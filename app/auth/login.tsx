@@ -79,9 +79,16 @@ export default function LoginScreen() {
   };
   
   const fillDemoCredentials = () => {
-    console.log('🔄 Filling demo credentials');
+    console.log('🔄 Filling demo credentials and auto-login');
     setEmail('demo@example.com');
     setPassword('password123');
+    
+    // Auto-login after a short delay to allow user to see the credentials
+    setTimeout(() => {
+      if (email === 'demo@example.com' && password === 'password123') {
+        handleLogin();
+      }
+    }, 1000);
   };
   
   // Show loading while initializing
@@ -113,7 +120,7 @@ export default function LoginScreen() {
         
         {/* Demo credentials helper */}
         <Pressable style={styles.demoButton} onPress={fillDemoCredentials}>
-          <Text style={styles.demoButtonText}>Use Demo Credentials</Text>
+          <Text style={styles.demoButtonText}>Use Demo Credentials (Auto-Login)</Text>
         </Pressable>
         
         <View style={styles.inputGroup}>
