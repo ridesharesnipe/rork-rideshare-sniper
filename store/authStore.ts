@@ -106,8 +106,12 @@ export const useAuthStore = create<AuthState>()(
       isInitialized: false,
       
       initialize: async () => {
-        if (get().isInitialized) return;
+        if (get().isInitialized) {
+          console.log('Auth already initialized, skipping');
+          return;
+        }
         
+        console.log('Starting auth initialization...');
         set({ isLoading: true });
         
         try {
@@ -115,6 +119,7 @@ export const useAuthStore = create<AuthState>()(
           const currentUser = await getCurrentUserFromStorage();
           
           if (currentUser) {
+            console.log('Found logged in user:', currentUser.email);
             set({
               user: currentUser,
               isAuthenticated: true,
@@ -123,6 +128,7 @@ export const useAuthStore = create<AuthState>()(
               error: null
             });
           } else {
+            console.log('No logged in user found');
             set({
               user: null,
               isAuthenticated: false,
@@ -142,6 +148,7 @@ export const useAuthStore = create<AuthState>()(
       },
       
       login: async (email: string, password: string) => {
+        console.log(`Login attempt for: ${email}`);
         set({ isLoading: true, error: null });
         
         try {
@@ -191,6 +198,7 @@ export const useAuthStore = create<AuthState>()(
           // Save current user to storage
           await saveCurrentUserToStorage(authenticatedUser);
           
+          console.log('Login successful for:', email);
           set({
             user: authenticatedUser,
             isAuthenticated: true,

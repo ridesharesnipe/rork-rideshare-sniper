@@ -5,10 +5,27 @@ import colors from '@/constants/colors';
 import { useSettingsStore } from '@/store/settingsStore';
 import * as Haptics from 'expo-haptics';
 import OverlayDemo from './OverlayDemo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function StartSniperButton() {
   const [showOverlayDemo, setShowOverlayDemo] = useState(false);
   const { driverStatus, setDriverStatus, areAllPermissionsGranted } = useSettingsStore();
+  const [overlayPositions, setOverlayPositions] = useState(null);
+  
+  // Load saved overlay positions on component mount
+  useEffect(() => {
+    const loadPositions = async () => {
+      try {
+        const savedPositions = await AsyncStorage.getItem('overlayPositions');
+        if (savedPositions) {
+          setOverlayPositions(JSON.parse(savedPositions));
+        }
+      } catch (error) {
+        console.error('Failed to load overlay positions:', error);
+      }
+    };
+    loadPositions();
+  }, []);
   
   const handleStartSniper = async () => {
     // Vibration feedback - only on native platforms
@@ -62,23 +79,47 @@ export default function StartSniperButton() {
         if (supported) {
           Linking.openURL('uber-driver://').catch(err => {
             console.log('Error opening Uber Driver app:', err);
+            // Try regular Uber app as fallback
+            tryLaunchRegularUber();
           });
         } else {
           // Try regular Uber app as fallback
-          Linking.canOpenURL('uber://').then(uberSupported => {
-            if (uberSupported) {
-              Linking.openURL('uber://').catch(err => {
-                console.log('Error opening Uber app:', err);
-              });
-            } else {
-              console.log('Uber app not installed');
-            }
-          }).catch(err => {
-            console.log('Error checking for Uber app:', err);
-          });
+          tryLaunchRegularUber();
         }
       }).catch(err => {
         console.log('Error checking for Uber Driver app:', err);
+        tryLaunchRegularUber();
+      });
+    } catch (error) {
+      console.log('Deep linking error:', error);
+      tryLaunchRegularUber();
+    }
+  };
+  
+  const tryLaunchRegularUber = () => {
+    try {
+      Linking.canOpenURL('uber://').then(uberSupported => {
+        if (uberSupported) {
+          Linking.openURL('uber://').catch(err => {
+            console.log('Error opening Uber app:', err);
+            // If both Uber apps fail to open, show a message
+            Alert.alert(
+              "Uber App Not Found",
+              "Please install the Uber Driver or Uber app to use this feature.",
+              [{ text: "OK" }]
+            );
+          });
+        } else {
+          console.log('Uber app not installed');
+          // If both Uber apps are not installed, show a message
+          Alert.alert(
+            "Uber App Not Found",
+            "Please install the Uber Driver or Uber app to use this feature.",
+            [{ text: "OK" }]
+          );
+        }
+      }).catch(err => {
+        console.log('Error checking for Uber app:', err);
       });
     } catch (error) {
       console.log('Deep linking error:', error);
@@ -90,7 +131,8 @@ export default function StartSniperButton() {
       {showOverlayDemo ? (
         <OverlayDemo 
           recommendation="accept" 
-          onClose={() => setShowOverlayDemo(false)} 
+          onClose={() => setShowOverlayDemo(false)}
+          initialPositions={overlayPositions}
         />
       ) : (
         <Pressable

@@ -14,6 +14,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [demoLoginInProgress, setDemoLoginInProgress] = useState(false);
   
   // Initialize auth store when component mounts
   useEffect(() => {
@@ -80,15 +81,29 @@ export default function LoginScreen() {
   
   const fillDemoCredentials = () => {
     console.log('🔄 Filling demo credentials and auto-login');
-    setEmail('demo@example.com');
-    setPassword('password123');
     
-    // Auto-login after a short delay to allow user to see the credentials
+    // Set demo login in progress flag
+    setDemoLoginInProgress(true);
+    
+    // Fill in the credentials
+    const demoEmail = 'demo@example.com';
+    const demoPassword = 'password123';
+    
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    
+    // Directly attempt login with demo credentials instead of relying on state updates
     setTimeout(() => {
-      if (email === 'demo@example.com' && password === 'password123') {
-        handleLogin();
-      }
-    }, 1000);
+      console.log('🔄 Auto-login with demo credentials');
+      login(demoEmail, demoPassword)
+        .then(() => {
+          console.log('✅ Demo login successful');
+        })
+        .catch(error => {
+          console.error('❌ Demo login error:', error);
+          setDemoLoginInProgress(false);
+        });
+    }, 500);
   };
   
   // Show loading while initializing
@@ -119,8 +134,19 @@ export default function LoginScreen() {
         )}
         
         {/* Demo credentials helper */}
-        <Pressable style={styles.demoButton} onPress={fillDemoCredentials}>
-          <Text style={styles.demoButtonText}>Use Demo Credentials (Auto-Login)</Text>
+        <Pressable 
+          style={[styles.demoButton, demoLoginInProgress && styles.demoButtonActive]} 
+          onPress={fillDemoCredentials}
+          disabled={isLoading || demoLoginInProgress}
+        >
+          {demoLoginInProgress ? (
+            <View style={styles.demoButtonContent}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={styles.demoButtonText}>Logging in with demo account...</Text>
+            </View>
+          ) : (
+            <Text style={styles.demoButtonText}>Use Demo Credentials (Auto-Login)</Text>
+          )}
         </Pressable>
         
         <View style={styles.inputGroup}>
@@ -138,7 +164,7 @@ export default function LoginScreen() {
             }}
             autoCapitalize="none"
             keyboardType="email-address"
-            editable={!isLoading}
+            editable={!isLoading && !demoLoginInProgress}
           />
         </View>
         {emailError ? (
@@ -156,7 +182,7 @@ export default function LoginScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
-            editable={!isLoading}
+            editable={!isLoading && !demoLoginInProgress}
           />
           <Pressable style={styles.passwordToggle} onPress={togglePasswordVisibility}>
             {showPassword ? (
@@ -170,15 +196,18 @@ export default function LoginScreen() {
         <Pressable 
           style={styles.forgotPasswordButton} 
           onPress={navigateToRecovery}
-          disabled={isLoading}
+          disabled={isLoading || demoLoginInProgress}
         >
           <Text style={styles.forgotPasswordText}>Forgot Password or Email?</Text>
         </Pressable>
         
         <Pressable 
-          style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
+          style={[
+            styles.loginButton, 
+            (isLoading || demoLoginInProgress || !email || !password) && styles.loginButtonDisabled
+          ]} 
           onPress={handleLogin}
-          disabled={isLoading || !email || !password}
+          disabled={isLoading || demoLoginInProgress || !email || !password}
         >
           {isLoading ? (
             <ActivityIndicator color={colors.textPrimary} />
@@ -193,7 +222,7 @@ export default function LoginScreen() {
       
       <View style={styles.footer}>
         <Text style={styles.footerText}>Don't have an account?</Text>
-        <Pressable onPress={navigateToSignup} disabled={isLoading}>
+        <Pressable onPress={navigateToSignup} disabled={isLoading || demoLoginInProgress}>
           <Text style={styles.signupText}>Sign Up</Text>
         </Pressable>
       </View>
@@ -246,10 +275,19 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: 'center',
   },
+  demoButtonActive: {
+    backgroundColor: 'rgba(0, 128, 128, 0.1)',
+    borderColor: colors.primary,
+  },
+  demoButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   demoButtonText: {
     color: colors.primary,
     fontSize: 14,
     fontWeight: '500',
+    marginLeft: 8,
   },
   errorContainer: {
     backgroundColor: 'rgba(255, 61, 0, 0.1)',

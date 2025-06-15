@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface OverlayDemoProps {
   recommendation: 'accept' | 'reject' | 'consider';
   onClose: () => void;
+  initialPositions?: any;
 }
 
 interface Position {
@@ -14,7 +15,7 @@ interface Position {
   y: number;
 }
 
-export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProps) {
+export default function OverlayDemo({ recommendation, onClose, initialPositions }: OverlayDemoProps) {
   const [autoHideTimer, setAutoHideTimer] = useState<NodeJS.Timeout | null>(null);
   const [opacity] = useState(new Animated.Value(1));
   
@@ -22,11 +23,22 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
   const [tacticalPanelPosition, setTacticalPanelPosition] = useState<Position>({ x: 0, y: 0 });
   const [acceptOverlayPosition, setAcceptOverlayPosition] = useState<Position>({ x: 0, y: 0 });
   const [rejectXPosition, setRejectXPosition] = useState<Position>({ x: 0, y: 0 });
+  const [positionsLoaded, setPositionsLoaded] = useState(false);
   
   // Load saved positions from storage on component mount
   useEffect(() => {
     const loadPositions = async () => {
       try {
+        // If initialPositions were passed, use them
+        if (initialPositions) {
+          setTacticalPanelPosition(initialPositions.tacticalPanel || { x: 0, y: 0 });
+          setAcceptOverlayPosition(initialPositions.acceptOverlay || { x: 0, y: 0 });
+          setRejectXPosition(initialPositions.rejectX || { x: 0, y: 0 });
+          setPositionsLoaded(true);
+          return;
+        }
+        
+        // Otherwise load from AsyncStorage
         const savedPositions = await AsyncStorage.getItem('overlayPositions');
         if (savedPositions) {
           const positions = JSON.parse(savedPositions);
@@ -34,15 +46,19 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
           setAcceptOverlayPosition(positions.acceptOverlay || { x: 0, y: 0 });
           setRejectXPosition(positions.rejectX || { x: 0, y: 0 });
         }
+        setPositionsLoaded(true);
       } catch (error) {
         console.error('Failed to load overlay positions:', error);
+        setPositionsLoaded(true);
       }
     };
     loadPositions();
-  }, []);
+  }, [initialPositions]);
 
   // Save positions to storage when they change
   useEffect(() => {
+    if (!positionsLoaded) return;
+    
     const savePositions = async () => {
       try {
         const positions = {
@@ -51,12 +67,13 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
           rejectX: rejectXPosition,
         };
         await AsyncStorage.setItem('overlayPositions', JSON.stringify(positions));
+        console.log('Saved overlay positions:', positions);
       } catch (error) {
         console.error('Failed to save overlay positions:', error);
       }
     };
     savePositions();
-  }, [tacticalPanelPosition, acceptOverlayPosition, rejectXPosition]);
+  }, [tacticalPanelPosition, acceptOverlayPosition, rejectXPosition, positionsLoaded]);
   
   // Create pan responders for each draggable element
   const tacticalPanelPanResponder = PanResponder.create({
