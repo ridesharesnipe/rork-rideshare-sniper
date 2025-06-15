@@ -406,6 +406,24 @@ export default function SettingsScreen() {
           </View>
           <ChevronRight size={20} color={colors.textSecondary} />
         </Pressable>
+        
+        <Pressable 
+          style={styles.helpItem}
+          onPress={() => router.push('/help')}
+        >
+          <View style={styles.helpItemContent}>
+            <View style={styles.helpIconContainer}>
+              <HelpCircle size={20} color={colors.primary} />
+            </View>
+            <View style={styles.helpTextContainer}>
+              <Text style={styles.helpItemTitle}>Help Center</Text>
+              <Text style={styles.helpItemDescription}>
+                Detailed instructions on how to use Rideshare Sniper
+              </Text>
+            </View>
+          </View>
+          <ChevronRight size={20} color={colors.textSecondary} />
+        </Pressable>
       </View>
       
       {/* ABOUT SECTION */}

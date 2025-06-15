@@ -3,7 +3,7 @@ import { Tabs, useRouter } from "expo-router";
 import { Home, Settings, Activity, Crosshair, LogOut, HelpCircle } from "lucide-react-native";
 import colors from "@/constants/colors";
 import { useAuthStore } from "@/store/authStore";
-import { Pressable } from "react-native";
+import { Pressable, Text } from "react-native";
 
 export default function TabLayout() {
   const { logout, isAuthenticated, isInitialized } = useAuthStore();
@@ -43,10 +43,11 @@ export default function TabLayout() {
   const HelpButton = () => {
     return (
       <Pressable 
-        onPress={() => router.push('/onboarding')}
-        style={{ marginRight: 16 }}
+        onPress={() => router.push('/help')}
+        style={{ marginRight: 16, flexDirection: 'row', alignItems: 'center' }}
       >
         <HelpCircle size={20} color={colors.primary} />
+        <Text style={{ color: colors.primary, marginLeft: 4, fontWeight: '600' }}>Help</Text>
       </Pressable>
     );
   };
