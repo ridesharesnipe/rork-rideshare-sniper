@@ -37,10 +37,6 @@ export interface TripEvaluation {
   distanceEfficiency?: string;
 }
 
-export interface PermissionStatus {
-  sniper: boolean;
-}
-
 export interface StatsData {
   totalTrips: number;
   acceptedTrips: number;
