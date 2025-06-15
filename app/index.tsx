@@ -14,6 +14,7 @@ export default function Index() {
     const initializeAuth = async () => {
       try {
         await initialize();
+        console.log('✅ Auth initialized from index');
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
         // Even on error, mark as initialized to prevent getting stuck

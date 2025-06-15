@@ -3,10 +3,10 @@ import { Tabs, useRouter } from "expo-router";
 import { Home, Settings, Activity, Crosshair, LogOut, HelpCircle } from "lucide-react-native";
 import colors from "@/constants/colors";
 import { useAuthStore } from "@/store/authStore";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, Alert } from "react-native";
 
 export default function TabLayout() {
-  const { logout, isAuthenticated, isInitialized } = useAuthStore();
+  const { logout, isAuthenticated, isInitialized, user } = useAuthStore();
   const router = useRouter();
   
   // Redirect to login if not authenticated (only after initialization)
@@ -19,11 +19,28 @@ export default function TabLayout() {
   
   const handleLogout = async () => {
     try {
-      console.log("Logging out user");
-      await logout();
-      router.replace('/welcome');
+      // Confirm logout
+      Alert.alert(
+        "Logout",
+        "Are you sure you want to log out?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "Logout",
+            onPress: async () => {
+              console.log("Logging out user");
+              await logout();
+              router.replace('/welcome');
+            }
+          }
+        ]
+      );
     } catch (error) {
       console.error('Logout error:', error);
+      Alert.alert("Error", "Failed to log out. Please try again.");
     }
   };
   
@@ -81,6 +98,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          headerTitle: user ? `Welcome, ${user.name}` : "Home",
         }}
       />
       <Tabs.Screen

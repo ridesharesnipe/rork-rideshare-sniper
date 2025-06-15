@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { validateEmail } from '@/utils/validation';
+import { trpcClient } from '@/lib/trpc';
 
 export interface User {
   id: string;
@@ -11,6 +12,7 @@ export interface User {
 
 interface AuthState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -29,76 +31,11 @@ interface AuthState {
   recoverEmail: (phoneNumber: string, verificationCode: string) => Promise<{ email: string } | null>;
 }
 
-// Mock user database stored in AsyncStorage
-const USERS_STORAGE_KEY = 'rideshare_sniper_users';
-const CURRENT_USER_KEY = 'rideshare_sniper_current_user';
-
-// Default demo users
-const DEFAULT_USERS = {
-  'demo@example.com': {
-    id: 'user-demo-123',
-    email: 'demo@example.com',
-    name: 'Demo User',
-    password: 'password123'
-  },
-  'test@example.com': {
-    id: 'user-test-456',
-    email: 'test@example.com',
-    name: 'Test User',
-    password: 'test123'
-  }
-};
-
-// Helper functions for mock authentication
-const getUsersFromStorage = async () => {
-  try {
-    const usersJson = await AsyncStorage.getItem(USERS_STORAGE_KEY);
-    if (usersJson) {
-      return JSON.parse(usersJson);
-    }
-    // Initialize with default users if none exist
-    await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(DEFAULT_USERS));
-    return DEFAULT_USERS;
-  } catch (error) {
-    console.error('Error getting users from storage:', error);
-    return DEFAULT_USERS;
-  }
-};
-
-const saveUsersToStorage = async (users: any) => {
-  try {
-    await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-  } catch (error) {
-    console.error('Error saving users to storage:', error);
-  }
-};
-
-const getCurrentUserFromStorage = async (): Promise<User | null> => {
-  try {
-    const userJson = await AsyncStorage.getItem(CURRENT_USER_KEY);
-    return userJson ? JSON.parse(userJson) : null;
-  } catch (error) {
-    console.error('Error getting current user from storage:', error);
-    return null;
-  }
-};
-
-const saveCurrentUserToStorage = async (user: User | null) => {
-  try {
-    if (user) {
-      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-    } else {
-      await AsyncStorage.removeItem(CURRENT_USER_KEY);
-    }
-  } catch (error) {
-    console.error('Error saving current user to storage:', error);
-  }
-};
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
+      token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -118,22 +55,24 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          // Check if user is already logged in
-          const currentUser = await getCurrentUserFromStorage();
+          // Check if we have a stored user and token
+          const { user, token } = get();
           
-          if (currentUser) {
-            console.log('Found logged in user:', currentUser.email);
+          if (user && token) {
+            console.log('Found stored credentials, validating...');
+            // In a real app, you would validate the token with the backend here
+            // For now, we'll just consider the user authenticated if we have a token
             set({
-              user: currentUser,
               isAuthenticated: true,
               isLoading: false,
               isInitialized: true,
               error: null
             });
           } else {
-            console.log('No logged in user found');
+            console.log('No stored credentials found');
             set({
               user: null,
+              token: null,
               isAuthenticated: false,
               isLoading: false,
               isInitialized: true,
@@ -145,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
           // Always mark as initialized to prevent getting stuck
           set({
             user: null,
+            token: null,
             isAuthenticated: false,
             isLoading: false,
             isInitialized: true,
@@ -171,46 +111,27 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          // Simulate network delay (shorter for demo)
-          await new Promise(resolve => setTimeout(resolve, 300));
-          
-          // Get users from storage
-          const users = await getUsersFromStorage();
-          const user = users[email.toLowerCase()];
-          
-          if (!user) {
-            set({
-              isLoading: false,
-              error: "Invalid email or password. Please check your credentials."
-            });
-            return;
-          }
-          
-          if (user.password !== password) {
-            set({
-              isLoading: false,
-              error: "Invalid email or password. Please check your credentials."
-            });
-            return;
-          }
-          
-          // Create user object without password
-          const authenticatedUser: User = {
-            id: user.id,
-            email: user.email,
-            name: user.name
-          };
-          
-          // Save current user to storage
-          await saveCurrentUserToStorage(authenticatedUser);
-          
-          console.log('Login successful for:', email);
-          set({
-            user: authenticatedUser,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null
+          // Call backend login endpoint
+          const response = await trpcClient.auth.login.mutate({
+            email: email.trim().toLowerCase(),
+            password
           });
+          
+          console.log('Login response:', response);
+          
+          if (response.success && response.user && response.token) {
+            // Store user and token
+            set({
+              user: response.user,
+              token: response.token,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null
+            });
+            console.log('Login successful for:', email);
+          } else {
+            throw new Error("Invalid response from server");
+          }
         } catch (error: any) {
           console.error('Login error:', error);
           set({
@@ -237,50 +158,28 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Get users from storage
-          const users = await getUsersFromStorage();
-          
-          // Check if user already exists
-          if (users[email.toLowerCase()]) {
-            set({
-              isLoading: false,
-              error: "An account with this email already exists. Please try logging in."
-            });
-            return;
-          }
-          
-          // Create new user
-          const newUser = {
-            id: `user-${Date.now()}`,
-            email: email.toLowerCase(),
-            name: name.trim(),
-            password
-          };
-          
-          // Add user to storage
-          users[email.toLowerCase()] = newUser;
-          await saveUsersToStorage(users);
-          
-          // Create user object without password
-          const authenticatedUser: User = {
-            id: newUser.id,
-            email: newUser.email,
-            name: newUser.name
-          };
-          
-          // Save current user to storage
-          await saveCurrentUserToStorage(authenticatedUser);
-          
-          console.log('Signup successful for:', email);
-          set({
-            user: authenticatedUser,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
+          // Call backend signup endpoint
+          const response = await trpcClient.auth.signup.mutate({
+            email: email.trim().toLowerCase(),
+            password,
+            name: name.trim()
           });
+          
+          console.log('Signup response:', response);
+          
+          if (response.success && response.user && response.token) {
+            // Store user and token
+            set({
+              user: response.user,
+              token: response.token,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null
+            });
+            console.log('Signup successful for:', email);
+          } else {
+            throw new Error("Invalid response from server");
+          }
         } catch (error: any) {
           console.error('Signup error:', error);
           set({
@@ -295,11 +194,12 @@ export const useAuthStore = create<AuthState>()(
           console.log('Logging out user...');
           set({ isLoading: true });
           
-          // Remove current user from storage
-          await saveCurrentUserToStorage(null);
+          // In a real app, you would call a logout endpoint here
+          // For now, just clear the state
           
           set({
             user: null,
+            token: null,
             isAuthenticated: false,
             error: null,
             isLoading: false
@@ -323,7 +223,7 @@ export const useAuthStore = create<AuthState>()(
         set({ rememberMe: value });
       },
       
-      // Password recovery using mock system
+      // Password recovery using backend
       recoverPassword: async (email: string, resetCode: string, newPassword: string) => {
         set({ isLoading: true, error: null });
         
@@ -341,38 +241,24 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Get users from storage
-          const users = await getUsersFromStorage();
-          const user = users[email.toLowerCase()];
-          
-          if (!user) {
-            set({
-              isLoading: false,
-              error: "No account found with this email address."
-            });
-            return;
-          }
-          
-          // For demo purposes, accept any 6-digit code
-          if (resetCode !== "123456") {
-            set({
-              isLoading: false,
-              error: "Invalid reset code. For demo, use 123456."
-            });
-            return;
-          }
-          
-          // Update password
-          user.password = newPassword;
-          await saveUsersToStorage(users);
-          
-          set({
-            isLoading: false,
-            error: null
+          // Call backend recovery endpoint
+          const response = await trpcClient.auth.recovery.mutate({
+            recoveryType: "password",
+            email: email.trim().toLowerCase(),
+            resetCode: resetCode.trim(),
+            newPassword
           });
+          
+          console.log('Password recovery response:', response);
+          
+          if (response.success) {
+            set({
+              isLoading: false,
+              error: null
+            });
+          } else {
+            throw new Error("Invalid response from server");
+          }
         } catch (error: any) {
           console.error('Password recovery error:', error);
           set({
@@ -382,7 +268,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
-      // Email recovery (mock implementation)
+      // Email recovery using backend
       recoverEmail: async (phoneNumber: string, verificationCode: string) => {
         set({ isLoading: true, error: null });
         
@@ -393,25 +279,25 @@ export const useAuthStore = create<AuthState>()(
             return null;
           }
           
-          // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Call backend recovery endpoint
+          const response = await trpcClient.auth.recovery.mutate({
+            recoveryType: "email",
+            phoneNumber: phoneNumber.trim(),
+            verificationCode: verificationCode.trim()
+          });
           
-          // For demo purposes, accept any 6-digit code
-          if (verificationCode !== "123456") {
-            set({
-              isLoading: false,
-              error: "Invalid verification code. For demo, use 123456."
-            });
-            return null;
-          }
+          console.log('Email recovery response:', response);
           
           set({
             isLoading: false,
             error: null
           });
           
-          // Return demo email - in production, this would come from your backend
-          return { email: "demo@example.com" };
+          if (response.success && response.email) {
+            return { email: response.email };
+          }
+          
+          return null;
         } catch (error: any) {
           console.error('Email recovery error:', error);
           set({
@@ -427,6 +313,7 @@ export const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         user: state.user,
+        token: state.token,
         isAuthenticated: state.isAuthenticated,
         rememberMe: state.rememberMe,
       }),

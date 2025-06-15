@@ -1,20 +1,20 @@
-import { createTRPCRouter } from "./create-context";
-import loginProcedure from "./routes/auth/login";
-import signupProcedure from "./routes/auth/signup";
-import recoveryProcedure from "./routes/auth/recovery";
-import hiProcedure from "./routes/example/hi/route";
-import profileProcedure from "./routes/user/profile";
+import { router } from './create-context';
+import hiProcedure from './routes/example/hi/route';
+import loginProcedure from './routes/auth/login';
+import signupProcedure from './routes/auth/signup';
+import recoveryProcedure from './routes/auth/recovery';
+import profileProcedure from './routes/user/profile';
 
-export const appRouter = createTRPCRouter({
-  example: createTRPCRouter({
+export const appRouter = router({
+  example: router({
     hi: hiProcedure,
   }),
-  auth: createTRPCRouter({
+  auth: router({
     login: loginProcedure,
     signup: signupProcedure,
     recovery: recoveryProcedure,
   }),
-  user: createTRPCRouter({
+  user: router({
     profile: profileProcedure,
   }),
 });
