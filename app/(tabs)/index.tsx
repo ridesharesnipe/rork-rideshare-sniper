@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Power, ChevronRight, Shield, Crosshair, Edit, HelpCircle } from 'lucide-react-native';
+import { Shield, Crosshair, Edit, HelpCircle } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import ProfileSelector from '@/components/ProfileSelector';
 import StatsCard from '@/components/StatsCard';
@@ -9,18 +9,15 @@ import StartSniperButton from '@/components/StartSniperButton';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
+import StatusIndicator from '@/components/StatusIndicator';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { driverStatus, setDriverStatus } = useSettingsStore();
+  const { driverStatus } = useSettingsStore();
   const { getActiveProfile, activeProfileId } = useProfileStore();
   const { user } = useAuthStore();
   
   const activeProfile = getActiveProfile();
-  
-  const toggleDriverStatus = () => {
-    setDriverStatus(driverStatus === 'online' ? 'offline' : 'online');
-  };
   
   const navigateToSimulator = () => {
     router.push('/simulator');
@@ -106,7 +103,7 @@ export default function HomeScreen() {
           </View>
         )}
         
-        {/* Removed GO ONLINE/OFFLINE button as requested */}
+        {/* GO ONLINE/OFFLINE button removed as requested */}
       </View>
       
       {/* START SNIPER BUTTON */}
@@ -292,25 +289,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
-  },
-  powerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.buttonBackground,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  powerButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  powerButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginLeft: 8,
-    letterSpacing: 0.5,
   },
   buttonRow: {
     flexDirection: 'row',

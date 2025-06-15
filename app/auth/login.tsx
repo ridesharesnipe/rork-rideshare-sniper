@@ -5,10 +5,12 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { useAuthStore } from '@/store/authStore';
 import { validateEmail } from '@/utils/validation';
+import { useSettingsStore } from '@/store/settingsStore';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading, error, clearError, user, initialize, isInitialized } = useAuthStore();
+  const { setDriverStatus } = useSettingsStore();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +37,9 @@ export default function LoginScreen() {
       
       // Set the navigation flag to prevent multiple navigations
       hasNavigated.current = true;
+      
+      // Set driver status to online when user logs in
+      setDriverStatus('online');
       
       // Reset demo login state if it was in progress
       if (demoLoginInProgress) {
@@ -63,7 +68,7 @@ export default function LoginScreen() {
         ]
       );
     }
-  }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress]);
+  }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress, setDriverStatus]);
   
   // Reset navigation flag when authentication state changes to false
   useEffect(() => {

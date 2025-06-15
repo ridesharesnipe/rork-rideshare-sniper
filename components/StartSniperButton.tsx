@@ -52,6 +52,7 @@ export default function StartSniperButton() {
       }
     }
     
+    // Always set driver status to online when starting sniper
     if (driverStatus === 'offline') {
       setDriverStatus('online');
     }

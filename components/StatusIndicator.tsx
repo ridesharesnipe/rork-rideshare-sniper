@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Circle } from 'lucide-react-native';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useAuthStore } from '@/store/authStore';
 import colors from '@/constants/colors';
 
 export default function StatusIndicator() {
   const { driverStatus, setDriverStatus } = useSettingsStore();
+  const { isAuthenticated } = useAuthStore();
+  
+  // Set driver status to online when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      setDriverStatus('online');
+    }
+  }, [isAuthenticated, setDriverStatus]);
   
   const toggleStatus = () => {
     if (driverStatus === 'offline') {
