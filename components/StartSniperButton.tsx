@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function StartSniperButton() {
   const [showOverlayDemo, setShowOverlayDemo] = useState(false);
-  const { driverStatus, setDriverStatus, areAllPermissionsGranted } = useSettingsStore();
+  const { driverStatus, setDriverStatus, isSniperPermissionGranted } = useSettingsStore();
   const [overlayPositions, setOverlayPositions] = useState(null);
   
   // Load saved overlay positions on component mount
@@ -41,9 +41,9 @@ export default function StartSniperButton() {
       setDriverStatus('online');
     }
     
-    // Check if all permissions are granted
-    if (areAllPermissionsGranted()) {
-      // If all permissions are granted, automatically launch Uber and show overlay
+    // Check if permission is granted
+    if (isSniperPermissionGranted()) {
+      // If permission is granted, automatically launch Uber and show overlay
       setShowOverlayDemo(true);
       
       // Try to launch Uber app if installed (only on native platforms)
@@ -51,10 +51,10 @@ export default function StartSniperButton() {
         tryLaunchUber();
       }
     } else {
-      // If permissions are not granted, show an alert to inform the user
+      // If permission is not granted, show an alert to inform the user
       Alert.alert(
-        "Permissions Required",
-        "Please grant all necessary permissions before starting the sniper. Go to Settings to check permission status or replay the onboarding tutorial.",
+        "Permission Required",
+        "Please grant the Sniper permission before starting. This is required for the app to function properly.",
         [
           { 
             text: "Go to Settings", 
@@ -147,9 +147,9 @@ export default function StartSniperButton() {
           <View style={styles.infoContainer}>
             <AlertTriangle size={14} color={colors.textSecondary} />
             <Text style={styles.infoText}>
-              {areAllPermissionsGranted() 
+              {isSniperPermissionGranted() 
                 ? "Launches Uber with overlay" 
-                : "Permissions required"}
+                : "Permission required"}
             </Text>
           </View>
         </Pressable>

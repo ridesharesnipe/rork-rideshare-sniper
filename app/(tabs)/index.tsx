@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { driverStatus, setDriverStatus, areAllPermissionsGranted } = useSettingsStore();
+  const { driverStatus, setDriverStatus, isSniperPermissionGranted } = useSettingsStore();
   const { getActiveProfile, activeProfileId } = useProfileStore();
   const { user } = useAuthStore();
   const [showWelcome, setShowWelcome] = useState(false);
@@ -93,12 +93,12 @@ export default function HomeScreen() {
         <Text style={styles.tagline}>PRECISION. PROFIT. PROTECTION.</Text>
       </View>
       
-      {/* PERMISSIONS STATUS ALERT */}
-      {!areAllPermissionsGranted() && (
+      {/* PERMISSION STATUS ALERT */}
+      {!isSniperPermissionGranted() && (
         <View style={styles.permissionAlert}>
-          <Text style={styles.permissionAlertTitle}>⚠️ PERMISSIONS REQUIRED</Text>
+          <Text style={styles.permissionAlertTitle}>⚠️ PERMISSION REQUIRED</Text>
           <Text style={styles.permissionAlertText}>
-            Some essential permissions are missing. Rideshare Sniper may not function properly.
+            Sniper permission is missing. Rideshare Sniper may not function properly.
           </Text>
           <Pressable 
             style={styles.permissionAlertButton}

@@ -17,10 +17,8 @@ export default function OnboardingScreen() {
   const { updateProfile } = useProfileStore();
   const { isAuthenticated } = useAuthStore();
   const { 
-    setOverlayPermission, 
-    setLocationPermission, 
-    setNotificationPermission,
-    areAllPermissionsGranted 
+    setSniperPermission,
+    isSniperPermissionGranted
   } = useSettingsStore();
   
   const [currentStep, setCurrentStep] = useState(0);
@@ -30,25 +28,23 @@ export default function OnboardingScreen() {
   const [currentDemo, setCurrentDemo] = useState<'accept' | 'reject' | 'consider' | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   
-  // Essential permissions only
-  const [overlayPermission, setOverlayPermissionLocal] = useState(false);
-  const [notificationPermission, setNotificationPermissionLocal] = useState(false);
-  const [locationPermission, setLocationPermissionLocal] = useState(false);
+  // Single permission toggle
+  const [sniperPermission, setSniperPermissionLocal] = useState(false);
   
   const handleNext = () => {
-    // If we're on the permissions step, check if permissions are granted
-    if (currentStep === 4) {
-      if (!overlayPermission || !notificationPermission || !locationPermission) {
+    // If we're on the permissions step, check if permission is granted
+    if (currentStep === 3) {
+      if (!sniperPermission) {
         Alert.alert(
-          "Permissions Required",
-          "Please enable all permissions to continue. These are required for the app to function properly.",
+          "Permission Required",
+          "Please enable the Sniper permission to continue. This is required for the app to function properly.",
           [{ text: "OK" }]
         );
         return;
       }
     }
     
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
       handleFinish();
@@ -70,10 +66,8 @@ export default function OnboardingScreen() {
     try {
       console.log("Finishing onboarding");
       
-      // Save permissions to store
-      setOverlayPermission(overlayPermission);
-      setLocationPermission(locationPermission);
-      setNotificationPermission(notificationPermission);
+      // Save permission to store
+      setSniperPermission(sniperPermission);
       
       // Update the default profile with the onboarding settings
       updateProfile('1', {
@@ -265,89 +259,25 @@ export default function OnboardingScreen() {
         return (
           <View style={styles.stepContainer}>
             <View style={styles.stepHeader}>
-              <Navigation size={28} color={colors.primary} />
-              <Text style={styles.stepTitle}>Maximum Driving Distance</Text>
-            </View>
-            
-            <Text style={styles.stepDescription}>
-              Set the maximum distance you're willing to drive for the trip itself. Longer trips will be marked with a red X.
-            </Text>
-            
-            <View style={styles.sliderContainer}>
-              <Text style={styles.sliderValue}>{maxDrivingDistance.toFixed(1)} mi</Text>
-              <Slider
-                value={maxDrivingDistance}
-                minimumValue={5}
-                maximumValue={30}
-                step={1}
-                onValueChange={setMaxDrivingDistance}
-              />
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>5 mi</Text>
-                <Text style={styles.sliderLabel}>30 mi</Text>
-              </View>
-            </View>
-            
-            <View style={styles.infoPanel}>
-              <Text style={styles.infoPanelTitle}>Recommendation</Text>
-              <Text style={styles.infoPanelText}>
-                Consider your market and strategy when setting this. Short trips (10-15 miles) are often more profitable in dense urban areas, while longer trips may be better in suburban or rural areas.
-              </Text>
-            </View>
-          </View>
-        );
-      
-      case 4:
-        return (
-          <View style={styles.stepContainer}>
-            <View style={styles.stepHeader}>
               <Lock size={28} color={colors.primary} />
-              <Text style={styles.stepTitle}>Essential Permissions</Text>
+              <Text style={styles.stepTitle}>Sniper Permission</Text>
             </View>
             
             <Text style={styles.stepDescription}>
-              Rideshare Sniper needs these 3 essential permissions to function properly:
+              Rideshare Sniper needs permission to function properly. This allows the app to display indicators over your rideshare app, detect trip requests, and calculate distances.
             </Text>
             
             <View style={styles.permissionItem}>
               <View style={styles.permissionHeader}>
-                <Lock size={20} color={colors.primary} />
-                <Text style={styles.permissionTitle}>Screen Overlay</Text>
+                <Shield size={20} color={colors.primary} />
+                <Text style={styles.permissionTitle}>Sniper Permission</Text>
                 <ToggleSwitch
-                  value={overlayPermission}
-                  onValueChange={setOverlayPermissionLocal}
+                  value={sniperPermission}
+                  onValueChange={setSniperPermissionLocal}
                 />
               </View>
               <Text style={styles.permissionDescription}>
-                Display indicators over your rideshare app (green crosshair, yellow warning, red X)
-              </Text>
-            </View>
-            
-            <View style={styles.permissionItem}>
-              <View style={styles.permissionHeader}>
-                <Bell size={20} color={colors.primary} />
-                <Text style={styles.permissionTitle}>Notifications</Text>
-                <ToggleSwitch
-                  value={notificationPermission}
-                  onValueChange={setNotificationPermissionLocal}
-                />
-              </View>
-              <Text style={styles.permissionDescription}>
-                Detect incoming trip requests from Uber and Lyft
-              </Text>
-            </View>
-            
-            <View style={styles.permissionItem}>
-              <View style={styles.permissionHeader}>
-                <MapPin size={20} color={colors.primary} />
-                <Text style={styles.permissionTitle}>Location</Text>
-                <ToggleSwitch
-                  value={locationPermission}
-                  onValueChange={setLocationPermissionLocal}
-                />
-              </View>
-              <Text style={styles.permissionDescription}>
-                Calculate accurate distances for pickup and trip evaluation
+                Allow Rideshare Sniper to display indicators, detect trips, and calculate distances
               </Text>
             </View>
             
@@ -359,11 +289,11 @@ export default function OnboardingScreen() {
               </Text>
             </View>
             
-            {(!overlayPermission || !notificationPermission || !locationPermission) && (
+            {!sniperPermission && (
               <View style={styles.permissionWarning}>
                 <AlertTriangle size={20} color={colors.warning} />
                 <Text style={styles.permissionWarningText}>
-                  All permissions are required for Rideshare Sniper to function properly.
+                  This permission is required for Rideshare Sniper to function properly.
                 </Text>
               </View>
             )}
@@ -408,21 +338,21 @@ export default function OnboardingScreen() {
             <Pressable 
               style={[
                 styles.nextButton, 
-                (currentStep === 4 && (!overlayPermission || !notificationPermission || !locationPermission)) ? 
+                (currentStep === 3 && !sniperPermission) ? 
                   styles.nextButtonDisabled : {}
               ]} 
               onPress={handleNext}
-              disabled={currentStep === 4 && (!overlayPermission || !notificationPermission || !locationPermission)}
+              disabled={currentStep === 3 && !sniperPermission}
             >
               <Text style={styles.nextButtonText}>
-                {currentStep < 4 ? 'NEXT' : 'COMPLETE SETUP'}
+                {currentStep < 3 ? 'NEXT' : 'COMPLETE SETUP'}
               </Text>
               <ChevronRight size={20} color={colors.textPrimary} />
             </Pressable>
           </View>
           
           <View style={styles.progressContainer}>
-            {[0, 1, 2, 3, 4].map((step) => (
+            {[0, 1, 2, 3].map((step) => (
               <View 
                 key={step}
                 style={[

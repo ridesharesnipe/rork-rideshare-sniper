@@ -13,10 +13,8 @@ interface SettingsState {
   minimalMode: boolean;
   emergencyDisable: boolean;
   
-  // Essential permissions only
-  overlayPermissionGranted: boolean;
-  locationPermissionGranted: boolean;
-  notificationPermissionGranted: boolean;
+  // Single permission instead of multiple
+  sniperPermissionGranted: boolean;
   
   setDriverStatus: (status: DriverStatus) => void;
   setSoundEnabled: (enabled: boolean) => void;
@@ -27,16 +25,14 @@ interface SettingsState {
   setMinimalMode: (enabled: boolean) => void;
   setEmergencyDisable: (enabled: boolean) => void;
   
-  // Essential permission setters
-  setOverlayPermission: (granted: boolean) => void;
-  setLocationPermission: (granted: boolean) => void;
-  setNotificationPermission: (granted: boolean) => void;
+  // Single permission setter
+  setSniperPermission: (granted: boolean) => void;
   
-  // Check if all required permissions are granted
-  areAllPermissionsGranted: () => boolean;
+  // Check if permission is granted
+  isSniperPermissionGranted: () => boolean;
   
-  // Reset all permissions (for troubleshooting)
-  resetPermissions: () => Promise<void>;
+  // Reset permission (for troubleshooting)
+  resetPermission: () => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -51,10 +47,8 @@ export const useSettingsStore = create<SettingsState>()(
       minimalMode: false,
       emergencyDisable: false,
       
-      // Essential permissions - default to false
-      overlayPermissionGranted: false,
-      locationPermissionGranted: false,
-      notificationPermissionGranted: false,
+      // Single permission - default to false
+      sniperPermissionGranted: false,
       
       setDriverStatus: (status) => {
         set({ driverStatus: status });
@@ -96,47 +90,25 @@ export const useSettingsStore = create<SettingsState>()(
         console.log(`Emergency disable ${enabled ? 'enabled' : 'disabled'}`);
       },
       
-      // Essential permission setters
-      setOverlayPermission: (granted) => {
-        set({ overlayPermissionGranted: granted });
-        console.log(`Overlay permission ${granted ? 'granted' : 'denied'}`);
+      // Single permission setter
+      setSniperPermission: (granted) => {
+        set({ sniperPermissionGranted: granted });
+        console.log(`Sniper permission ${granted ? 'granted' : 'denied'}`);
       },
       
-      setLocationPermission: (granted) => {
-        set({ locationPermissionGranted: granted });
-        console.log(`Location permission ${granted ? 'granted' : 'denied'}`);
+      // Check if permission is granted
+      isSniperPermissionGranted: () => {
+        return get().sniperPermissionGranted;
       },
       
-      setNotificationPermission: (granted) => {
-        set({ notificationPermissionGranted: granted });
-        console.log(`Notification permission ${granted ? 'granted' : 'denied'}`);
-      },
-      
-      // Check if all required permissions are granted
-      areAllPermissionsGranted: () => {
-        const { 
-          overlayPermissionGranted,
-          locationPermissionGranted,
-          notificationPermissionGranted
-        } = get();
-        
-        return overlayPermissionGranted && 
-               locationPermissionGranted && 
-               notificationPermissionGranted;
-      },
-      
-      // Reset all permissions (for troubleshooting)
-      resetPermissions: async () => {
+      // Reset permission (for troubleshooting)
+      resetPermission: async () => {
         try {
-          console.log('🔄 Starting permissions reset...');
+          console.log('🔄 Starting permission reset...');
           
-          // First, reset permissions in state
-          set({
-            overlayPermissionGranted: false,
-            locationPermissionGranted: false,
-            notificationPermissionGranted: false,
-          });
-          console.log('✅ Permissions reset in state');
+          // Reset permission in state
+          set({ sniperPermissionGranted: false });
+          console.log('✅ Permission reset in state');
           
           // Clear onboarding flag so user goes through setup again
           try {
@@ -154,27 +126,25 @@ export const useSettingsStore = create<SettingsState>()(
             console.warn('⚠️ Failed to remove overlay positions:', error);
           }
           
-          // Force save the current state to ensure permissions are persisted as false
+          // Force save the current state to ensure permission is persisted as false
           const currentState = get();
           try {
             const stateToSave = {
               ...currentState,
-              overlayPermissionGranted: false,
-              locationPermissionGranted: false,
-              notificationPermissionGranted: false,
+              sniperPermissionGranted: false,
             };
             await AsyncStorage.setItem('rideshare-sniper-settings', JSON.stringify({
               state: stateToSave,
               version: 0
             }));
-            console.log('✅ Forced save of reset permissions to storage');
+            console.log('✅ Forced save of reset permission to storage');
           } catch (error) {
             console.warn('⚠️ Failed to force save state:', error);
           }
           
-          console.log('✅ All permissions and related data reset successfully');
+          console.log('✅ Permission and related data reset successfully');
         } catch (error) {
-          console.error('❌ Error resetting permissions:', error);
+          console.error('❌ Error resetting permission:', error);
           throw error;
         }
       }

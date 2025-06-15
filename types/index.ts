@@ -38,10 +38,7 @@ export interface TripEvaluation {
 }
 
 export interface PermissionStatus {
-  location: boolean;
-  notifications: boolean;
-  overlay: boolean;
-  batteryOptimization: boolean;
+  sniper: boolean;
 }
 
 export interface StatsData {

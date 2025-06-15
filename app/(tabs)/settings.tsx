@@ -19,9 +19,7 @@ export default function SettingsScreen() {
     autoHideEnabled,
     minimalMode,
     emergencyDisable,
-    overlayPermissionGranted,
-    locationPermissionGranted,
-    notificationPermissionGranted,
+    sniperPermissionGranted,
     setSoundEnabled,
     setVibrationEnabled,
     setDarkMode,
@@ -29,8 +27,9 @@ export default function SettingsScreen() {
     setAutoHideEnabled,
     setMinimalMode,
     setEmergencyDisable,
-    areAllPermissionsGranted,
-    resetPermissions,
+    setSniperPermission,
+    isSniperPermissionGranted,
+    resetPermission,
   } = useSettingsStore();
   
   const { profiles, deleteProfile } = useProfileStore();
@@ -38,7 +37,7 @@ export default function SettingsScreen() {
   
   const [showDemo, setShowDemo] = useState(false);
   const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
-  const [isResettingPermissions, setIsResettingPermissions] = useState(false);
+  const [isResettingPermission, setIsResettingPermission] = useState(false);
   
   // Modal states for Privacy Policy and Terms of Service
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
@@ -114,10 +113,10 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleResetPermissions = () => {
+  const handleResetPermission = () => {
     Alert.alert(
-      "Reset Permissions",
-      "This will reset all permissions and related settings. You'll need to grant them again through the onboarding process.",
+      "Reset Permission",
+      "This will reset the Sniper permission and related settings. You'll need to grant it again through the onboarding process.",
       [
         {
           text: "Cancel",
@@ -126,19 +125,19 @@ export default function SettingsScreen() {
         {
           text: "Reset",
           onPress: async () => {
-            setIsResettingPermissions(true);
+            setIsResettingPermission(true);
             try {
-              console.log('🔄 Starting permissions reset from settings...');
+              console.log('🔄 Starting permission reset from settings...');
               
               // Call the reset function
-              await resetPermissions();
+              await resetPermission();
               
-              console.log('✅ Permissions reset complete');
+              console.log('✅ Permission reset complete');
               
               // Show success message and navigate
               Alert.alert(
-                "Permissions Reset", 
-                "All permissions have been reset. You will now be redirected to the onboarding process.",
+                "Permission Reset", 
+                "The permission has been reset. You will now be redirected to the onboarding process.",
                 [
                   {
                     text: "Continue",
@@ -153,10 +152,10 @@ export default function SettingsScreen() {
                 ]
               );
             } catch (error) {
-              console.error('❌ Failed to reset permissions:', error);
+              console.error('❌ Failed to reset permission:', error);
               Alert.alert(
                 "Error", 
-                "Failed to reset permissions. Please try again or restart the app.",
+                "Failed to reset permission. Please try again or restart the app.",
                 [
                   {
                     text: "OK"
@@ -164,7 +163,7 @@ export default function SettingsScreen() {
                 ]
               );
             } finally {
-              setIsResettingPermissions(false);
+              setIsResettingPermission(false);
             }
           },
           style: "destructive"
@@ -266,75 +265,35 @@ export default function SettingsScreen() {
         ))}
       </View>
       
-      {/* PERMISSIONS STATUS SECTION */}
+      {/* PERMISSION STATUS SECTION */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>PERMISSIONS STATUS</Text>
+        <Text style={styles.sectionTitle}>PERMISSION STATUS</Text>
         
         <View style={styles.permissionStatusItem}>
           <View style={styles.permissionStatusInfo}>
-            <Lock size={20} color={colors.textSecondary} />
+            <Shield size={20} color={colors.textSecondary} />
             <View style={styles.permissionStatusText}>
-              <Text style={styles.permissionStatusLabel}>Screen Overlay</Text>
+              <Text style={styles.permissionStatusLabel}>Sniper Permission</Text>
               <Text style={styles.permissionStatusDescription}>
-                Display indicators over rideshare apps
+                Allow Rideshare Sniper to display indicators, detect trips, and calculate distances
               </Text>
             </View>
           </View>
           <View style={[
             styles.permissionStatusIndicator,
-            overlayPermissionGranted ? styles.permissionGranted : styles.permissionDenied
+            sniperPermissionGranted ? styles.permissionGranted : styles.permissionDenied
           ]}>
             <Text style={styles.permissionStatusIndicatorText}>
-              {overlayPermissionGranted ? 'GRANTED' : 'DENIED'}
+              {sniperPermissionGranted ? 'GRANTED' : 'DENIED'}
             </Text>
           </View>
         </View>
         
-        <View style={styles.permissionStatusItem}>
-          <View style={styles.permissionStatusInfo}>
-            <Bell size={20} color={colors.textSecondary} />
-            <View style={styles.permissionStatusText}>
-              <Text style={styles.permissionStatusLabel}>Notifications</Text>
-              <Text style={styles.permissionStatusDescription}>
-                Detect incoming trip requests
-              </Text>
-            </View>
-          </View>
-          <View style={[
-            styles.permissionStatusIndicator,
-            notificationPermissionGranted ? styles.permissionGranted : styles.permissionDenied
-          ]}>
-            <Text style={styles.permissionStatusIndicatorText}>
-              {notificationPermissionGranted ? 'GRANTED' : 'DENIED'}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.permissionStatusItem}>
-          <View style={styles.permissionStatusInfo}>
-            <MapPin size={20} color={colors.textSecondary} />
-            <View style={styles.permissionStatusText}>
-              <Text style={styles.permissionStatusLabel}>Location</Text>
-              <Text style={styles.permissionStatusDescription}>
-                Calculate distances for trip evaluation
-              </Text>
-            </View>
-          </View>
-          <View style={[
-            styles.permissionStatusIndicator,
-            locationPermissionGranted ? styles.permissionGranted : styles.permissionDenied
-          ]}>
-            <Text style={styles.permissionStatusIndicatorText}>
-              {locationPermissionGranted ? 'GRANTED' : 'DENIED'}
-            </Text>
-          </View>
-        </View>
-        
-        {!areAllPermissionsGranted() && (
+        {!isSniperPermissionGranted() && (
           <View style={styles.permissionWarning}>
             <AlertTriangle size={20} color={colors.warning} />
             <Text style={styles.permissionWarningText}>
-              Some permissions are missing. Rideshare Sniper may not function properly.
+              Sniper permission is required. Rideshare Sniper may not function properly.
             </Text>
           </View>
         )}
@@ -342,15 +301,15 @@ export default function SettingsScreen() {
         <Pressable 
           style={[
             styles.resetPermissionsButton,
-            isResettingPermissions && styles.resetPermissionsButtonDisabled
+            isResettingPermission && styles.resetPermissionsButtonDisabled
           ]} 
-          onPress={handleResetPermissions}
-          disabled={isResettingPermissions}
+          onPress={handleResetPermission}
+          disabled={isResettingPermission}
           testID="reset-permissions-button"
         >
           <RefreshCw size={16} color="#fff" />
           <Text style={styles.resetPermissionsButtonText}>
-            {isResettingPermissions ? 'RESETTING...' : 'RESET PERMISSIONS'}
+            {isResettingPermission ? 'RESETTING...' : 'RESET PERMISSION'}
           </Text>
         </Pressable>
       </View>
