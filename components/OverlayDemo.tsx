@@ -1,336 +1,329 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated, PanResponder } from 'react-native';
-import { AlertTriangle, ArrowLeft, X } from 'lucide-react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, Animated, PanResponder, Dimensions, Alert, Platform } from 'react-native';
+import { X, ChevronRight, DollarSign, MapPin, Clock } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface OverlayDemoProps {
+type OverlayDemoProps = {
   recommendation: 'accept' | 'reject' | 'consider';
   onClose: () => void;
   initialPositions?: any;
-}
+  launchAttempted?: boolean;
+};
 
-interface Position {
-  x: number;
-  y: number;
-}
-
-export default function OverlayDemo({ recommendation, onClose, initialPositions }: OverlayDemoProps) {
-  const [autoHideTimer, setAutoHideTimer] = useState<NodeJS.Timeout | null>(null);
-  const [opacity] = useState(new Animated.Value(1));
+export default function OverlayDemo({ recommendation, onClose, initialPositions, launchAttempted }: OverlayDemoProps) {
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [showMinimal, setShowMinimal] = useState(false);
+  const [autoHideActive, setAutoHideActive] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
   
-  // Position state for draggable elements with initial default positions
-  const [tacticalPanelPosition, setTacticalPanelPosition] = useState<Position>({ x: 0, y: 0 });
-  const [acceptOverlayPosition, setAcceptOverlayPosition] = useState<Position>({ x: 0, y: 0 });
-  const [rejectXPosition, setRejectXPosition] = useState<Position>({ x: 0, y: 0 });
-  const [positionsLoaded, setPositionsLoaded] = useState(false);
-  
-  // Load saved positions from storage on component mount
-  useEffect(() => {
-    const loadPositions = async () => {
-      try {
-        // If initialPositions were passed, use them
-        if (initialPositions) {
-          setTacticalPanelPosition(initialPositions.tacticalPanel || { x: 0, y: 0 });
-          setAcceptOverlayPosition(initialPositions.acceptOverlay || { x: 0, y: 0 });
-          setRejectXPosition(initialPositions.rejectX || { x: 0, y: 0 });
-          setPositionsLoaded(true);
-          return;
-        }
-        
-        // Otherwise load from AsyncStorage
-        const savedPositions = await AsyncStorage.getItem('overlayPositions');
-        if (savedPositions) {
-          const positions = JSON.parse(savedPositions);
-          setTacticalPanelPosition(positions.tacticalPanel || { x: 0, y: 0 });
-          setAcceptOverlayPosition(positions.acceptOverlay || { x: 0, y: 0 });
-          setRejectXPosition(positions.rejectX || { x: 0, y: 0 });
-        }
-        setPositionsLoaded(true);
-      } catch (error) {
-        console.error('Failed to load overlay positions:', error);
-        setPositionsLoaded(true);
-      }
-    };
-    loadPositions();
-  }, [initialPositions]);
-
-  // Save positions to storage when they change
-  useEffect(() => {
-    if (!positionsLoaded) return;
-    
-    const savePositions = async () => {
-      try {
-        const positions = {
-          tacticalPanel: tacticalPanelPosition,
-          acceptOverlay: acceptOverlayPosition,
-          rejectX: rejectXPosition,
-        };
-        await AsyncStorage.setItem('overlayPositions', JSON.stringify(positions));
-        console.log('Saved overlay positions:', positions);
-      } catch (error) {
-        console.error('Failed to save overlay positions:', error);
-      }
-    };
-    savePositions();
-  }, [tacticalPanelPosition, acceptOverlayPosition, rejectXPosition, positionsLoaded]);
-  
-  // Create pan responders for each draggable element
-  const tacticalPanelPanResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, gestureState) => {
-      setTacticalPanelPosition({
-        x: tacticalPanelPosition.x + gestureState.dx,
-        y: tacticalPanelPosition.y + gestureState.dy,
-      });
-    },
-    onPanResponderRelease: () => {
-      handleInteraction();
-    },
-  });
-  
-  const acceptOverlayPanResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, gestureState) => {
-      setAcceptOverlayPosition({
-        x: acceptOverlayPosition.x + gestureState.dx,
-        y: acceptOverlayPosition.y + gestureState.dy,
-      });
-    },
-    onPanResponderRelease: () => {
-      handleInteraction();
-    },
-  });
-  
-  const rejectXPanResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, gestureState) => {
-      setRejectXPosition({
-        x: rejectXPosition.x + gestureState.dx,
-        y: rejectXPosition.y + gestureState.dy,
-      });
-    },
-    onPanResponderRelease: () => {
-      handleInteraction();
-    },
-  });
-  
-  // Auto-hide the overlay after 5 seconds (safety feature)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      Animated.timing(opacity, {
-        toValue: 0.3,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-    }, 5000);
-    
-    setAutoHideTimer(timer);
-    
-    return () => {
-      if (autoHideTimer) {
-        clearTimeout(autoHideTimer);
-      }
-    };
-  }, []);
-  
-  // Reset the auto-hide timer when the user interacts with the overlay
-  const handleInteraction = () => {
-    if (autoHideTimer) {
-      clearTimeout(autoHideTimer);
-    }
-    
-    opacity.setValue(1);
-    
-    const timer = setTimeout(() => {
-      Animated.timing(opacity, {
-        toValue: 0.3,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-    }, 5000);
-    
-    setAutoHideTimer(timer);
+  // Default positions
+  const defaultPositions = {
+    indicator: { x: windowWidth * 0.5 - 20, y: windowHeight * 0.3 },
+    panel: { x: windowWidth * 0.1, y: windowHeight * 0.5 }
   };
   
-  return (
-    <Pressable 
-      style={styles.container} 
-      onPress={handleInteraction}
-    >
-      {/* Back button - prominent and always visible */}
-      <Pressable 
-        style={styles.backButton} 
-        onPress={onClose}
-        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-      >
-        <ArrowLeft size={28} color={colors.primary} />
-        <Text style={styles.backButtonText}>BACK</Text>
-      </Pressable>
-
-      <View style={styles.mockPhoneFrame}>
-        {/* Mock Rideshare App Background - Map */}
-        <View style={styles.mockAppBackground}>
-          <View style={styles.mockMap}>
-            {/* Simplified map elements */}
-            <View style={styles.mockRoute} />
-            <View style={styles.mockPickupPoint} />
-            <View style={styles.mockDropoffPoint} />
+  // Use saved positions or defaults
+  const [indicatorPosition, setIndicatorPosition] = useState(
+    initialPositions?.indicator || defaultPositions.indicator
+  );
+  const [panelPosition, setPanelPosition] = useState(
+    initialPositions?.panel || defaultPositions.panel
+  );
+  
+  // Auto-hide timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (!showInstructions && !autoHideActive) {
+      timer = setTimeout(() => {
+        setAutoHideActive(true);
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      }, 5000);
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [showInstructions, autoHideActive]);
+  
+  // Reset auto-hide when tapped
+  const handleOverlayPress = () => {
+    if (autoHideActive) {
+      setAutoHideActive(false);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+  
+  // Save positions when overlay is closed
+  const handleClose = async () => {
+    try {
+      const positions = {
+        indicator: indicatorPosition,
+        panel: panelPosition
+      };
+      await AsyncStorage.setItem('overlayPositions', JSON.stringify(positions));
+    } catch (error) {
+      console.error('Failed to save overlay positions:', error);
+    }
+    onClose();
+  };
+  
+  // Pan responder for the indicator
+  const indicatorPanResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: (_, gestureState) => {
+      setIndicatorPosition({
+        x: indicatorPosition.x + gestureState.dx,
+        y: indicatorPosition.y + gestureState.dy
+      });
+    },
+    onPanResponderRelease: () => {
+      // Reset auto-hide timer
+      if (autoHideActive) {
+        setAutoHideActive(false);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+  });
+  
+  // Pan responder for the panel
+  const panelPanResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: (_, gestureState) => {
+      setPanelPosition({
+        x: panelPosition.x + gestureState.dx,
+        y: panelPosition.y + gestureState.dy
+      });
+    },
+    onPanResponderRelease: () => {
+      // Reset auto-hide timer
+      if (autoHideActive) {
+        setAutoHideActive(false);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+  });
+  
+  // Render the appropriate indicator based on recommendation
+  const renderIndicator = () => {
+    switch (recommendation) {
+      case 'accept':
+        return (
+          <View style={styles.crosshairContainer}>
+            <View style={styles.crosshairHorizontal} />
+            <View style={styles.crosshairVertical} />
+            <View style={styles.crosshairCenter} />
+          </View>
+        );
+      case 'reject':
+        return (
+          <View style={[styles.indicatorContainer, styles.rejectIndicator]}>
+            <X size={20} color={colors.textPrimary} />
+          </View>
+        );
+      case 'consider':
+        return (
+          <View style={[styles.indicatorContainer, styles.considerIndicator]}>
+            <X size={20} color={colors.textPrimary} />
+          </View>
+        );
+    }
+  };
+  
+  // Show instructions overlay
+  if (showInstructions) {
+    return (
+      <View style={styles.instructionsContainer}>
+        <View style={styles.instructionsCard}>
+          <Text style={styles.instructionsTitle}>
+            {launchAttempted ? "Uber Driver App Launched" : "Overlay Demo Mode"}
+          </Text>
+          
+          <Text style={styles.instructionsText}>
+            {launchAttempted 
+              ? "The Uber Driver app has been launched. This overlay will appear on top of the app to help you evaluate trip requests."
+              : "This is a demonstration of how the overlay will appear on top of your rideshare app. You can drag the elements to position them where you want."}
+          </Text>
+          
+          <View style={styles.instructionStep}>
+            <View style={styles.instructionNumber}>
+              <Text style={styles.instructionNumberText}>1</Text>
+            </View>
+            <Text style={styles.instructionStepText}>
+              Drag the {recommendation === 'accept' ? 'green crosshair' : recommendation === 'reject' ? 'red X' : 'yellow warning'} to position it over the {recommendation === 'accept' ? 'Accept button' : recommendation === 'reject' ? 'Close button' : 'trip details'}.
+            </Text>
           </View>
           
-          {/* Mock Trip Request Card */}
-          <View style={styles.mockTripRequest}>
-            <View style={styles.mockRequestHeader}>
-              <View style={styles.mockShareButton}>
-                <Text style={styles.mockShareText}>Share</Text>
-              </View>
-              <Text style={styles.mockExclusiveText}>Exclusive</Text>
-              <View style={styles.mockCloseButton}>
-                <Text style={styles.mockCloseText}>×</Text>
-              </View>
+          <View style={styles.instructionStep}>
+            <View style={styles.instructionNumber}>
+              <Text style={styles.instructionNumberText}>2</Text>
             </View>
-            
-            <Text style={styles.mockFareAmount}>$4.31</Text>
-            
-            <View style={styles.mockRatingContainer}>
-              <Text style={styles.mockRatingStar}>★</Text>
-              <Text style={styles.mockRatingValue}>5.00</Text>
-            </View>
-            
-            <Text style={styles.mockTripTime}>9 mins (3.2 mi)</Text>
-            
-            <View style={styles.mockLocationContainer}>
-              <View style={styles.mockLocationDot} />
-              <View style={styles.mockLocationLine} />
-              <View style={styles.mockLocationSquare} />
-              
-              <View style={styles.mockLocationTexts}>
-                <Text style={styles.mockPickupText}>Bristol Forest Way, Orlando</Text>
-                <Text style={styles.mockPickupEta}>13 mins (4.4 mi)</Text>
-                <Text style={styles.mockDropoffText}>N Alafaya Trl, Orlando</Text>
-              </View>
-            </View>
-            
-            <View style={styles.mockAcceptButton}>
-              <Text style={styles.mockAcceptText}>Accept</Text>
-            </View>
+            <Text style={styles.instructionStepText}>
+              Drag the info panel to a position where it won't block important information.
+            </Text>
           </View>
+          
+          <View style={styles.instructionStep}>
+            <View style={styles.instructionNumber}>
+              <Text style={styles.instructionNumberText}>3</Text>
+            </View>
+            <Text style={styles.instructionStepText}>
+              The overlay will automatically dim after 5 seconds. Tap anywhere to restore full visibility.
+            </Text>
+          </View>
+          
+          <View style={styles.instructionStep}>
+            <View style={styles.instructionNumber}>
+              <Text style={styles.instructionNumberText}>4</Text>
+            </View>
+            <Text style={styles.instructionStepText}>
+              Toggle between full panel and minimal mode by double-tapping the indicator.
+            </Text>
+          </View>
+          
+          <Pressable 
+            style={styles.continueButton}
+            onPress={() => setShowInstructions(false)}
+          >
+            <Text style={styles.continueButtonText}>CONTINUE TO DEMO</Text>
+            <ChevronRight size={20} color={colors.textPrimary} />
+          </Pressable>
+          
+          <Pressable 
+            style={styles.closeButton}
+            onPress={handleClose}
+          >
+            <Text style={styles.closeButtonText}>CLOSE DEMO</Text>
+          </Pressable>
         </View>
+      </View>
+    );
+  }
+  
+  return (
+    <Pressable style={styles.container} onPress={handleOverlayPress}>
+      <Animated.View 
+        style={[
+          styles.overlay,
+          { opacity: fadeAnim }
+        ]}
+      >
+        {/* Close button */}
+        <Pressable 
+          style={styles.closeOverlayButton}
+          onPress={handleClose}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <X size={24} color={colors.textPrimary} />
+        </Pressable>
         
-        {/* Sniper Overlay */}
-        <Animated.View style={[styles.overlayContainer, { opacity }]}>
-          {/* Tactical Info Panel - Draggable */}
-          <Animated.View 
+        {/* Toggle minimal mode button */}
+        <Pressable 
+          style={styles.toggleMinimalButton}
+          onPress={() => setShowMinimal(!showMinimal)}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <Text style={styles.toggleMinimalText}>
+            {showMinimal ? "SHOW FULL" : "MINIMAL MODE"}
+          </Text>
+        </Pressable>
+        
+        {/* Draggable indicator */}
+        <Animated.View
+          style={[
+            styles.draggableIndicator,
+            {
+              left: indicatorPosition.x,
+              top: indicatorPosition.y,
+            }
+          ]}
+          {...indicatorPanResponder.panHandlers}
+        >
+          {renderIndicator()}
+        </Animated.View>
+        
+        {/* Draggable panel - only show if not in minimal mode */}
+        {!showMinimal && (
+          <Animated.View
             style={[
-              styles.tacticalPanel, 
-              { 
-                transform: [
-                  { translateX: tacticalPanelPosition.x },
-                  { translateY: tacticalPanelPosition.y }
-                ] 
+              styles.draggablePanel,
+              {
+                left: panelPosition.x,
+                top: panelPosition.y,
               }
             ]}
-            {...tacticalPanelPanResponder.panHandlers}
+            {...panelPanResponder.panHandlers}
           >
-            <Text style={styles.tacticalPanelDragHint}>Drag</Text>
-            <Text style={styles.fareAmount}>$4.31</Text>
+            <View style={styles.panelHeader}>
+              <Text style={styles.panelTitle}>TRIP EVALUATION</Text>
+            </View>
             
-            <View style={styles.distanceContainer}>
-              <View style={styles.distanceItem}>
-                <Text style={styles.distanceLabel}>PICKUP</Text>
-                <Text style={styles.distanceValue}>4.4 mi</Text>
+            <View style={styles.panelContent}>
+              <View style={styles.panelRow}>
+                <View style={styles.panelIconContainer}>
+                  <DollarSign size={16} color={colors.textPrimary} />
+                </View>
+                <Text style={styles.panelLabel}>Fare:</Text>
+                <Text style={styles.panelValue}>
+                  {recommendation === 'accept' ? '$18.50' : recommendation === 'consider' ? '$12.75' : '$8.25'}
+                </Text>
               </View>
               
-              <View style={styles.distanceItem}>
-                <Text style={styles.distanceLabel}>DROPOFF</Text>
-                <Text style={styles.distanceValue}>3.2 mi</Text>
+              <View style={styles.panelRow}>
+                <View style={styles.panelIconContainer}>
+                  <MapPin size={16} color={colors.textPrimary} />
+                </View>
+                <Text style={styles.panelLabel}>Pickup:</Text>
+                <Text style={styles.panelValue}>
+                  {recommendation === 'accept' ? '1.2 mi' : recommendation === 'consider' ? '3.5 mi' : '4.8 mi'}
+                </Text>
+              </View>
+              
+              <View style={styles.panelRow}>
+                <View style={styles.panelIconContainer}>
+                  <Clock size={16} color={colors.textPrimary} />
+                </View>
+                <Text style={styles.panelLabel}>Duration:</Text>
+                <Text style={styles.panelValue}>
+                  {recommendation === 'accept' ? '15 min' : recommendation === 'consider' ? '22 min' : '35 min'}
+                </Text>
               </View>
             </View>
             
-            <View style={styles.timerContainer}>
-              <Text style={styles.timer}>8s</Text>
+            <View style={[
+              styles.panelFooter,
+              recommendation === 'accept' ? styles.acceptFooter : 
+              recommendation === 'consider' ? styles.considerFooter : 
+              styles.rejectFooter
+            ]}>
+              <Text style={styles.panelRecommendation}>
+                {recommendation === 'accept' ? 'ACCEPT TRIP' : 
+                 recommendation === 'consider' ? 'CONSIDER TRIP' : 
+                 'REJECT TRIP'}
+              </Text>
             </View>
           </Animated.View>
-          
-          {/* Action Button Overlays */}
-          <Animated.View 
-            style={[
-              styles.buttonOverlay, 
-              styles.acceptOverlay,
-              recommendation !== 'reject' ? styles.activeOverlay : styles.inactiveOverlay,
-              recommendation === 'accept' ? { backgroundColor: colors.primary } : 
-              recommendation === 'consider' ? { backgroundColor: colors.warning } : {},
-              { 
-                transform: [
-                  { translateX: acceptOverlayPosition.x },
-                  { translateY: acceptOverlayPosition.y }
-                ] 
-              }
-            ]}
-            {...acceptOverlayPanResponder.panHandlers}
-          >
-            <Text style={styles.overlayDragHint}>Drag</Text>
-            {recommendation === 'accept' ? (
-              <View style={styles.crosshairContainer}>
-                <View style={styles.crosshairHorizontal} />
-                <View style={styles.crosshairVertical} />
-                <View style={styles.crosshairCenter} />
-              </View>
-            ) : recommendation === 'consider' ? (
-              <AlertTriangle size={32} color={colors.textPrimary} />
-            ) : null}
-          </Animated.View>
-          
-          {/* Red X Button - Only shown for reject recommendation - Draggable */}
-          {recommendation === 'reject' && (
-            <Animated.View 
-              style={[
-                styles.rejectXButton,
-                { 
-                  transform: [
-                    { translateX: rejectXPosition.x },
-                    { translateY: rejectXPosition.y }
-                  ] 
-                }
-              ]}
-              {...rejectXPanResponder.panHandlers}
-            >
-              <Text style={styles.overlayDragHint}>Drag</Text>
-              <X size={32} color={colors.textPrimary} />
-            </Animated.View>
-          )}
-        </Animated.View>
-      </View>
-      
-      <View style={styles.demoControls}>
-        <Text style={styles.demoText}>
-          The overlay auto-dims after 5 seconds for safety. Tap anywhere to restore.
-        </Text>
-        
-        <Text style={styles.dragInstructionText}>
-          {recommendation === 'accept' ? (
-            <>
-              <Text style={styles.dragInstructionHighlight}>Place the green crosshair</Text> directly over the "Accept" button to quickly identify profitable trips.
-            </>
-          ) : recommendation === 'reject' ? (
-            <>
-              <Text style={styles.dragInstructionHighlight}>Position the red X</Text> near the close button (×) in the top-right corner to quickly identify unprofitable trips.
-            </>
-          ) : (
-            <>
-              <Text style={styles.dragInstructionHighlight}>Place the yellow warning</Text> above the trip details to indicate borderline trips that need closer inspection.
-            </>
-          )}
-        </Text>
-        
-        <Text style={styles.tacticalPanelInstructionText}>
-          <Text style={styles.dragInstructionHighlight}>Position the tactical panel</Text> where it won't block important information like pickup/dropoff locations.
-        </Text>
-        
-        <Pressable style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeButtonText}>CLOSE DEMO</Text>
-        </Pressable>
-      </View>
+        )}
+      </Animated.View>
     </Pressable>
   );
 }
@@ -338,373 +331,239 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  closeOverlayButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    padding: 16,
+    zIndex: 1000,
   },
-  backButton: {
+  toggleMinimalButton: {
     position: 'absolute',
     top: 40,
     left: 20,
-    flexDirection: 'row',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'center',
-    backgroundColor: 'rgba(18, 18, 18, 0.8)',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 30,
+    justifyContent: 'center',
     zIndex: 1000,
   },
-  backButtonText: {
-    color: colors.primary,
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  mockPhoneFrame: {
-    width: 280,
-    height: 500,
-    borderRadius: 24,
-    borderWidth: 8,
-    borderColor: '#333',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  mockAppBackground: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  mockMap: {
-    flex: 1,
-    backgroundColor: '#e8e8e8',
-    position: 'relative',
-  },
-  mockRoute: {
-    position: 'absolute',
-    top: '40%',
-    left: '20%',
-    right: '20%',
-    height: 4,
-    backgroundColor: '#333',
-    borderRadius: 2,
-  },
-  mockPickupPoint: {
-    position: 'absolute',
-    top: '40%',
-    left: '20%',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#000',
-  },
-  mockDropoffPoint: {
-    position: 'absolute',
-    top: '40%',
-    right: '20%',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#4285F4',
-  },
-  mockTripRequest: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  mockRequestHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  mockShareButton: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  mockShareText: {
-    fontSize: 12,
-    color: '#333',
-  },
-  mockExclusiveText: {
-    fontSize: 12,
-    color: '#4285F4',
-  },
-  mockCloseButton: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mockCloseText: {
-    fontSize: 20,
-    color: '#333',
-  },
-  mockFareAmount: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 4,
-  },
-  mockRatingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  mockRatingStar: {
-    fontSize: 14,
-    color: '#333',
-    marginRight: 4,
-  },
-  mockRatingValue: {
-    fontSize: 14,
-    color: '#333',
-  },
-  mockTripTime: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
-  },
-  mockLocationContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  mockLocationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#000',
-    marginTop: 6,
-  },
-  mockLocationLine: {
-    width: 2,
-    height: 30,
-    backgroundColor: '#ccc',
-    marginLeft: 3,
-    marginTop: 10,
-  },
-  mockLocationSquare: {
-    width: 8,
-    height: 8,
-    backgroundColor: '#000',
-    marginTop: 40,
-  },
-  mockLocationTexts: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  mockPickupText: {
-    fontSize: 12,
-    color: '#333',
-    marginBottom: 2,
-  },
-  mockPickupEta: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-  },
-  mockDropoffText: {
-    fontSize: 12,
-    color: '#333',
-  },
-  mockAcceptButton: {
-    backgroundColor: '#4285F4',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  mockAcceptText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  overlayContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    pointerEvents: 'box-none',
-  },
-  tacticalPanel: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: 'rgba(18, 18, 18, 0.9)',
-    borderRadius: 8,
-    padding: 12,
-    width: 140,
-    borderWidth: 1,
-    borderColor: colors.border,
-    zIndex: 100,
-  },
-  tacticalPanelDragHint: {
-    position: 'absolute',
-    top: 2,
-    left: 2,
-    fontSize: 8,
-    color: colors.primary,
-    opacity: 0.7,
-  },
-  fareAmount: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  toggleMinimalText: {
     color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  distanceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  distanceItem: {
-    flex: 1,
-  },
-  distanceLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.textSecondary,
-    marginBottom: 2,
-    letterSpacing: 0.5,
-  },
-  distanceValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
-  timerContainer: {
+  draggableIndicator: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: colors.background,
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  timer: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.textSecondary,
-  },
-  buttonOverlay: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
     zIndex: 100,
-  },
-  acceptOverlay: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 16,
-    height: 48,
-    borderRadius: 8,
-    borderColor: colors.primary,
-  },
-  activeOverlay: {
-    opacity: 1,
-  },
-  inactiveOverlay: {
-    opacity: 0.3,
-  },
-  rejectXButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.background,
-    zIndex: 200,
-  },
-  overlayDragHint: {
-    position: 'absolute',
-    top: 2,
-    left: 4,
-    fontSize: 8,
-    color: colors.textPrimary,
-    opacity: 0.7,
   },
   crosshairContainer: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 20,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 32,
+    width: 30,
     height: 2,
     backgroundColor: colors.textPrimary,
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 32,
+    height: 30,
     backgroundColor: colors.textPrimary,
   },
   crosshairCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    borderWidth: 2,
-    borderColor: colors.textPrimary,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.textPrimary,
   },
-  demoControls: {
-    marginTop: 24,
+  indicatorContainer: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+  },
+  rejectIndicator: {
+    backgroundColor: colors.secondary,
+  },
+  considerIndicator: {
+    backgroundColor: colors.warning,
+  },
+  draggablePanel: {
+    position: 'absolute',
+    width: 200,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+    zIndex: 50,
+  },
+  panelHeader: {
+    backgroundColor: colors.surfaceLight,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  panelTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  panelContent: {
+    padding: 12,
+  },
+  panelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  panelIconContainer: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  panelLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    width: 70,
+  },
+  panelValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    flex: 1,
+    textAlign: 'right',
+  },
+  panelFooter: {
+    paddingVertical: 8,
     alignItems: 'center',
   },
-  demoText: {
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 12,
-    fontSize: 14,
-    maxWidth: 300,
+  acceptFooter: {
+    backgroundColor: colors.primary,
   },
-  dragInstructionText: {
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 12,
-    fontSize: 14,
-    maxWidth: 300,
-    lineHeight: 20,
+  considerFooter: {
+    backgroundColor: colors.warning,
   },
-  tacticalPanelInstructionText: {
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 16,
-    fontSize: 14,
-    maxWidth: 300,
-    lineHeight: 20,
+  rejectFooter: {
+    backgroundColor: colors.secondary,
   },
-  dragInstructionHighlight: {
-    color: colors.primary,
+  panelRecommendation: {
+    fontSize: 14,
     fontWeight: 'bold',
+    color: colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  instructionsContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  instructionsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 500,
+    maxHeight: '90%',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  instructionsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  instructionsText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 24,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  instructionStep: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'flex-start',
+  },
+  instructionNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  instructionNumberText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  instructionStepText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    flex: 1,
+    lineHeight: 22,
+  },
+  continueButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  continueButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginRight: 8,
+    letterSpacing: 0.5,
   },
   closeButton: {
-    backgroundColor: colors.surfaceLight,
     paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    alignItems: 'center',
   },
   closeButtonText: {
-    color: colors.textPrimary,
-    fontWeight: 'bold',
-    fontSize: 16,
-    letterSpacing: 1,
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
 });

@@ -148,7 +148,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             isLoading: false,
             isInitialized: true,
-            error: null
+            error: error?.message || "Failed to initialize authentication"
           });
         }
       },
@@ -215,7 +215,7 @@ export const useAuthStore = create<AuthState>()(
           console.error('Login error:', error);
           set({
             isLoading: false,
-            error: "Network error. Please check your connection and try again."
+            error: error?.message || "Network error. Please check your connection and try again."
           });
         }
       },
@@ -274,6 +274,7 @@ export const useAuthStore = create<AuthState>()(
           // Save current user to storage
           await saveCurrentUserToStorage(authenticatedUser);
           
+          console.log('Signup successful for:', email);
           set({
             user: authenticatedUser,
             isAuthenticated: true,
@@ -284,7 +285,7 @@ export const useAuthStore = create<AuthState>()(
           console.error('Signup error:', error);
           set({
             isLoading: false,
-            error: "Network error. Please check your connection and try again."
+            error: error?.message || "Network error. Please check your connection and try again."
           });
         }
       },
@@ -292,6 +293,7 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           console.log('Logging out user...');
+          set({ isLoading: true });
           
           // Remove current user from storage
           await saveCurrentUserToStorage(null);
@@ -299,14 +301,16 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: null,
             isAuthenticated: false,
-            error: null
+            error: null,
+            isLoading: false
           });
           
           console.log('Logout successful');
         } catch (error: any) {
           console.error('Logout error:', error);
           set({
-            error: "Network error during logout. Please try again."
+            error: error?.message || "Network error during logout. Please try again.",
+            isLoading: false
           });
         }
       },
@@ -373,7 +377,7 @@ export const useAuthStore = create<AuthState>()(
           console.error('Password recovery error:', error);
           set({
             isLoading: false,
-            error: "Network error. Please check your connection and try again."
+            error: error?.message || "Network error. Please check your connection and try again."
           });
         }
       },
@@ -412,7 +416,7 @@ export const useAuthStore = create<AuthState>()(
           console.error('Email recovery error:', error);
           set({
             isLoading: false,
-            error: "Network error. Please check your connection and try again."
+            error: error?.message || "Network error. Please check your connection and try again."
           });
           return null;
         }

@@ -62,6 +62,14 @@ export default function SettingsScreen() {
     setShowDemo(true);
   };
   
+  const navigateToHelp = () => {
+    router.push('/help');
+  };
+  
+  const navigateToOnboarding = () => {
+    router.push('/onboarding');
+  };
+  
   if (showDemo) {
     return (
       <OverlayDemo 
@@ -391,7 +399,7 @@ export default function SettingsScreen() {
         
         <Pressable 
           style={styles.helpItem}
-          onPress={() => router.push('/onboarding')}
+          onPress={navigateToOnboarding}
         >
           <View style={styles.helpItemContent}>
             <View style={styles.helpIconContainer}>
@@ -408,21 +416,21 @@ export default function SettingsScreen() {
         </Pressable>
         
         <Pressable 
-          style={styles.helpItem}
-          onPress={() => router.push('/help')}
+          style={[styles.helpItem, styles.helpItemHighlighted]}
+          onPress={navigateToHelp}
         >
           <View style={styles.helpItemContent}>
-            <View style={styles.helpIconContainer}>
-              <HelpCircle size={20} color={colors.primary} />
+            <View style={[styles.helpIconContainer, styles.helpIconHighlighted]}>
+              <HelpCircle size={20} color={colors.textPrimary} />
             </View>
             <View style={styles.helpTextContainer}>
-              <Text style={styles.helpItemTitle}>Help Center</Text>
+              <Text style={[styles.helpItemTitle, styles.helpItemTitleHighlighted]}>Help Center</Text>
               <Text style={styles.helpItemDescription}>
                 Detailed instructions on how to use Rideshare Sniper
               </Text>
             </View>
           </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
+          <ChevronRight size={20} color={colors.primary} />
         </Pressable>
       </View>
       
@@ -916,6 +924,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
+  helpItemHighlighted: {
+    backgroundColor: 'rgba(0, 128, 128, 0.1)',
+    borderRadius: 8,
+    marginVertical: 4,
+    paddingHorizontal: 8,
+  },
   helpItemContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -928,6 +942,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
+  helpIconHighlighted: {
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+  },
   helpTextContainer: {
     flex: 1,
   },
@@ -935,6 +953,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     marginBottom: 4,
+  },
+  helpItemTitleHighlighted: {
+    color: colors.primary,
+    fontWeight: 'bold',
   },
   helpItemDescription: {
     fontSize: 12,

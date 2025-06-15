@@ -72,6 +72,11 @@ export default function LoginScreen() {
       setEmailError('');
     }
     
+    if (!password) {
+      Alert.alert("Error", "Please enter your password");
+      return;
+    }
+    
     try {
       await login(email.trim(), password);
       console.log('✅ Login successful');
@@ -118,6 +123,7 @@ export default function LoginScreen() {
     } catch (error) {
       console.error('❌ Demo login error:', error);
       setDemoLoginInProgress(false);
+      Alert.alert("Login Error", "Failed to login with demo credentials. Please try again.");
     }
   };
   
@@ -224,7 +230,7 @@ export default function LoginScreen() {
           onPress={handleLogin}
           disabled={isLoading || demoLoginInProgress || !email || !password}
         >
-          {isLoading ? (
+          {isLoading && !demoLoginInProgress ? (
             <ActivityIndicator color={colors.textPrimary} />
           ) : (
             <>
@@ -241,6 +247,13 @@ export default function LoginScreen() {
           <Text style={styles.signupText}>Sign Up</Text>
         </Pressable>
       </View>
+      
+      <Pressable 
+        style={styles.helpButton}
+        onPress={() => router.push('/help')}
+      >
+        <Text style={styles.helpButtonText}>Need Help?</Text>
+      </Pressable>
     </KeyboardAvoidingView>
   );
 }
@@ -385,5 +398,17 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
+  },
+  helpButton: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  helpButtonText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 });

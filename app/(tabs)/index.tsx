@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Power, ChevronRight, Shield, Crosshair, Edit } from 'lucide-react-native';
+import { Power, ChevronRight, Shield, Crosshair, Edit, HelpCircle } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import ProfileSelector from '@/components/ProfileSelector';
 import StatsCard from '@/components/StatsCard';
@@ -33,6 +33,10 @@ export default function HomeScreen() {
         params: { id: activeProfileId },
       });
     }
+  };
+  
+  const navigateToHelp = () => {
+    router.push('/help');
   };
   
   return (
@@ -127,13 +131,21 @@ export default function HomeScreen() {
         averageFare={23.43}
       />
       
-      <Pressable style={styles.simulatorButton} onPress={navigateToSimulator}>
-        <View style={styles.simulatorButtonContent}>
-          <Crosshair size={20} color={colors.textPrimary} />
-          <Text style={styles.simulatorButtonText}>TRY TRIP SIMULATOR</Text>
-          <ChevronRight size={20} color={colors.textPrimary} />
-        </View>
-      </Pressable>
+      <View style={styles.buttonRow}>
+        <Pressable style={styles.simulatorButton} onPress={navigateToSimulator}>
+          <View style={styles.simulatorButtonContent}>
+            <Crosshair size={20} color={colors.textPrimary} />
+            <Text style={styles.simulatorButtonText}>TRY SIMULATOR</Text>
+          </View>
+        </Pressable>
+        
+        <Pressable style={styles.helpButton} onPress={navigateToHelp}>
+          <View style={styles.helpButtonContent}>
+            <HelpCircle size={20} color={colors.textPrimary} />
+            <Text style={styles.helpButtonText}>HELP & TUTORIALS</Text>
+          </View>
+        </Pressable>
+      </View>
       
       <View style={styles.infoCard}>
         <View style={styles.infoHeader}>
@@ -311,23 +323,46 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     letterSpacing: 0.5,
   },
-  simulatorButton: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 8,
+  buttonRow: {
+    flexDirection: 'row',
     marginHorizontal: 16,
     marginVertical: 8,
+    gap: 8,
+  },
+  simulatorButton: {
+    flex: 1,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: 8,
     padding: 16,
   },
   simulatorButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   simulatorButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.textPrimary,
+    marginLeft: 8,
+    letterSpacing: 0.5,
+  },
+  helpButton: {
     flex: 1,
-    marginLeft: 12,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: 16,
+  },
+  helpButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  helpButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginLeft: 8,
     letterSpacing: 0.5,
   },
   infoCard: {
