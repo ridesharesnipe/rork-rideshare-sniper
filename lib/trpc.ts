@@ -18,11 +18,11 @@ const getBaseUrl = () => {
       return "http://localhost:8081";
     }
     
-    // Production fallback
-    return "https://api.example.com";
+    // Production fallback - update this for your actual production URL
+    return "https://api.ridesharesniper.com";
   } catch (error) {
     console.error("Error getting base URL:", error);
-    return "http://localhost:8081"; // Safe fallback
+    return "http://localhost:8081"; // Safe fallback for development
   }
 };
 

@@ -7,7 +7,7 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { useRouter } from 'expo-router';
 import { trpc, trpcClient } from '@/lib/trpc';
 
-// Create a client with optimized settings
+// Create a client with optimized settings for production
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

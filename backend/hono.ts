@@ -9,7 +9,7 @@ const app = new Hono();
 
 // Enable CORS for all routes with proper configuration
 app.use("*", cors({
-  origin: ["http://localhost:8081", "http://localhost:19006", "https://localhost:19006"],
+  origin: ["http://localhost:8081", "http://localhost:19006", "https://localhost:19006", "https://ridesharesniper.com"],
   allowHeaders: ["Content-Type", "Authorization"],
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
