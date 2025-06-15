@@ -13,7 +13,7 @@ interface SettingsState {
   minimalMode: boolean;
   emergencyDisable: boolean;
   
-  // Single permission instead of multiple
+  // Single permission for sniping
   sniperPermissionGranted: boolean;
   
   setDriverStatus: (status: DriverStatus) => void;
@@ -101,50 +101,36 @@ export const useSettingsStore = create<SettingsState>()(
         return get().sniperPermissionGranted;
       },
       
-      // Reset permission (for troubleshooting)
+      // Reset permission (for troubleshooting) - simplified and more reliable
       resetPermission: async () => {
         try {
           console.log('🔄 Starting permission reset...');
           
-          // Reset permission in state
+          // Step 1: Reset permission in state immediately
           set({ sniperPermissionGranted: false });
           console.log('✅ Permission reset in state');
           
-          // Clear onboarding flag so user goes through setup again
-          try {
-            await AsyncStorage.removeItem('hasSeenOnboarding');
-            console.log('✅ Removed hasSeenOnboarding flag');
-          } catch (error) {
-            console.warn('⚠️ Failed to remove hasSeenOnboarding:', error);
+          // Step 2: Clear related AsyncStorage items
+          const keysToRemove = [
+            'hasSeenOnboarding',
+            'overlayPositions'
+          ];
+          
+          for (const key of keysToRemove) {
+            try {
+              await AsyncStorage.removeItem(key);
+              console.log(`✅ Removed ${key}`);
+            } catch (error) {
+              console.warn(`⚠️ Failed to remove ${key}:`, error);
+              // Continue with other keys even if one fails
+            }
           }
           
-          // Clear overlay positions
-          try {
-            await AsyncStorage.removeItem('overlayPositions');
-            console.log('✅ Removed overlay positions');
-          } catch (error) {
-            console.warn('⚠️ Failed to remove overlay positions:', error);
-          }
-          
-          // Force save the current state to ensure permission is persisted as false
-          const currentState = get();
-          try {
-            const stateToSave = {
-              ...currentState,
-              sniperPermissionGranted: false,
-            };
-            await AsyncStorage.setItem('rideshare-sniper-settings', JSON.stringify({
-              state: stateToSave,
-              version: 0
-            }));
-            console.log('✅ Forced save of reset permission to storage');
-          } catch (error) {
-            console.warn('⚠️ Failed to force save state:', error);
-          }
-          
-          console.log('✅ Permission and related data reset successfully');
+          console.log('✅ Permission reset completed successfully');
         } catch (error) {
-          console.error('❌ Error resetting permission:', error);
+          console.error('❌ Error during permission reset:', error);
+          // Even if there's an error, ensure the permission is reset in state
+          set({ sniperPermissionGranted: false });
           throw error;
         }
       }

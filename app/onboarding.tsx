@@ -260,11 +260,11 @@ export default function OnboardingScreen() {
           <View style={styles.stepContainer}>
             <View style={styles.stepHeader}>
               <Lock size={28} color={colors.primary} />
-              <Text style={styles.stepTitle}>Sniper Permission</Text>
+              <Text style={styles.stepTitle}>Permission Required</Text>
             </View>
             
             <Text style={styles.stepDescription}>
-              Rideshare Sniper needs permission to function properly. This allows the app to display indicators over your rideshare app, detect trip requests, and calculate distances.
+              Rideshare Sniper needs one permission to function properly. This allows the app to display indicators over your rideshare app and help you make quick decisions.
             </Text>
             
             <View style={styles.permissionItem}>
@@ -277,7 +277,7 @@ export default function OnboardingScreen() {
                 />
               </View>
               <Text style={styles.permissionDescription}>
-                Allow Rideshare Sniper to display indicators, detect trips, and calculate distances
+                Allow Rideshare Sniper to display indicators and help you make quick trip decisions
               </Text>
             </View>
             

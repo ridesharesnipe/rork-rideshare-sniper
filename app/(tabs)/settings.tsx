@@ -116,7 +116,7 @@ export default function SettingsScreen() {
   const handleResetPermission = () => {
     Alert.alert(
       "Reset Permission",
-      "This will reset the Sniper permission and related settings. You'll need to grant it again through the onboarding process.",
+      "This will reset the Sniper permission and clear all related settings. You'll need to go through the setup process again.",
       [
         {
           text: "Cancel",
@@ -127,40 +127,33 @@ export default function SettingsScreen() {
           onPress: async () => {
             setIsResettingPermission(true);
             try {
-              console.log('🔄 Starting permission reset from settings...');
+              console.log('🔄 User initiated permission reset...');
               
-              // Call the reset function
+              // Call the simplified reset function
               await resetPermission();
               
-              console.log('✅ Permission reset complete');
+              console.log('✅ Permission reset successful');
               
-              // Show success message and navigate
+              // Show success and navigate to onboarding
               Alert.alert(
-                "Permission Reset", 
-                "The permission has been reset. You will now be redirected to the onboarding process.",
+                "Permission Reset Complete", 
+                "The permission has been reset successfully. You will now go through the setup process again.",
                 [
                   {
                     text: "Continue",
                     onPress: () => {
-                      // Small delay to ensure state is saved
-                      setTimeout(() => {
-                        console.log('🔄 Navigating to onboarding...');
-                        router.replace('/onboarding');
-                      }, 100);
+                      console.log('🔄 Navigating to onboarding...');
+                      router.replace('/onboarding');
                     }
                   }
                 ]
               );
             } catch (error) {
-              console.error('❌ Failed to reset permission:', error);
+              console.error('❌ Permission reset failed:', error);
               Alert.alert(
-                "Error", 
-                "Failed to reset permission. Please try again or restart the app.",
-                [
-                  {
-                    text: "OK"
-                  }
-                ]
+                "Reset Failed", 
+                "There was an error resetting the permission. Please try restarting the app.",
+                [{ text: "OK" }]
               );
             } finally {
               setIsResettingPermission(false);
@@ -275,7 +268,7 @@ export default function SettingsScreen() {
             <View style={styles.permissionStatusText}>
               <Text style={styles.permissionStatusLabel}>Sniper Permission</Text>
               <Text style={styles.permissionStatusDescription}>
-                Allow Rideshare Sniper to display indicators, detect trips, and calculate distances
+                Required for Rideshare Sniper to function properly
               </Text>
             </View>
           </View>
@@ -284,7 +277,7 @@ export default function SettingsScreen() {
             sniperPermissionGranted ? styles.permissionGranted : styles.permissionDenied
           ]}>
             <Text style={styles.permissionStatusIndicatorText}>
-              {sniperPermissionGranted ? 'GRANTED' : 'DENIED'}
+              {sniperPermissionGranted ? 'GRANTED' : 'REQUIRED'}
             </Text>
           </View>
         </View>
@@ -293,7 +286,7 @@ export default function SettingsScreen() {
           <View style={styles.permissionWarning}>
             <AlertTriangle size={20} color={colors.warning} />
             <Text style={styles.permissionWarningText}>
-              Sniper permission is required. Rideshare Sniper may not function properly.
+              Permission required. Rideshare Sniper may not function properly.
             </Text>
           </View>
         )}

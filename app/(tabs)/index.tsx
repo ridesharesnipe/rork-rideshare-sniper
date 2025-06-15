@@ -98,7 +98,7 @@ export default function HomeScreen() {
         <View style={styles.permissionAlert}>
           <Text style={styles.permissionAlertTitle}>⚠️ PERMISSION REQUIRED</Text>
           <Text style={styles.permissionAlertText}>
-            Sniper permission is missing. Rideshare Sniper may not function properly.
+            Sniper permission is required. Rideshare Sniper may not function properly.
           </Text>
           <Pressable 
             style={styles.permissionAlertButton}
