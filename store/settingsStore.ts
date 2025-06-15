@@ -44,8 +44,8 @@ export const useSettingsStore = create<SettingsState>()(
       minimalMode: false,
       emergencyDisable: false,
       
-      // Single permission - default to false
-      sniperPermissionGranted: true, // Set to true for easier testing
+      // Single permission - default to true for easier testing
+      sniperPermissionGranted: true,
       
       setDriverStatus: (status) => {
         set({ driverStatus: status });

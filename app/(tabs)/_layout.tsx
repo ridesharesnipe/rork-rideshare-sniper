@@ -4,6 +4,7 @@ import { Home, Settings, Activity, Crosshair, LogOut, HelpCircle } from "lucide-
 import colors from "@/constants/colors";
 import { useAuthStore } from "@/store/authStore";
 import { Pressable, Text, View, Alert } from "react-native";
+import StatusIndicator from "@/components/StatusIndicator";
 
 export default function TabLayout() {
   const { logout, isAuthenticated, isInitialized, user } = useAuthStore();
@@ -56,7 +57,7 @@ export default function TabLayout() {
     );
   };
 
-  // Help button component - Made more prominent
+  // Help button component
   const HelpButton = () => {
     return (
       <Pressable 
@@ -87,6 +88,7 @@ export default function TabLayout() {
         },
         headerRight: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <StatusIndicator />
             <HelpButton />
             <LogoutButton />
           </View>
