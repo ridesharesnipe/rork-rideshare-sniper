@@ -73,7 +73,13 @@ export default function Welcome() {
   }, []);
 
   const handleContinue = () => {
-    router.replace('/creator');
+    if (user) {
+      // If user is logged in, go to tabs
+      router.replace('/(tabs)');
+    } else {
+      // If not logged in, go to creator page
+      router.replace('/creator');
+    }
   };
 
   return (

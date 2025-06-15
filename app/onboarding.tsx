@@ -99,6 +99,8 @@ export default function OnboardingScreen() {
       } else {
         router.replace('/auth/login');
       }
+    } finally {
+      setIsNavigating(false);
     }
   };
 
@@ -117,6 +119,8 @@ export default function OnboardingScreen() {
       console.error('Error navigating:', error);
       // Fallback navigation
       router.replace('/auth/login');
+    } finally {
+      setIsNavigating(false);
     }
   };
   

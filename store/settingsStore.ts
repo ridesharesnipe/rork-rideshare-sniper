@@ -137,9 +137,21 @@ export const useSettingsStore = create<SettingsState>()(
             notificationPermissionGranted: false,
           });
           
-          // Also clear any related AsyncStorage keys
-          await AsyncStorage.removeItem('hasSeenOnboarding');
-          await AsyncStorage.removeItem('overlayPositions');
+          // Clear all related AsyncStorage keys
+          const keysToRemove = [
+            'hasSeenOnboarding',
+            'overlayPositions',
+            'rideshare-sniper-settings',
+            'auth-storage'
+          ];
+          
+          await Promise.all(
+            keysToRemove.map(key => 
+              AsyncStorage.removeItem(key).catch(error => 
+                console.warn(`Failed to remove ${key}:`, error)
+              )
+            )
+          );
           
           console.log('✅ All permissions and related data reset successfully');
         } catch (error) {

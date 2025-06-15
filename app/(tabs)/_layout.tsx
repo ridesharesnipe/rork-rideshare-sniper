@@ -12,8 +12,8 @@ export default function TabLayout() {
   // Redirect to login if not authenticated (only after initialization)
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
-      console.log("Not authenticated, redirecting to login");
-      router.replace('/auth/login');
+      console.log("Not authenticated in tabs, redirecting to welcome");
+      router.replace('/welcome');
     }
   }, [isAuthenticated, isInitialized, router]);
   
@@ -21,7 +21,7 @@ export default function TabLayout() {
     try {
       console.log("Logging out user");
       await logout();
-      router.replace('/auth/login');
+      router.replace('/welcome');
     } catch (error) {
       console.error('Logout error:', error);
     }
