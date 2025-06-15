@@ -129,28 +129,40 @@ export default function SettingsScreen() {
             setIsResettingPermissions(true);
             try {
               console.log('🔄 Starting permissions reset from settings...');
+              
+              // Call the reset function
               await resetPermissions();
               
-              console.log('✅ Permissions reset complete, navigating to onboarding...');
+              console.log('✅ Permissions reset complete');
               
-              // Navigate to onboarding after successful reset
-              setTimeout(() => {
-                Alert.alert(
-                  "Permissions Reset", 
-                  "All permissions have been reset. Redirecting to onboarding...",
-                  [
-                    {
-                      text: "OK",
-                      onPress: () => {
+              // Show success message and navigate
+              Alert.alert(
+                "Permissions Reset", 
+                "All permissions have been reset. You will now be redirected to the onboarding process.",
+                [
+                  {
+                    text: "Continue",
+                    onPress: () => {
+                      // Small delay to ensure state is saved
+                      setTimeout(() => {
+                        console.log('🔄 Navigating to onboarding...');
                         router.replace('/onboarding');
-                      }
+                      }, 100);
                     }
-                  ]
-                );
-              }, 500);
+                  }
+                ]
+              );
             } catch (error) {
               console.error('❌ Failed to reset permissions:', error);
-              Alert.alert("Error", "Failed to reset permissions. Please try again.");
+              Alert.alert(
+                "Error", 
+                "Failed to reset permissions. Please try again or restart the app.",
+                [
+                  {
+                    text: "OK"
+                  }
+                ]
+              );
             } finally {
               setIsResettingPermissions(false);
             }

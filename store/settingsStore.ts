@@ -130,30 +130,46 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           console.log('🔄 Starting permissions reset...');
           
-          // Reset permissions in state first
+          // First, reset permissions in state
           set({
             overlayPermissionGranted: false,
             locationPermissionGranted: false,
             notificationPermissionGranted: false,
           });
+          console.log('✅ Permissions reset in state');
           
-          // Clear all related AsyncStorage keys
-          const keysToRemove = [
-            'hasSeenOnboarding',
-            'overlayPositions',
-            'rideshare-sniper-settings',
-            'auth-storage'
-          ];
+          // Clear onboarding flag so user goes through setup again
+          try {
+            await AsyncStorage.removeItem('hasSeenOnboarding');
+            console.log('✅ Removed hasSeenOnboarding flag');
+          } catch (error) {
+            console.warn('⚠️ Failed to remove hasSeenOnboarding:', error);
+          }
           
-          // Remove each key individually with error handling
-          for (const key of keysToRemove) {
-            try {
-              await AsyncStorage.removeItem(key);
-              console.log(`✅ Removed ${key} from AsyncStorage`);
-            } catch (error) {
-              console.warn(`⚠️ Failed to remove ${key}:`, error);
-              // Continue with other keys even if one fails
-            }
+          // Clear overlay positions
+          try {
+            await AsyncStorage.removeItem('overlayPositions');
+            console.log('✅ Removed overlay positions');
+          } catch (error) {
+            console.warn('⚠️ Failed to remove overlay positions:', error);
+          }
+          
+          // Force save the current state to ensure permissions are persisted as false
+          const currentState = get();
+          try {
+            const stateToSave = {
+              ...currentState,
+              overlayPermissionGranted: false,
+              locationPermissionGranted: false,
+              notificationPermissionGranted: false,
+            };
+            await AsyncStorage.setItem('rideshare-sniper-settings', JSON.stringify({
+              state: stateToSave,
+              version: 0
+            }));
+            console.log('✅ Forced save of reset permissions to storage');
+          } catch (error) {
+            console.warn('⚠️ Failed to force save state:', error);
           }
           
           console.log('✅ All permissions and related data reset successfully');
