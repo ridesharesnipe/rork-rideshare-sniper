@@ -130,7 +130,7 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           console.log('🔄 Starting permissions reset...');
           
-          // Reset permissions in state
+          // Reset permissions in state first
           set({
             overlayPermissionGranted: false,
             locationPermissionGranted: false,
@@ -145,13 +145,16 @@ export const useSettingsStore = create<SettingsState>()(
             'auth-storage'
           ];
           
-          await Promise.all(
-            keysToRemove.map(key => 
-              AsyncStorage.removeItem(key).catch(error => 
-                console.warn(`Failed to remove ${key}:`, error)
-              )
-            )
-          );
+          // Remove each key individually with error handling
+          for (const key of keysToRemove) {
+            try {
+              await AsyncStorage.removeItem(key);
+              console.log(`✅ Removed ${key} from AsyncStorage`);
+            } catch (error) {
+              console.warn(`⚠️ Failed to remove ${key}:`, error);
+              // Continue with other keys even if one fails
+            }
+          }
           
           console.log('✅ All permissions and related data reset successfully');
         } catch (error) {

@@ -128,9 +128,12 @@ export default function SettingsScreen() {
           onPress: async () => {
             setIsResettingPermissions(true);
             try {
+              console.log('🔄 Starting permissions reset from settings...');
               await resetPermissions();
               
-              // Small delay to ensure state is updated
+              console.log('✅ Permissions reset complete, navigating to onboarding...');
+              
+              // Navigate to onboarding after successful reset
               setTimeout(() => {
                 Alert.alert(
                   "Permissions Reset", 
@@ -139,7 +142,6 @@ export default function SettingsScreen() {
                     {
                       text: "OK",
                       onPress: () => {
-                        // Navigate to onboarding
                         router.replace('/onboarding');
                       }
                     }
@@ -147,7 +149,7 @@ export default function SettingsScreen() {
                 );
               }, 500);
             } catch (error) {
-              console.error('Failed to reset permissions:', error);
+              console.error('❌ Failed to reset permissions:', error);
               Alert.alert("Error", "Failed to reset permissions. Please try again.");
             } finally {
               setIsResettingPermissions(false);

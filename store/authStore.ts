@@ -142,7 +142,7 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error: any) {
           console.error('Auth initialization error:', error);
-          // Even on error, mark as initialized to prevent getting stuck
+          // Always mark as initialized to prevent getting stuck
           set({
             user: null,
             isAuthenticated: false,

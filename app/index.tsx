@@ -11,8 +11,19 @@ export default function Index() {
   // Initialize auth store on component mount
   useEffect(() => {
     console.log('🔄 Initializing auth from index...');
-    initialize();
-  }, [initialize]);
+    const initializeAuth = async () => {
+      try {
+        await initialize();
+      } catch (error) {
+        console.error('❌ Auth initialization error:', error);
+        // Even on error, mark as initialized to prevent getting stuck
+      }
+    };
+    
+    if (!isInitialized) {
+      initializeAuth();
+    }
+  }, [initialize, isInitialized]);
 
   // Set up splash screen timer - reduced to 2 seconds
   useEffect(() => {
@@ -27,9 +38,16 @@ export default function Index() {
 
   // Handle navigation after splash screen
   useEffect(() => {
-    // Only proceed if both splash timer is complete AND auth is initialized
-    if (!splashTimerComplete || !isInitialized) {
-      console.log(`⏳ Waiting... Splash: ${splashTimerComplete}, Auth: ${isInitialized}`);
+    // Only proceed if splash timer is complete
+    if (!splashTimerComplete) {
+      console.log(`⏳ Waiting for splash timer... Timer: ${splashTimerComplete}`);
+      return;
+    }
+
+    // If auth is not initialized after splash timer, proceed anyway to prevent getting stuck
+    if (!isInitialized) {
+      console.log('⚠️ Auth not initialized after splash timer, proceeding to welcome');
+      router.replace('/welcome');
       return;
     }
 
