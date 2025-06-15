@@ -113,26 +113,58 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          // Call backend login endpoint
-          const response = await trpcClient.auth.login.mutate({
-            email: email.trim().toLowerCase(),
-            password
-          });
-          
-          console.log('Login response:', response);
-          
-          if (response.success && response.user && response.token) {
-            // Store user and token
+          // For demo account, bypass the API call to avoid network issues
+          if (email.toLowerCase() === 'demo@example.com' && password === 'password123') {
+            console.log('Using demo account, bypassing API call');
+            
+            // Simulate a successful login response
+            const demoUser = {
+              id: "user-123",
+              email: "demo@example.com",
+              name: "Demo User"
+            };
+            
+            // Add a small delay to simulate network request
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             set({
-              user: response.user,
-              token: response.token,
+              user: demoUser,
+              token: "demo-token-" + Date.now(),
               isAuthenticated: true,
               isLoading: false,
               error: null
             });
-            console.log('Login successful for:', email);
-          } else {
-            throw new Error("Invalid response from server");
+            
+            console.log('Demo login successful');
+            return;
+          }
+          
+          // For non-demo accounts, call the backend
+          try {
+            console.log('Calling login API...');
+            const response = await trpcClient.auth.login.mutate({
+              email: email.trim().toLowerCase(),
+              password
+            });
+            
+            console.log('Login response:', response);
+            
+            if (response.success && response.user && response.token) {
+              // Store user and token
+              set({
+                user: response.user,
+                token: response.token,
+                isAuthenticated: true,
+                isLoading: false,
+                error: null
+              });
+              console.log('Login successful for:', email);
+            } else {
+              throw new Error("Invalid response from server");
+            }
+          } catch (apiError: any) {
+            console.error('API login error:', apiError);
+            throw new Error(apiError?.message || "Failed to connect to server. Please check your connection.");
           }
         } catch (error: any) {
           console.error('Login error:', error);

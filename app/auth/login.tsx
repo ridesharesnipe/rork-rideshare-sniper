@@ -42,7 +42,7 @@ export default function LoginScreen() {
       }
       
       // Navigate to tabs without alert for demo login
-      if (demoLoginInProgress || email === 'demo@example.com') {
+      if (demoLoginInProgress) {
         console.log('🔄 Demo login successful, redirecting to tabs');
         router.replace('/(tabs)');
         return;
@@ -63,7 +63,7 @@ export default function LoginScreen() {
         ]
       );
     }
-  }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress, email]);
+  }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress]);
   
   // Reset navigation flag when authentication state changes to false
   useEffect(() => {

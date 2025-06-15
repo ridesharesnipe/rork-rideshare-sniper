@@ -7,6 +7,7 @@ export default function Index() {
   const router = useRouter();
   const { isAuthenticated, isInitialized, initialize } = useAuthStore();
   const [splashTimerComplete, setSplashTimerComplete] = useState(false);
+  const [navigationAttempted, setNavigationAttempted] = useState(false);
 
   // Initialize auth store on component mount
   useEffect(() => {
@@ -39,6 +40,11 @@ export default function Index() {
 
   // Handle navigation after splash screen
   useEffect(() => {
+    // Prevent multiple navigation attempts
+    if (navigationAttempted) {
+      return;
+    }
+    
     // Only proceed if splash timer is complete
     if (!splashTimerComplete) {
       console.log(`⏳ Waiting for splash timer... Timer: ${splashTimerComplete}`);
@@ -48,6 +54,7 @@ export default function Index() {
     // If auth is not initialized after splash timer, proceed anyway to prevent getting stuck
     if (!isInitialized) {
       console.log('⚠️ Auth not initialized after splash timer, proceeding to welcome');
+      setNavigationAttempted(true);
       router.replace('/welcome');
       return;
     }
@@ -56,6 +63,7 @@ export default function Index() {
     console.log('🔍 Auth status:', { isAuthenticated, isInitialized });
     
     // Navigate based on authentication status
+    setNavigationAttempted(true);
     if (isAuthenticated) {
       console.log('✅ User is authenticated, navigating to tabs');
       router.replace('/(tabs)');
@@ -63,7 +71,7 @@ export default function Index() {
       console.log('ℹ️ User is not authenticated, navigating to welcome');
       router.replace('/welcome');
     }
-  }, [isAuthenticated, isInitialized, splashTimerComplete, router]);
+  }, [isAuthenticated, isInitialized, splashTimerComplete, router, navigationAttempted]);
 
   // Always show splash screen during the timer
   return <SplashScreen />;

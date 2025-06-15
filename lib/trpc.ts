@@ -43,6 +43,7 @@ export const trpcClient = trpc.createClient({
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
         
         try {
+          console.log(`Fetching from: ${url}`);
           const response = await fetch(url, {
             ...options,
             signal: controller.signal,
@@ -54,13 +55,24 @@ export const trpcClient = trpc.createClient({
           clearTimeout(timeoutId);
           
           if (!response.ok) {
+            console.error(`HTTP error: ${response.status} ${response.statusText}`);
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
           
           return response;
-        } catch (error) {
+        } catch (error: any) {
           clearTimeout(timeoutId);
           console.error('tRPC fetch error:', error);
+          
+          // Provide more helpful error messages for common network issues
+          if (error.name === 'AbortError') {
+            throw new Error('Request timed out. Please check your connection and try again.');
+          }
+          
+          if (error.message.includes('Failed to fetch') || error.message.includes('Network request failed')) {
+            throw new Error('Network connection failed. Please check your internet connection.');
+          }
+          
           throw error;
         }
       },
