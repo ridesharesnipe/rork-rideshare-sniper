@@ -106,14 +106,16 @@ export const useAuthStore = create<AuthState>()(
       isInitialized: false,
       
       initialize: async () => {
+        const state = get();
+        
         // Skip if already initialized
-        if (get().isInitialized) {
+        if (state.isInitialized) {
           console.log('Auth already initialized, skipping');
           return;
         }
         
         console.log('Starting auth initialization...');
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         
         try {
           // Check if user is already logged in
@@ -142,6 +144,8 @@ export const useAuthStore = create<AuthState>()(
           console.error('Auth initialization error:', error);
           // Even on error, mark as initialized to prevent getting stuck
           set({
+            user: null,
+            isAuthenticated: false,
             isLoading: false,
             isInitialized: true,
             error: null
@@ -168,7 +172,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay (shorter for demo)
-          await new Promise(resolve => setTimeout(resolve, 300)); // Reduced from 500ms
+          await new Promise(resolve => setTimeout(resolve, 300));
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -424,10 +428,7 @@ export const useAuthStore = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         console.log('Auth store rehydrated:', state?.isAuthenticated ? 'authenticated' : 'not authenticated');
-        if (state) {
-          // Mark as initialized after rehydration
-          state.isInitialized = true;
-        }
+        // Don't mark as initialized here - let the initialize function handle it
       },
     }
   )

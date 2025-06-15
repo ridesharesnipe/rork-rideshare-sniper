@@ -15,6 +15,7 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [demoLoginInProgress, setDemoLoginInProgress] = useState(false);
+  const [hasNavigated, setHasNavigated] = useState(false);
   
   // Initialize auth store when component mounts if needed
   useEffect(() => {
@@ -26,8 +27,16 @@ export default function LoginScreen() {
   
   // Handle successful authentication
   useEffect(() => {
+    // Prevent multiple navigations
+    if (hasNavigated) {
+      return;
+    }
+
     if (isAuthenticated && user && isInitialized) {
       console.log('✅ User authenticated in login screen, navigating to tabs');
+      
+      // Mark as navigated to prevent multiple navigations
+      setHasNavigated(true);
       
       // Reset demo login state if it was in progress
       if (demoLoginInProgress) {
@@ -56,7 +65,7 @@ export default function LoginScreen() {
         ]
       );
     }
-  }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress, email]);
+  }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress, email, hasNavigated]);
   
   // Handle login with entered credentials
   const handleLogin = async () => {

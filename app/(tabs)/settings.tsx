@@ -38,6 +38,7 @@ export default function SettingsScreen() {
   
   const [showDemo, setShowDemo] = useState(false);
   const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
+  const [isResettingPermissions, setIsResettingPermissions] = useState(false);
   
   // Modal states for Privacy Policy and Terms of Service
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
@@ -85,8 +86,22 @@ export default function SettingsScreen() {
   };
   
   const resetOnboarding = async () => {
-    await AsyncStorage.setItem('hasSeenOnboarding', 'false');
-    router.replace('/onboarding');
+    try {
+      await AsyncStorage.setItem('hasSeenOnboarding', 'false');
+      Alert.alert(
+        "Success", 
+        "Onboarding reset. You'll see the tutorial again on next app start.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.replace('/onboarding')
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Failed to reset onboarding:', error);
+      Alert.alert("Error", "Failed to reset onboarding.");
+    }
   };
   
   const resetOverlayPositions = async () => {
@@ -102,7 +117,7 @@ export default function SettingsScreen() {
   const handleResetPermissions = () => {
     Alert.alert(
       "Reset Permissions",
-      "This will reset all permissions. You'll need to grant them again through the onboarding process.",
+      "This will reset all permissions and related settings. You'll need to grant them again through the onboarding process.",
       [
         {
           text: "Cancel",
@@ -110,13 +125,31 @@ export default function SettingsScreen() {
         },
         {
           text: "Reset",
-          onPress: () => {
-            resetPermissions();
-            Alert.alert("Permissions Reset", "All permissions have been reset. Please go through onboarding again to grant them.");
-            // Force navigation to onboarding after resetting permissions
-            setTimeout(() => {
-              resetOnboarding();
-            }, 500);
+          onPress: async () => {
+            setIsResettingPermissions(true);
+            try {
+              await resetPermissions();
+              Alert.alert(
+                "Permissions Reset", 
+                "All permissions have been reset. Redirecting to onboarding...",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                      // Navigate to onboarding after a short delay
+                      setTimeout(() => {
+                        router.replace('/onboarding');
+                      }, 500);
+                    }
+                  }
+                ]
+              );
+            } catch (error) {
+              console.error('Failed to reset permissions:', error);
+              Alert.alert("Error", "Failed to reset permissions. Please try again.");
+            } finally {
+              setIsResettingPermissions(false);
+            }
           },
           style: "destructive"
         }
@@ -291,12 +324,18 @@ export default function SettingsScreen() {
         )}
         
         <Pressable 
-          style={styles.resetPermissionsButton} 
+          style={[
+            styles.resetPermissionsButton,
+            isResettingPermissions && styles.resetPermissionsButtonDisabled
+          ]} 
           onPress={handleResetPermissions}
+          disabled={isResettingPermissions}
           testID="reset-permissions-button"
         >
           <RefreshCw size={16} color="#fff" />
-          <Text style={styles.resetPermissionsButtonText}>RESET PERMISSIONS</Text>
+          <Text style={styles.resetPermissionsButtonText}>
+            {isResettingPermissions ? 'RESETTING...' : 'RESET PERMISSIONS'}
+          </Text>
         </Pressable>
       </View>
       
@@ -994,6 +1033,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  resetPermissionsButtonDisabled: {
+    opacity: 0.7,
   },
   resetPermissionsButtonText: {
     fontSize: 14,

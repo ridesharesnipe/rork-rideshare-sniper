@@ -36,7 +36,7 @@ interface SettingsState {
   areAllPermissionsGranted: () => boolean;
   
   // Reset all permissions (for troubleshooting)
-  resetPermissions: () => void;
+  resetPermissions: () => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -126,14 +126,26 @@ export const useSettingsStore = create<SettingsState>()(
       },
       
       // Reset all permissions (for troubleshooting)
-      resetPermissions: () => {
-        console.log('Resetting all permissions...');
-        set({
-          overlayPermissionGranted: false,
-          locationPermissionGranted: false,
-          notificationPermissionGranted: false,
-        });
-        console.log('All permissions reset');
+      resetPermissions: async () => {
+        try {
+          console.log('🔄 Starting permissions reset...');
+          
+          // Reset permissions in state
+          set({
+            overlayPermissionGranted: false,
+            locationPermissionGranted: false,
+            notificationPermissionGranted: false,
+          });
+          
+          // Also clear any related AsyncStorage keys
+          await AsyncStorage.removeItem('hasSeenOnboarding');
+          await AsyncStorage.removeItem('overlayPositions');
+          
+          console.log('✅ All permissions and related data reset successfully');
+        } catch (error) {
+          console.error('❌ Error resetting permissions:', error);
+          throw error;
+        }
       }
     }),
     {
