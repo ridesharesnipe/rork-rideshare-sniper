@@ -68,6 +68,7 @@ export const useAuthStore = create<AuthState>()(
               isInitialized: true,
               error: null
             });
+            console.log('Auth initialized with stored credentials');
           } else {
             console.log('No stored credentials found');
             set({
@@ -78,6 +79,7 @@ export const useAuthStore = create<AuthState>()(
               isInitialized: true,
               error: null
             });
+            console.log('Auth initialized without credentials');
           }
         } catch (error: any) {
           console.error('Auth initialization error:', error);

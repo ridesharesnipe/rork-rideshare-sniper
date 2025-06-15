@@ -34,7 +34,7 @@ export default function LoginScreen() {
         setDemoLoginInProgress(false);
       }
       
-      // Navigate directly to tabs without alert for demo login
+      // Navigate to tabs without alert for demo login
       if (demoLoginInProgress || email === 'demo@example.com') {
         console.log('🔄 Demo login successful, redirecting to tabs');
         router.replace('/(tabs)');
