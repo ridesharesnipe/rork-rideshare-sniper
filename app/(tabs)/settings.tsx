@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, Pressable, Alert, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Edit, Plus, Trash2, Bell, Battery, Eye, Clock, Shield, Lock, HelpCircle, AlertTriangle, X, DollarSign, MapPin, Navigation } from 'lucide-react-native';
+import { ChevronRight, Edit, Plus, Trash2, Bell, Battery, Eye, Shield, Lock, HelpCircle, AlertTriangle, X, DollarSign, MapPin, Navigation, RefreshCw } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '@/constants/colors';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -16,8 +16,7 @@ export default function SettingsScreen() {
     vibrationEnabled, 
     darkMode, 
     batteryOptimization,
-    autoRejectEnabled,
-    autoRejectDelay,
+    autoHideEnabled,
     minimalMode,
     emergencyDisable,
     overlayPermissionGranted,
@@ -27,12 +26,11 @@ export default function SettingsScreen() {
     setVibrationEnabled,
     setDarkMode,
     setBatteryOptimization,
-    setAutoRejectEnabled,
+    setAutoHideEnabled,
     setMinimalMode,
     setEmergencyDisable,
-    setOverlayPermission,
-    setLocationPermission,
-    setNotificationPermission,
+    areAllPermissionsGranted,
+    resetPermissions,
   } = useSettingsStore();
   
   const { profiles, deleteProfile } = useProfileStore();
@@ -100,6 +98,27 @@ export default function SettingsScreen() {
       Alert.alert("Error", "Failed to reset overlay positions.");
     }
   };
+
+  const handleResetPermissions = () => {
+    Alert.alert(
+      "Reset Permissions",
+      "This will reset all permissions. You'll need to grant them again through the onboarding process.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Reset",
+          onPress: () => {
+            resetPermissions();
+            Alert.alert("Permissions Reset", "All permissions have been reset. Please go through onboarding again to grant them.");
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
   
   if (showDemo) {
     return (
@@ -156,33 +175,124 @@ export default function SettingsScreen() {
           <Text style={styles.editFiltersButtonText}>CREATE NEW FILTER PROFILE</Text>
         </Pressable>
       </View>
-      
+
+      {/* DRIVER PROFILES SECTION */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>ACCOUNT</Text>
-        
-        <View style={styles.settingItem}>
-          <View style={styles.settingIconContainer}>
-            <Lock size={20} color={colors.textSecondary} />
-          </View>
-          <View style={styles.settingTextContainer}>
-            <Text style={styles.settingLabel}>Remember Me</Text>
-            <Text style={styles.settingDescription}>
-              Stay logged in for quick access next time
-            </Text>
-          </View>
-          <Switch
-            value={rememberMe}
-            onValueChange={setRememberMe}
-            trackColor={{ false: colors.surfaceLight, true: colors.primary }}
-            thumbColor={colors.textPrimary}
-          />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>DRIVER PROFILES</Text>
+          <Pressable style={styles.addButton} onPress={navigateToCreateProfile}>
+            <Plus size={20} color={colors.textPrimary} />
+          </Pressable>
         </View>
         
-        <Pressable style={styles.logoutButton} onPress={handleCompleteLogout}>
-          <Text style={styles.logoutButtonText}>COMPLETE LOGOUT</Text>
+        {profiles.map((profile) => (
+          <View key={profile.id} style={styles.profileItem}>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>{profile.name}</Text>
+              <Text style={styles.profileDetail}>
+                Min: ${profile.minFare} | Max Pickup: {profile.maxPickupDistance} mi | Max Drive: {profile.maxDrivingDistance} mi
+              </Text>
+            </View>
+            
+            <View style={styles.profileActions}>
+              <Pressable 
+                style={styles.profileActionButton}
+                onPress={() => handleDeleteProfile(profile.id)}
+              >
+                <Trash2 size={20} color={colors.secondary} />
+              </Pressable>
+              
+              <Pressable 
+                style={styles.profileActionButton}
+                onPress={() => navigateToEditProfile(profile.id)}
+              >
+                <Edit size={20} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+          </View>
+        ))}
+      </View>
+      
+      {/* PERMISSIONS STATUS SECTION */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>PERMISSIONS STATUS</Text>
+        
+        <View style={styles.permissionStatusItem}>
+          <View style={styles.permissionStatusInfo}>
+            <Lock size={20} color={colors.textSecondary} />
+            <View style={styles.permissionStatusText}>
+              <Text style={styles.permissionStatusLabel}>Screen Overlay</Text>
+              <Text style={styles.permissionStatusDescription}>
+                Display indicators over rideshare apps
+              </Text>
+            </View>
+          </View>
+          <View style={[
+            styles.permissionStatusIndicator,
+            overlayPermissionGranted ? styles.permissionGranted : styles.permissionDenied
+          ]}>
+            <Text style={styles.permissionStatusIndicatorText}>
+              {overlayPermissionGranted ? 'GRANTED' : 'DENIED'}
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.permissionStatusItem}>
+          <View style={styles.permissionStatusInfo}>
+            <Bell size={20} color={colors.textSecondary} />
+            <View style={styles.permissionStatusText}>
+              <Text style={styles.permissionStatusLabel}>Notifications</Text>
+              <Text style={styles.permissionStatusDescription}>
+                Detect incoming trip requests
+              </Text>
+            </View>
+          </View>
+          <View style={[
+            styles.permissionStatusIndicator,
+            notificationPermissionGranted ? styles.permissionGranted : styles.permissionDenied
+          ]}>
+            <Text style={styles.permissionStatusIndicatorText}>
+              {notificationPermissionGranted ? 'GRANTED' : 'DENIED'}
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.permissionStatusItem}>
+          <View style={styles.permissionStatusInfo}>
+            <MapPin size={20} color={colors.textSecondary} />
+            <View style={styles.permissionStatusText}>
+              <Text style={styles.permissionStatusLabel}>Location</Text>
+              <Text style={styles.permissionStatusDescription}>
+                Calculate distances for trip evaluation
+              </Text>
+            </View>
+          </View>
+          <View style={[
+            styles.permissionStatusIndicator,
+            locationPermissionGranted ? styles.permissionGranted : styles.permissionDenied
+          ]}>
+            <Text style={styles.permissionStatusIndicatorText}>
+              {locationPermissionGranted ? 'GRANTED' : 'DENIED'}
+            </Text>
+          </View>
+        </View>
+        
+        {!areAllPermissionsGranted() && (
+          <View style={styles.permissionWarning}>
+            <AlertTriangle size={20} color={colors.warning} />
+            <Text style={styles.permissionWarningText}>
+              Some permissions are missing. Rideshare Sniper may not function properly.
+            </Text>
+          </View>
+        )}
+        
+        <Pressable style={styles.resetPermissionsButton} onPress={handleResetPermissions}>
+          <RefreshCw size={16} color={colors.textSecondary} />
+          <Text style={styles.resetPermissionsButtonText}>RESET PERMISSIONS</Text>
         </Pressable>
       </View>
       
+      {/* DISPLAY OPTIONS SECTION */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>DISPLAY OPTIONS</Text>
         
@@ -241,6 +351,7 @@ export default function SettingsScreen() {
         </View>
       </View>
       
+      {/* PERFORMANCE & SAFETY SECTION */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>PERFORMANCE & SAFETY</Text>
         
@@ -264,17 +375,17 @@ export default function SettingsScreen() {
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
-            <Clock size={20} color={colors.textSecondary} />
+            <Eye size={20} color={colors.textSecondary} />
           </View>
           <View style={styles.settingTextContainer}>
             <Text style={styles.settingLabel}>Auto-Hide Overlay</Text>
             <Text style={styles.settingDescription}>
-              Automatically hide overlay after 5 seconds
+              Automatically hide overlay after 5 seconds for safety
             </Text>
           </View>
           <Switch
-            value={autoRejectEnabled}
-            onValueChange={setAutoRejectEnabled}
+            value={autoHideEnabled}
+            onValueChange={setAutoHideEnabled}
             trackColor={{ false: colors.surfaceLight, true: colors.primary }}
             thumbColor={colors.textPrimary}
           />
@@ -299,101 +410,34 @@ export default function SettingsScreen() {
         </View>
       </View>
       
+      {/* ACCOUNT SECTION */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>PERMISSIONS</Text>
+        <Text style={styles.sectionTitle}>ACCOUNT</Text>
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
             <Lock size={20} color={colors.textSecondary} />
           </View>
           <View style={styles.settingTextContainer}>
-            <Text style={styles.settingLabel}>Overlay Permission</Text>
+            <Text style={styles.settingLabel}>Remember Me</Text>
             <Text style={styles.settingDescription}>
-              Allow Rideshare Sniper to display over other apps
+              Stay logged in for quick access next time
             </Text>
           </View>
           <Switch
-            value={overlayPermissionGranted}
-            onValueChange={setOverlayPermission}
+            value={rememberMe}
+            onValueChange={setRememberMe}
             trackColor={{ false: colors.surfaceLight, true: colors.primary }}
             thumbColor={colors.textPrimary}
           />
         </View>
         
-        <View style={styles.settingItem}>
-          <View style={styles.settingIconContainer}>
-            <MapPin size={20} color={colors.textSecondary} />
-          </View>
-          <View style={styles.settingTextContainer}>
-            <Text style={styles.settingLabel}>Location Permission</Text>
-            <Text style={styles.settingDescription}>
-              Allow access to your location for distance calculations
-            </Text>
-          </View>
-          <Switch
-            value={locationPermissionGranted}
-            onValueChange={setLocationPermission}
-            trackColor={{ false: colors.surfaceLight, true: colors.primary }}
-            thumbColor={colors.textPrimary}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <View style={styles.settingIconContainer}>
-            <Bell size={20} color={colors.textSecondary} />
-          </View>
-          <View style={styles.settingTextContainer}>
-            <Text style={styles.settingLabel}>Notification Permission</Text>
-            <Text style={styles.settingDescription}>
-              Allow notifications for trip alerts
-            </Text>
-          </View>
-          <Switch
-            value={notificationPermissionGranted}
-            onValueChange={setNotificationPermission}
-            trackColor={{ false: colors.surfaceLight, true: colors.primary }}
-            thumbColor={colors.textPrimary}
-          />
-        </View>
+        <Pressable style={styles.logoutButton} onPress={handleCompleteLogout}>
+          <Text style={styles.logoutButtonText}>COMPLETE LOGOUT</Text>
+        </Pressable>
       </View>
       
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>DRIVER PROFILES</Text>
-          <Pressable style={styles.addButton} onPress={navigateToCreateProfile}>
-            <Plus size={20} color={colors.textPrimary} />
-          </Pressable>
-        </View>
-        
-        {profiles.map((profile) => (
-          <View key={profile.id} style={styles.profileItem}>
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{profile.name}</Text>
-              <Text style={styles.profileDetail}>
-                Min: ${profile.minFare} | Max Pickup: {profile.maxPickupDistance} mi | Max Drive: {profile.maxDrivingDistance} mi
-              </Text>
-            </View>
-            
-            <View style={styles.profileActions}>
-              <Pressable 
-                style={styles.profileActionButton}
-                onPress={() => handleDeleteProfile(profile.id)}
-              >
-                <Trash2 size={20} color={colors.secondary} />
-              </Pressable>
-              
-              <Pressable 
-                style={styles.profileActionButton}
-                onPress={() => navigateToEditProfile(profile.id)}
-              >
-                <Edit size={20} color={colors.textSecondary} />
-              </Pressable>
-            </View>
-          </View>
-        ))}
-      </View>
-      
-      {/* Help & Tutorials Section */}
+      {/* HELP & TUTORIALS SECTION */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>HELP & TUTORIALS</Text>
         
@@ -496,6 +540,7 @@ export default function SettingsScreen() {
         </Pressable>
       </View>
       
+      {/* ABOUT SECTION */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>ABOUT</Text>
         
@@ -871,6 +916,80 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  // Permission status styles
+  permissionStatusItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  permissionStatusInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  permissionStatusText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  permissionStatusLabel: {
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  permissionStatusDescription: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  permissionStatusIndicator: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  permissionGranted: {
+    backgroundColor: colors.primary,
+  },
+  permissionDenied: {
+    backgroundColor: colors.secondary,
+  },
+  permissionStatusIndicatorText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  permissionWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 204, 0, 0.1)',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  permissionWarningText: {
+    fontSize: 14,
+    color: colors.warning,
+    marginLeft: 8,
+    flex: 1,
+  },
+  resetPermissionsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceLight,
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  resetPermissionsButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginLeft: 8,
     letterSpacing: 0.5,
   },
   // Original styles

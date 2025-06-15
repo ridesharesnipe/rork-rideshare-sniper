@@ -14,12 +14,12 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    // Show splash screen for 6 seconds (increased from 4 seconds)
-    console.log('🔄 Starting 6-second splash screen timer...');
+    // Show splash screen for 8 seconds (increased from 6 seconds)
+    console.log('🔄 Starting 8-second splash screen timer...');
     const splashTimer = setTimeout(() => {
-      console.log('✅ Splash screen timer complete (6 seconds)');
+      console.log('✅ Splash screen timer complete (8 seconds)');
       setSplashComplete(true);
-    }, 6000); // Increased to 6 seconds
+    }, 8000); // Increased to 8 seconds
 
     return () => {
       console.log('🧹 Cleaning up splash screen timer');
@@ -42,7 +42,7 @@ export default function Index() {
         console.log('ℹ️ User is not authenticated, navigating to welcome');
         router.replace('/welcome');
       }
-    }, 200); // Slightly increased delay for smoother transition
+    }, 200);
 
     return () => {
       console.log('🧹 Cleaning up navigation timer');
@@ -50,6 +50,6 @@ export default function Index() {
     };
   }, [isAuthenticated, isInitialized, splashComplete]);
 
-  // Show splash screen while loading or during the 6-second timer
+  // Show splash screen while loading or during the 8-second timer
   return <SplashScreen />;
 }

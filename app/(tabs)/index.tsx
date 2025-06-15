@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Power, ChevronRight, Shield, Crosshair, Edit, Navigation } from 'lucide-react-native';
+import { Power, ChevronRight, Shield, Crosshair, Edit } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import ProfileSelector from '@/components/ProfileSelector';
 import StatsCard from '@/components/StatsCard';
@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { driverStatus, setDriverStatus } = useSettingsStore();
+  const { driverStatus, setDriverStatus, areAllPermissionsGranted } = useSettingsStore();
   const { getActiveProfile, activeProfileId } = useProfileStore();
   const { user } = useAuthStore();
   const [showWelcome, setShowWelcome] = useState(false);
@@ -92,6 +92,22 @@ export default function HomeScreen() {
       <View style={styles.taglineContainer}>
         <Text style={styles.tagline}>PRECISION. PROFIT. PROTECTION.</Text>
       </View>
+      
+      {/* PERMISSIONS STATUS ALERT */}
+      {!areAllPermissionsGranted() && (
+        <View style={styles.permissionAlert}>
+          <Text style={styles.permissionAlertTitle}>⚠️ PERMISSIONS REQUIRED</Text>
+          <Text style={styles.permissionAlertText}>
+            Some essential permissions are missing. Rideshare Sniper may not function properly.
+          </Text>
+          <Pressable 
+            style={styles.permissionAlertButton}
+            onPress={() => router.push('/(tabs)/settings')}
+          >
+            <Text style={styles.permissionAlertButtonText}>CHECK SETTINGS</Text>
+          </Pressable>
+        </View>
+      )}
       
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -266,6 +282,40 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textSecondary,
     letterSpacing: 1,
+  },
+  permissionAlert: {
+    backgroundColor: 'rgba(255, 204, 0, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  permissionAlertTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.warning,
+    marginBottom: 8,
+  },
+  permissionAlertText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  permissionAlertButton: {
+    backgroundColor: colors.warning,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignSelf: 'flex-start',
+  },
+  permissionAlertButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    letterSpacing: 0.5,
   },
   card: {
     backgroundColor: colors.surface,

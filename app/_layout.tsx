@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { useSettingsStore } from '@/store/settingsStore';
-import { useRouter } from 'expo-router';
 import { trpc, trpcClient } from '@/lib/trpc';
 
 // Create a client with optimized settings for production
@@ -26,7 +25,6 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const { isAuthenticated, user, isInitialized, initialize } = useAuthStore();
   const { darkMode } = useSettingsStore();
-  const router = useRouter();
 
   useEffect(() => {
     // Initialize auth store on app start
@@ -42,25 +40,6 @@ export default function RootLayout() {
     
     initializeApp();
   }, []);
-
-  useEffect(() => {
-    // Only handle routing after auth is initialized
-    if (!isInitialized) {
-      console.log('⏳ Waiting for auth initialization...');
-      return;
-    }
-    
-    console.log('🔄 Auth state changed:', { isAuthenticated, user: user?.email });
-    
-    // Redirect based on authentication status
-    if (isAuthenticated && user) {
-      console.log('✅ User authenticated, redirecting to tabs');
-      router.replace('/(tabs)');
-    } else {
-      console.log('❌ User not authenticated, redirecting to login');
-      router.replace('/auth/login');
-    }
-  }, [isAuthenticated, user, isInitialized]);
 
   // Use the darkMode setting from the store
   const statusBarStyle = darkMode ? 'light' : 'dark';

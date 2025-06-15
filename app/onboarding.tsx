@@ -9,33 +9,36 @@ import ToggleSwitch from '@/components/ToggleSwitch';
 import OverlayDemo from '@/components/OverlayDemo';
 import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
+import { useSettingsStore } from '@/store/settingsStore';
 
 export default function OnboardingScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const { updateProfile } = useProfileStore();
   const { isAuthenticated } = useAuthStore();
+  const { 
+    setOverlayPermission, 
+    setLocationPermission, 
+    setNotificationPermission,
+    areAllPermissionsGranted 
+  } = useSettingsStore();
   
   const [currentStep, setCurrentStep] = useState(0);
   const [minFare, setMinFare] = useState(10);
   const [maxPickupDistance, setMaxPickupDistance] = useState(5);
-  const [maxDrivingDistance, setMaxDrivingDistance] = useState(15); // New state for driving distance
-  const [onlyShowProfitable, setOnlyShowProfitable] = useState(true);
+  const [maxDrivingDistance, setMaxDrivingDistance] = useState(15);
   const [currentDemo, setCurrentDemo] = useState<'accept' | 'reject' | 'consider' | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   
-  // Permission states
-  const [screenOverlayPermission, setScreenOverlayPermission] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState(false);
-  const [locationPermission, setLocationPermission] = useState(false);
-  
-  // New state for permission tabs
-  const [activePermissionTab, setActivePermissionTab] = useState<'overlay' | 'notification' | 'location'>('overlay');
+  // Essential permissions only
+  const [overlayPermission, setOverlayPermissionLocal] = useState(false);
+  const [notificationPermission, setNotificationPermissionLocal] = useState(false);
+  const [locationPermission, setLocationPermissionLocal] = useState(false);
   
   const handleNext = () => {
     // If we're on the permissions step, check if permissions are granted
-    if (currentStep === 5) {
-      if (!screenOverlayPermission || !notificationPermission || !locationPermission) {
+    if (currentStep === 4) {
+      if (!overlayPermission || !notificationPermission || !locationPermission) {
         Alert.alert(
           "Permissions Required",
           "Please enable all permissions to continue. These are required for the app to function properly.",
@@ -45,7 +48,7 @@ export default function OnboardingScreen() {
       }
     }
     
-    if (currentStep < 5) { // Updated to account for new step
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else {
       handleFinish();
@@ -66,11 +69,17 @@ export default function OnboardingScreen() {
     
     try {
       console.log("Finishing onboarding");
+      
+      // Save permissions to store
+      setOverlayPermission(overlayPermission);
+      setLocationPermission(locationPermission);
+      setNotificationPermission(notificationPermission);
+      
       // Update the default profile with the onboarding settings
       updateProfile('1', {
         minFare,
         maxPickupDistance,
-        maxDrivingDistance, // Added new field
+        maxDrivingDistance,
       });
       
       await AsyncStorage.setItem('hasSeenOnboarding', 'true');
@@ -110,261 +119,6 @@ export default function OnboardingScreen() {
       router.replace('/auth/login');
     }
   };
-  
-  // For Android, use a simpler version of the onboarding screen
-  if (Platform.OS === 'android') {
-    return (
-      <View style={styles.container}>
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          <View style={styles.stepContainer}>
-            {/* Back button - only show if we can go back */}
-            {navigation.canGoBack() && (
-              <Pressable 
-                style={styles.backButtonSmall} 
-                onPress={() => navigation.goBack()}
-              >
-                <ChevronLeft size={20} color={colors.textSecondary} />
-              </Pressable>
-            )}
-            
-            <View style={styles.crosshairLogo}>
-              <View style={styles.crosshairHorizontal} />
-              <View style={styles.crosshairVertical} />
-              <View style={styles.crosshairCenter} />
-              <View style={styles.crosshairRing} />
-            </View>
-            
-            <Text style={styles.title}>RIDESHARE SNIPER</Text>
-            <Text style={styles.tagline}>Precision. Profit. Protection.</Text>
-            <Text style={styles.subtitle}>Your rideshare mission control</Text>
-            
-            <Text style={styles.description}>
-              Rideshare Sniper helps you make quick decisions about trip requests while driving.
-              Set your preferences, and we'll show you clear visual signals for each trip.
-            </Text>
-            
-            <View style={styles.sliderContainer}>
-              <Text style={styles.sliderValue}>${minFare.toFixed(2)}</Text>
-              <Text style={styles.label}>Minimum Fare</Text>
-              <Slider
-                value={minFare}
-                minimumValue={5}
-                maximumValue={25}
-                step={0.5}
-                onValueChange={setMinFare}
-              />
-            </View>
-            
-            <View style={styles.sliderContainer}>
-              <Text style={styles.sliderValue}>{maxPickupDistance.toFixed(1)} mi</Text>
-              <Text style={styles.label}>Maximum Pickup Distance</Text>
-              <Slider
-                value={maxPickupDistance}
-                minimumValue={1}
-                maximumValue={10}
-                step={0.5}
-                onValueChange={setMaxPickupDistance}
-              />
-            </View>
-            
-            <View style={styles.sliderContainer}>
-              <Text style={styles.sliderValue}>{maxDrivingDistance.toFixed(1)} mi</Text>
-              <Text style={styles.label}>Maximum Driving Distance</Text>
-              <Slider
-                value={maxDrivingDistance}
-                minimumValue={5}
-                maximumValue={30}
-                step={1}
-                onValueChange={setMaxDrivingDistance}
-              />
-            </View>
-            
-            {/* Permission section for Android with tabs */}
-            <View style={styles.permissionsContainer}>
-              <Text style={styles.permissionsTitle}>Required Permissions</Text>
-              <Text style={styles.permissionsSubtitle}>
-                Please enable the following permissions for Rideshare Sniper to function properly:
-              </Text>
-              
-              {/* Permission Tabs */}
-              <View style={styles.permissionTabs}>
-                <Pressable 
-                  style={[
-                    styles.permissionTab, 
-                    activePermissionTab === 'overlay' && styles.permissionTabActive
-                  ]}
-                  onPress={() => setActivePermissionTab('overlay')}
-                >
-                  <Lock size={16} color={activePermissionTab === 'overlay' ? colors.primary : colors.textSecondary} />
-                  <Text 
-                    style={[
-                      styles.permissionTabText,
-                      activePermissionTab === 'overlay' && styles.permissionTabTextActive
-                    ]}
-                  >
-                    Overlay
-                  </Text>
-                </Pressable>
-                
-                <Pressable 
-                  style={[
-                    styles.permissionTab, 
-                    activePermissionTab === 'notification' && styles.permissionTabActive
-                  ]}
-                  onPress={() => setActivePermissionTab('notification')}
-                >
-                  <Bell size={16} color={activePermissionTab === 'notification' ? colors.primary : colors.textSecondary} />
-                  <Text 
-                    style={[
-                      styles.permissionTabText,
-                      activePermissionTab === 'notification' && styles.permissionTabTextActive
-                    ]}
-                  >
-                    Notifications
-                  </Text>
-                </Pressable>
-                
-                <Pressable 
-                  style={[
-                    styles.permissionTab, 
-                    activePermissionTab === 'location' && styles.permissionTabActive
-                  ]}
-                  onPress={() => setActivePermissionTab('location')}
-                >
-                  <MapPin size={16} color={activePermissionTab === 'location' ? colors.primary : colors.textSecondary} />
-                  <Text 
-                    style={[
-                      styles.permissionTabText,
-                      activePermissionTab === 'location' && styles.permissionTabTextActive
-                    ]}
-                  >
-                    Location
-                  </Text>
-                </Pressable>
-              </View>
-              
-              {/* Permission Content based on active tab */}
-              <View style={styles.permissionContent}>
-                {activePermissionTab === 'overlay' && (
-                  <View style={styles.permissionTabContent}>
-                    <Text style={styles.permissionTabContentTitle}>Screen Overlay Permission</Text>
-                    <Text style={styles.permissionTabContentDescription}>
-                      Rideshare Sniper needs to display indicators over your rideshare app. This permission allows us to show the green crosshair, yellow warning, or red X directly on your screen while you're using Uber or Lyft.
-                    </Text>
-                    <View style={styles.permissionToggleContainer}>
-                      <Text style={styles.permissionToggleText}>
-                        {screenOverlayPermission ? "Permission Granted" : "Grant Permission"}
-                      </Text>
-                      <ToggleSwitch
-                        value={screenOverlayPermission}
-                        onValueChange={setScreenOverlayPermission}
-                      />
-                    </View>
-                    {!screenOverlayPermission && (
-                      <Text style={styles.permissionRequiredText}>
-                        * This permission is required to continue
-                      </Text>
-                    )}
-                  </View>
-                )}
-                
-                {activePermissionTab === 'notification' && (
-                  <View style={styles.permissionTabContent}>
-                    <Text style={styles.permissionTabContentTitle}>Notification Access</Text>
-                    <Text style={styles.permissionTabContentDescription}>
-                      Rideshare Sniper needs to detect incoming trip requests from Uber and Lyft. This permission allows us to analyze notifications to identify trip details and provide real-time recommendations.
-                    </Text>
-                    <View style={styles.permissionToggleContainer}>
-                      <Text style={styles.permissionToggleText}>
-                        {notificationPermission ? "Permission Granted" : "Grant Permission"}
-                      </Text>
-                      <ToggleSwitch
-                        value={notificationPermission}
-                        onValueChange={setNotificationPermission}
-                      />
-                    </View>
-                    {!notificationPermission && (
-                      <Text style={styles.permissionRequiredText}>
-                        * This permission is required to continue
-                      </Text>
-                    )}
-                  </View>
-                )}
-                
-                {activePermissionTab === 'location' && (
-                  <View style={styles.permissionTabContent}>
-                    <Text style={styles.permissionTabContentTitle}>Location Access</Text>
-                    <Text style={styles.permissionTabContentDescription}>
-                      Rideshare Sniper needs your location to calculate accurate distances for pickup and trip evaluation. We only use your location while the app is active and never share it with third parties.
-                    </Text>
-                    <View style={styles.permissionToggleContainer}>
-                      <Text style={styles.permissionToggleText}>
-                        {locationPermission ? "Permission Granted" : "Grant Permission"}
-                      </Text>
-                      <ToggleSwitch
-                        value={locationPermission}
-                        onValueChange={setLocationPermission}
-                      />
-                    </View>
-                    {!locationPermission && (
-                      <Text style={styles.permissionRequiredText}>
-                        * This permission is required to continue
-                      </Text>
-                    )}
-                  </View>
-                )}
-              </View>
-              
-              {/* Permission Status Indicators */}
-              <View style={styles.permissionStatusContainer}>
-                <View style={styles.permissionStatusItem}>
-                  <View style={[
-                    styles.permissionStatusDot,
-                    screenOverlayPermission ? styles.permissionStatusDotGranted : styles.permissionStatusDotDenied
-                  ]} />
-                  <Text style={styles.permissionStatusText}>Overlay</Text>
-                </View>
-                
-                <View style={styles.permissionStatusItem}>
-                  <View style={[
-                    styles.permissionStatusDot,
-                    notificationPermission ? styles.permissionStatusDotGranted : styles.permissionStatusDotDenied
-                  ]} />
-                  <Text style={styles.permissionStatusText}>Notifications</Text>
-                </View>
-                
-                <View style={styles.permissionStatusItem}>
-                  <View style={[
-                    styles.permissionStatusDot,
-                    locationPermission ? styles.permissionStatusDotGranted : styles.permissionStatusDotDenied
-                  ]} />
-                  <Text style={styles.permissionStatusText}>Location</Text>
-                </View>
-              </View>
-            </View>
-            
-            <Pressable 
-              style={[
-                styles.nextButton, 
-                (!screenOverlayPermission || !notificationPermission || !locationPermission) ? 
-                  styles.nextButtonDisabled : {}
-              ]} 
-              onPress={handleFinish}
-              disabled={!screenOverlayPermission || !notificationPermission || !locationPermission}
-            >
-              <Text style={styles.nextButtonText}>GET STARTED</Text>
-              <ChevronRight size={20} color={colors.textPrimary} />
-            </Pressable>
-
-            <Pressable style={styles.skipButton} onPress={skipToApp}>
-              <Text style={styles.skipButtonText}>SKIP TUTORIAL</Text>
-              <ChevronRight size={16} color={colors.textSecondary} />
-            </Pressable>
-          </View>
-        </ScrollView>
-      </View>
-    );
-  }
   
   const renderStep = () => {
     switch (currentStep) {
@@ -464,13 +218,6 @@ export default function OnboardingScreen() {
                 Consider your expenses and time value when setting this threshold.
               </Text>
             </View>
-            
-            <View style={styles.filterTipBox}>
-              <Text style={styles.filterTipTitle}>WHERE TO FIND THIS LATER:</Text>
-              <Text style={styles.filterTipText}>
-                You can adjust this filter anytime in Settings → Trip Filters or by tapping "Edit Filters" on the home screen.
-              </Text>
-            </View>
           </View>
         );
       
@@ -507,18 +254,10 @@ export default function OnboardingScreen() {
                 Long pickup distances can reduce your hourly earnings. Most drivers set this between 3-5 miles for optimal efficiency.
               </Text>
             </View>
-            
-            <View style={styles.filterTipBox}>
-              <Text style={styles.filterTipTitle}>WHERE TO FIND THIS LATER:</Text>
-              <Text style={styles.filterTipText}>
-                You can adjust this filter anytime in Settings → Trip Filters or by tapping "Edit Filters" on the home screen.
-              </Text>
-            </View>
           </View>
         );
       
       case 3:
-        // New step for Maximum Driving Distance
         return (
           <View style={styles.stepContainer}>
             <View style={styles.stepHeader}>
@@ -551,13 +290,6 @@ export default function OnboardingScreen() {
                 Consider your market and strategy when setting this. Short trips (10-15 miles) are often more profitable in dense urban areas, while longer trips may be better in suburban or rural areas.
               </Text>
             </View>
-            
-            <View style={styles.filterTipBox}>
-              <Text style={styles.filterTipTitle}>WHERE TO FIND THIS LATER:</Text>
-              <Text style={styles.filterTipText}>
-                You can adjust this filter anytime in Settings → Trip Filters or by tapping "Edit Filters" on the home screen.
-              </Text>
-            </View>
           </View>
         );
       
@@ -565,205 +297,54 @@ export default function OnboardingScreen() {
         return (
           <View style={styles.stepContainer}>
             <View style={styles.stepHeader}>
-              <AlertTriangle size={28} color={colors.primary} />
-              <Text style={styles.stepTitle}>Trip Filter Settings</Text>
+              <Lock size={28} color={colors.primary} />
+              <Text style={styles.stepTitle}>Essential Permissions</Text>
             </View>
             
             <Text style={styles.stepDescription}>
-              Configure how Rideshare Sniper evaluates and displays trip requests.
+              Rideshare Sniper needs these 3 essential permissions to function properly:
             </Text>
             
-            <View style={styles.settingItem}>
-              <View style={styles.settingTextContainer}>
-                <Text style={styles.settingLabel}>Only Show Profitable Trips</Text>
-                <Text style={styles.settingDescription}>
-                  When enabled, only trips that meet your criteria will show a green crosshair.
-                </Text>
+            <View style={styles.permissionItem}>
+              <View style={styles.permissionHeader}>
+                <Lock size={20} color={colors.primary} />
+                <Text style={styles.permissionTitle}>Screen Overlay</Text>
+                <ToggleSwitch
+                  value={overlayPermission}
+                  onValueChange={setOverlayPermissionLocal}
+                />
               </View>
-              <ToggleSwitch
-                value={onlyShowProfitable}
-                onValueChange={setOnlyShowProfitable}
-              />
-            </View>
-            
-            <View style={styles.infoPanel}>
-              <Text style={styles.infoPanelTitle}>How It Works</Text>
-              <Text style={styles.infoPanelText}>
-                Rideshare Sniper evaluates each trip based on fare amount, pickup distance, driving distance, and estimated trip duration.
-                We never auto-accept or block trips - we just provide clear visual signals to help you decide quickly.
+              <Text style={styles.permissionDescription}>
+                Display indicators over your rideshare app (green crosshair, yellow warning, red X)
               </Text>
             </View>
             
-            {/* Removed the advanced filters tip box */}
-          </View>
-        );
-      
-      case 5:
-        return (
-          <View style={styles.stepContainer}>
-            <View style={styles.stepHeader}>
-              <Lock size={28} color={colors.primary} />
-              <Text style={styles.stepTitle}>Required Permissions</Text>
+            <View style={styles.permissionItem}>
+              <View style={styles.permissionHeader}>
+                <Bell size={20} color={colors.primary} />
+                <Text style={styles.permissionTitle}>Notifications</Text>
+                <ToggleSwitch
+                  value={notificationPermission}
+                  onValueChange={setNotificationPermissionLocal}
+                />
+              </View>
+              <Text style={styles.permissionDescription}>
+                Detect incoming trip requests from Uber and Lyft
+              </Text>
             </View>
             
-            <Text style={styles.stepDescription}>
-              Rideshare Sniper needs the following permissions to function properly. Please enable each one to continue:
-            </Text>
-            
-            {/* Permission Tabs */}
-            <View style={styles.permissionTabs}>
-              <Pressable 
-                style={[
-                  styles.permissionTab, 
-                  activePermissionTab === 'overlay' && styles.permissionTabActive
-                ]}
-                onPress={() => setActivePermissionTab('overlay')}
-              >
-                <Lock size={16} color={activePermissionTab === 'overlay' ? colors.primary : colors.textSecondary} />
-                <Text 
-                  style={[
-                    styles.permissionTabText,
-                    activePermissionTab === 'overlay' && styles.permissionTabTextActive
-                  ]}
-                >
-                  Overlay
-                </Text>
-              </Pressable>
-              
-              <Pressable 
-                style={[
-                  styles.permissionTab, 
-                  activePermissionTab === 'notification' && styles.permissionTabActive
-                ]}
-                onPress={() => setActivePermissionTab('notification')}
-              >
-                <Bell size={16} color={activePermissionTab === 'notification' ? colors.primary : colors.textSecondary} />
-                <Text 
-                  style={[
-                    styles.permissionTabText,
-                    activePermissionTab === 'notification' && styles.permissionTabTextActive
-                  ]}
-                >
-                  Notifications
-                </Text>
-              </Pressable>
-              
-              <Pressable 
-                style={[
-                  styles.permissionTab, 
-                  activePermissionTab === 'location' && styles.permissionTabActive
-                ]}
-                onPress={() => setActivePermissionTab('location')}
-              >
-                <MapPin size={16} color={activePermissionTab === 'location' ? colors.primary : colors.textSecondary} />
-                <Text 
-                  style={[
-                    styles.permissionTabText,
-                    activePermissionTab === 'location' && styles.permissionTabTextActive
-                  ]}
-                >
-                  Location
-                </Text>
-              </Pressable>
-            </View>
-            
-            {/* Permission Content based on active tab */}
-            <View style={styles.permissionContent}>
-              {activePermissionTab === 'overlay' && (
-                <View style={styles.permissionTabContent}>
-                  <Text style={styles.permissionTabContentTitle}>Screen Overlay Permission</Text>
-                  <Text style={styles.permissionTabContentDescription}>
-                    Rideshare Sniper needs to display indicators over your rideshare app. This permission allows us to show the green crosshair, yellow warning, or red X directly on your screen while you're using Uber or Lyft.
-                  </Text>
-                  <View style={styles.permissionToggleContainer}>
-                    <Text style={styles.permissionToggleText}>
-                      {screenOverlayPermission ? "Permission Granted" : "Grant Permission"}
-                    </Text>
-                    <ToggleSwitch
-                      value={screenOverlayPermission}
-                      onValueChange={setScreenOverlayPermission}
-                    />
-                  </View>
-                  {!screenOverlayPermission && (
-                    <Text style={styles.permissionRequiredText}>
-                      * This permission is required to continue
-                    </Text>
-                  )}
-                </View>
-              )}
-              
-              {activePermissionTab === 'notification' && (
-                <View style={styles.permissionTabContent}>
-                  <Text style={styles.permissionTabContentTitle}>Notification Access</Text>
-                  <Text style={styles.permissionTabContentDescription}>
-                    Rideshare Sniper needs to detect incoming trip requests from Uber and Lyft. This permission allows us to analyze notifications to identify trip details and provide real-time recommendations.
-                  </Text>
-                  <View style={styles.permissionToggleContainer}>
-                    <Text style={styles.permissionToggleText}>
-                      {notificationPermission ? "Permission Granted" : "Grant Permission"}
-                    </Text>
-                    <ToggleSwitch
-                      value={notificationPermission}
-                      onValueChange={setNotificationPermission}
-                    />
-                  </View>
-                  {!notificationPermission && (
-                    <Text style={styles.permissionRequiredText}>
-                      * This permission is required to continue
-                    </Text>
-                  )}
-                </View>
-              )}
-              
-              {activePermissionTab === 'location' && (
-                <View style={styles.permissionTabContent}>
-                  <Text style={styles.permissionTabContentTitle}>Location Access</Text>
-                  <Text style={styles.permissionTabContentDescription}>
-                    Rideshare Sniper needs your location to calculate accurate distances for pickup and trip evaluation. We only use your location while the app is active and never share it with third parties.
-                  </Text>
-                  <View style={styles.permissionToggleContainer}>
-                    <Text style={styles.permissionToggleText}>
-                      {locationPermission ? "Permission Granted" : "Grant Permission"}
-                    </Text>
-                    <ToggleSwitch
-                      value={locationPermission}
-                      onValueChange={setLocationPermission}
-                    />
-                  </View>
-                  {!locationPermission && (
-                    <Text style={styles.permissionRequiredText}>
-                      * This permission is required to continue
-                    </Text>
-                  )}
-                </View>
-              )}
-            </View>
-            
-            {/* Permission Status Indicators */}
-            <View style={styles.permissionStatusContainer}>
-              <View style={styles.permissionStatusItem}>
-                <View style={[
-                  styles.permissionStatusDot,
-                  screenOverlayPermission ? styles.permissionStatusDotGranted : styles.permissionStatusDotDenied
-                ]} />
-                <Text style={styles.permissionStatusText}>Overlay</Text>
+            <View style={styles.permissionItem}>
+              <View style={styles.permissionHeader}>
+                <MapPin size={20} color={colors.primary} />
+                <Text style={styles.permissionTitle}>Location</Text>
+                <ToggleSwitch
+                  value={locationPermission}
+                  onValueChange={setLocationPermissionLocal}
+                />
               </View>
-              
-              <View style={styles.permissionStatusItem}>
-                <View style={[
-                  styles.permissionStatusDot,
-                  notificationPermission ? styles.permissionStatusDotGranted : styles.permissionStatusDotDenied
-                ]} />
-                <Text style={styles.permissionStatusText}>Notifications</Text>
-              </View>
-              
-              <View style={styles.permissionStatusItem}>
-                <View style={[
-                  styles.permissionStatusDot,
-                  locationPermission ? styles.permissionStatusDotGranted : styles.permissionStatusDotDenied
-                ]} />
-                <Text style={styles.permissionStatusText}>Location</Text>
-              </View>
+              <Text style={styles.permissionDescription}>
+                Calculate accurate distances for pickup and trip evaluation
+              </Text>
             </View>
             
             <View style={styles.infoPanel}>
@@ -774,7 +355,7 @@ export default function OnboardingScreen() {
               </Text>
             </View>
             
-            {(!screenOverlayPermission || !notificationPermission || !locationPermission) && (
+            {(!overlayPermission || !notificationPermission || !locationPermission) && (
               <View style={styles.permissionWarning}>
                 <AlertTriangle size={20} color={colors.warning} />
                 <Text style={styles.permissionWarningText}>
@@ -823,21 +404,21 @@ export default function OnboardingScreen() {
             <Pressable 
               style={[
                 styles.nextButton, 
-                (currentStep === 5 && (!screenOverlayPermission || !notificationPermission || !locationPermission)) ? 
+                (currentStep === 4 && (!overlayPermission || !notificationPermission || !locationPermission)) ? 
                   styles.nextButtonDisabled : {}
               ]} 
               onPress={handleNext}
-              disabled={currentStep === 5 && (!screenOverlayPermission || !notificationPermission || !locationPermission)}
+              disabled={currentStep === 4 && (!overlayPermission || !notificationPermission || !locationPermission)}
             >
               <Text style={styles.nextButtonText}>
-                {currentStep < 5 ? 'NEXT' : 'COMPLETE SETUP'}
+                {currentStep < 4 ? 'NEXT' : 'COMPLETE SETUP'}
               </Text>
               <ChevronRight size={20} color={colors.textPrimary} />
             </Pressable>
           </View>
           
           <View style={styles.progressContainer}>
-            {[0, 1, 2, 3, 4, 5].map((step) => (
+            {[0, 1, 2, 3, 4].map((step) => (
               <View 
                 key={step}
                 style={[
@@ -1051,49 +632,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 20,
   },
-  // New filter tip box
-  filterTipBox: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-  },
-  filterTipTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  filterTipText: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    lineHeight: 20,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  settingTextContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  settingLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  settingDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
   permissionItem: {
     backgroundColor: colors.surface,
     borderRadius: 12,
@@ -1102,40 +640,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  permissionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
   permissionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 8,
+    flex: 1,
+    marginLeft: 12,
   },
   permissionDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  // New permission toggle styles
-  permissionToggleItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  permissionTextContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  permissionToggleLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  permissionToggleDescription: {
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
@@ -1153,22 +671,6 @@ const styles = StyleSheet.create({
     color: colors.warning,
     marginLeft: 8,
     flex: 1,
-  },
-  // Android-specific permission container
-  permissionsContainer: {
-    marginTop: 24,
-    marginBottom: 24,
-  },
-  permissionsTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  permissionsSubtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    marginBottom: 16,
   },
   footer: {
     position: 'absolute',
@@ -1240,13 +742,6 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
   skipButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1258,100 +753,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginRight: 4,
-  },
-  // New permission tab styles
-  permissionTabs: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  permissionTab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    gap: 8,
-  },
-  permissionTabActive: {
-    backgroundColor: colors.primary,
-  },
-  permissionTabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textSecondary,
-  },
-  permissionTabTextActive: {
-    color: colors.textPrimary,
-    fontWeight: 'bold',
-  },
-  permissionContent: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  permissionTabContent: {
-    gap: 12,
-  },
-  permissionTabContentTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  permissionTabContentDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  permissionToggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
-  },
-  permissionToggleText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  permissionRequiredText: {
-    fontSize: 14,
-    color: colors.warning,
-    fontStyle: 'italic',
-  },
-  permissionStatusContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 24,
-  },
-  permissionStatusItem: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  permissionStatusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  permissionStatusDotGranted: {
-    backgroundColor: colors.primary,
-  },
-  permissionStatusDotDenied: {
-    backgroundColor: colors.secondary,
-  },
-  permissionStatusText: {
-    fontSize: 12,
-    color: colors.textSecondary,
   },
 });

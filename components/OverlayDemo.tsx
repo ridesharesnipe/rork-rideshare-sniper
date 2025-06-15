@@ -20,7 +20,6 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
   
   // Position state for draggable elements with initial default positions
   const [tacticalPanelPosition, setTacticalPanelPosition] = useState<Position>({ x: 0, y: 0 });
-  const [minimalIndicatorPosition, setMinimalIndicatorPosition] = useState<Position>({ x: 0, y: 0 });
   const [acceptOverlayPosition, setAcceptOverlayPosition] = useState<Position>({ x: 0, y: 0 });
   const [rejectXPosition, setRejectXPosition] = useState<Position>({ x: 0, y: 0 });
   
@@ -32,7 +31,6 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
         if (savedPositions) {
           const positions = JSON.parse(savedPositions);
           setTacticalPanelPosition(positions.tacticalPanel || { x: 0, y: 0 });
-          setMinimalIndicatorPosition(positions.minimalIndicator || { x: 0, y: 0 });
           setAcceptOverlayPosition(positions.acceptOverlay || { x: 0, y: 0 });
           setRejectXPosition(positions.rejectX || { x: 0, y: 0 });
         }
@@ -49,7 +47,6 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
       try {
         const positions = {
           tacticalPanel: tacticalPanelPosition,
-          minimalIndicator: minimalIndicatorPosition,
           acceptOverlay: acceptOverlayPosition,
           rejectX: rejectXPosition,
         };
@@ -59,7 +56,7 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
       }
     };
     savePositions();
-  }, [tacticalPanelPosition, minimalIndicatorPosition, acceptOverlayPosition, rejectXPosition]);
+  }, [tacticalPanelPosition, acceptOverlayPosition, rejectXPosition]);
   
   // Create pan responders for each draggable element
   const tacticalPanelPanResponder = PanResponder.create({
@@ -68,20 +65,6 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
       setTacticalPanelPosition({
         x: tacticalPanelPosition.x + gestureState.dx,
         y: tacticalPanelPosition.y + gestureState.dy,
-      });
-    },
-    onPanResponderRelease: () => {
-      // Reset auto-hide timer when user interacts with overlay
-      handleInteraction();
-    },
-  });
-  
-  const minimalIndicatorPanResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, gestureState) => {
-      setMinimalIndicatorPosition({
-        x: minimalIndicatorPosition.x + gestureState.dx,
-        y: minimalIndicatorPosition.y + gestureState.dy,
       });
     },
     onPanResponderRelease: () => {
@@ -251,23 +234,6 @@ export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProp
               <Text style={styles.timer}>8s</Text>
             </View>
           </Animated.View>
-          
-          {/* Minimal Mode Indicator - Draggable */}
-          <Animated.View 
-            style={[
-              styles.minimalIndicator,
-              recommendation === 'accept' ? styles.minimalIndicatorAccept :
-              recommendation === 'consider' ? styles.minimalIndicatorConsider :
-              styles.minimalIndicatorReject,
-              { 
-                transform: [
-                  { translateX: minimalIndicatorPosition.x },
-                  { translateY: minimalIndicatorPosition.y }
-                ] 
-              }
-            ]}
-            {...minimalIndicatorPanResponder.panHandlers}
-          />
           
           {/* Action Button Overlays */}
           <Animated.View 
@@ -612,26 +578,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: colors.textSecondary,
-  },
-  minimalIndicator: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.background,
-    zIndex: 100,
-  },
-  minimalIndicatorAccept: {
-    backgroundColor: colors.primary,
-  },
-  minimalIndicatorConsider: {
-    backgroundColor: colors.warning,
-  },
-  minimalIndicatorReject: {
-    backgroundColor: colors.secondary,
   },
   buttonOverlay: {
     alignItems: 'center',

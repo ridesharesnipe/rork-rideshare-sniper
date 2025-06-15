@@ -37,14 +37,13 @@ export default function StartSniperButton() {
       // If permissions are not granted, show an alert to inform the user
       Alert.alert(
         "Permissions Required",
-        "Please grant all necessary permissions before starting the sniper. You will be directed to settings.",
+        "Please grant all necessary permissions before starting the sniper. Go to Settings to check permission status or replay the onboarding tutorial.",
         [
           { 
             text: "Go to Settings", 
             onPress: () => {
-              // Here you would navigate to settings screen
-              // For now, we'll just show a message
-              Alert.alert("Navigation", "Please navigate to Settings tab to grant permissions.");
+              // Navigate to settings would happen here
+              console.log("Navigate to Settings tab");
             }
           },
           {
@@ -106,7 +105,9 @@ export default function StartSniperButton() {
           <View style={styles.infoContainer}>
             <AlertTriangle size={14} color={colors.textSecondary} />
             <Text style={styles.infoText}>
-              Launches Uber with overlay
+              {areAllPermissionsGranted() 
+                ? "Launches Uber with overlay" 
+                : "Permissions required"}
             </Text>
           </View>
         </Pressable>

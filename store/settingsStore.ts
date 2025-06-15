@@ -9,35 +9,34 @@ interface SettingsState {
   vibrationEnabled: boolean;
   darkMode: boolean;
   batteryOptimization: boolean;
-  autoRejectEnabled: boolean;
-  autoRejectDelay: number;
+  autoHideEnabled: boolean;
   minimalMode: boolean;
   emergencyDisable: boolean;
   
-  // Permission states
+  // Essential permissions only
+  overlayPermissionGranted: boolean;
   locationPermissionGranted: boolean;
   notificationPermissionGranted: boolean;
-  overlayPermissionGranted: boolean;
-  batteryOptimizationDisabled: boolean;
   
   setDriverStatus: (status: DriverStatus) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setVibrationEnabled: (enabled: boolean) => void;
   setDarkMode: (enabled: boolean) => void;
   setBatteryOptimization: (enabled: boolean) => void;
-  setAutoRejectEnabled: (enabled: boolean) => void;
-  setAutoRejectDelay: (delay: number) => void;
+  setAutoHideEnabled: (enabled: boolean) => void;
   setMinimalMode: (enabled: boolean) => void;
   setEmergencyDisable: (enabled: boolean) => void;
   
-  // Permission setters
+  // Essential permission setters
+  setOverlayPermission: (granted: boolean) => void;
   setLocationPermission: (granted: boolean) => void;
   setNotificationPermission: (granted: boolean) => void;
-  setOverlayPermission: (granted: boolean) => void;
-  setBatteryOptimizationDisabled: (disabled: boolean) => void;
   
   // Check if all required permissions are granted
   areAllPermissionsGranted: () => boolean;
+  
+  // Reset all permissions (for troubleshooting)
+  resetPermissions: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -48,16 +47,14 @@ export const useSettingsStore = create<SettingsState>()(
       vibrationEnabled: true,
       darkMode: true,
       batteryOptimization: true,
-      autoRejectEnabled: false,
-      autoRejectDelay: 5,
+      autoHideEnabled: true,
       minimalMode: false,
       emergencyDisable: false,
       
-      // Permission states - default to false
+      // Essential permissions - default to false
+      overlayPermissionGranted: false,
       locationPermissionGranted: false,
       notificationPermissionGranted: false,
-      overlayPermissionGranted: false,
-      batteryOptimizationDisabled: false,
       
       setDriverStatus: (status) => {
         set({ driverStatus: status });
@@ -84,14 +81,9 @@ export const useSettingsStore = create<SettingsState>()(
         console.log(`Battery optimization ${enabled ? 'enabled' : 'disabled'}`);
       },
       
-      setAutoRejectEnabled: (enabled) => {
-        set({ autoRejectEnabled: enabled });
-        console.log(`Auto-reject ${enabled ? 'enabled' : 'disabled'}`);
-      },
-      
-      setAutoRejectDelay: (delay) => {
-        set({ autoRejectDelay: delay });
-        console.log(`Auto-reject delay set to: ${delay} seconds`);
+      setAutoHideEnabled: (enabled) => {
+        set({ autoHideEnabled: enabled });
+        console.log(`Auto-hide overlay ${enabled ? 'enabled' : 'disabled'}`);
       },
       
       setMinimalMode: (enabled) => {
@@ -104,7 +96,12 @@ export const useSettingsStore = create<SettingsState>()(
         console.log(`Emergency disable ${enabled ? 'enabled' : 'disabled'}`);
       },
       
-      // Permission setters
+      // Essential permission setters
+      setOverlayPermission: (granted) => {
+        set({ overlayPermissionGranted: granted });
+        console.log(`Overlay permission ${granted ? 'granted' : 'denied'}`);
+      },
+      
       setLocationPermission: (granted) => {
         set({ locationPermissionGranted: granted });
         console.log(`Location permission ${granted ? 'granted' : 'denied'}`);
@@ -115,28 +112,27 @@ export const useSettingsStore = create<SettingsState>()(
         console.log(`Notification permission ${granted ? 'granted' : 'denied'}`);
       },
       
-      setOverlayPermission: (granted) => {
-        set({ overlayPermissionGranted: granted });
-        console.log(`Overlay permission ${granted ? 'granted' : 'denied'}`);
-      },
-      
-      setBatteryOptimizationDisabled: (disabled) => {
-        set({ batteryOptimizationDisabled: disabled });
-        console.log(`Battery optimization ${disabled ? 'disabled' : 'enabled'}`);
-      },
-      
       // Check if all required permissions are granted
       areAllPermissionsGranted: () => {
         const { 
+          overlayPermissionGranted,
           locationPermissionGranted,
-          notificationPermissionGranted,
-          overlayPermissionGranted
+          notificationPermissionGranted
         } = get();
         
-        // Battery optimization is optional, so we don't include it here
-        return locationPermissionGranted && 
-               notificationPermissionGranted && 
-               overlayPermissionGranted;
+        return overlayPermissionGranted && 
+               locationPermissionGranted && 
+               notificationPermissionGranted;
+      },
+      
+      // Reset all permissions (for troubleshooting)
+      resetPermissions: () => {
+        set({
+          overlayPermissionGranted: false,
+          locationPermissionGranted: false,
+          notificationPermissionGranted: false,
+        });
+        console.log('All permissions reset');
       }
     }),
     {
