@@ -29,10 +29,12 @@ export default function Index() {
   useEffect(() => {
     // Only proceed if both splash timer is complete AND auth is initialized
     if (!splashTimerComplete || !isInitialized) {
+      console.log(`⏳ Waiting... Splash: ${splashTimerComplete}, Auth: ${isInitialized}`);
       return;
     }
 
     console.log('🔄 Splash complete and auth initialized, navigating...');
+    console.log('🔍 Auth status:', { isAuthenticated, isInitialized });
     
     // Navigate based on authentication status
     if (isAuthenticated) {

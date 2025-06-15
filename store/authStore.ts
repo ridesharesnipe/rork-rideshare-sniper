@@ -166,8 +166,8 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 800));
+          // Simulate network delay (shorter for demo)
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -286,6 +286,8 @@ export const useAuthStore = create<AuthState>()(
       
       logout: async () => {
         try {
+          console.log('Logging out user...');
+          
           // Remove current user from storage
           await saveCurrentUserToStorage(null);
           
@@ -294,6 +296,8 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             error: null
           });
+          
+          console.log('Logout successful');
         } catch (error: any) {
           console.error('Logout error:', error);
           set({
@@ -417,6 +421,13 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         rememberMe: state.rememberMe,
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('Auth store rehydrated:', state?.isAuthenticated ? 'authenticated' : 'not authenticated');
+        if (state) {
+          // Mark as initialized after rehydration
+          state.isInitialized = true;
+        }
+      },
     }
   )
 );

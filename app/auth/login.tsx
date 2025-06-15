@@ -27,23 +27,35 @@ export default function LoginScreen() {
   // Handle successful authentication
   useEffect(() => {
     if (isAuthenticated && user && isInitialized) {
-      console.log('✅ User authenticated in login screen, showing welcome');
-      // Show welcome back message before redirecting
-      Alert.alert(
-        "Welcome Back!",
-        `Good to see you again, ${user.name}!`,
-        [
-          { 
-            text: "Continue", 
-            onPress: () => {
-              console.log('🔄 Redirecting to tabs from login');
-              router.replace('/(tabs)');
+      console.log('✅ User authenticated in login screen, navigating to tabs');
+      
+      // Reset demo login state if it was in progress
+      if (demoLoginInProgress) {
+        setDemoLoginInProgress(false);
+      }
+      
+      // Navigate directly to tabs without alert for demo login
+      if (demoLoginInProgress || email === 'demo@example.com') {
+        console.log('🔄 Demo login successful, redirecting to tabs');
+        router.replace('/(tabs)');
+      } else {
+        // Show welcome back message for manual login
+        Alert.alert(
+          "Welcome Back!",
+          `Good to see you again, ${user.name}!`,
+          [
+            { 
+              text: "Continue", 
+              onPress: () => {
+                console.log('🔄 Redirecting to tabs from login');
+                router.replace('/(tabs)');
+              }
             }
-          }
-        ]
-      );
+          ]
+        );
+      }
     }
-  }, [isAuthenticated, user, isInitialized, router]);
+  }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress, email]);
   
   // Handle login with entered credentials
   const handleLogin = async () => {
@@ -83,7 +95,7 @@ export default function LoginScreen() {
   
   // Demo credentials auto-login function
   const fillDemoCredentials = async () => {
-    console.log('🔄 Filling demo credentials and auto-login');
+    console.log('🔄 Starting demo credentials auto-login');
     
     // Set demo login in progress flag
     setDemoLoginInProgress(true);
