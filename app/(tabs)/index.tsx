@@ -106,18 +106,7 @@ export default function HomeScreen() {
           </View>
         )}
         
-        <Pressable 
-          style={[
-            styles.powerButton,
-            driverStatus === 'online' ? styles.powerButtonActive : {},
-          ]}
-          onPress={toggleDriverStatus}
-        >
-          <Power size={24} color={colors.textPrimary} />
-          <Text style={styles.powerButtonText}>
-            {driverStatus === 'online' ? 'GO OFFLINE' : 'GO ONLINE'}
-          </Text>
-        </Pressable>
+        {/* Removed GO ONLINE/OFFLINE button as requested */}
       </View>
       
       {/* START SNIPER BUTTON */}
