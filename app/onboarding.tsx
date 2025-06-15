@@ -1,50 +1,28 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Platform } from 'react-native';
 import { useRouter, useNavigation } from 'expo-router';
-import { Shield, DollarSign, AlertTriangle, X, ChevronRight, MapPin, Bell, ChevronLeft, Navigation, Lock } from 'lucide-react-native';
+import { Shield, DollarSign, X, ChevronRight, MapPin, ChevronLeft } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Slider from '@/components/Slider';
-import ToggleSwitch from '@/components/ToggleSwitch';
 import OverlayDemo from '@/components/OverlayDemo';
 import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
-import { useSettingsStore } from '@/store/settingsStore';
 
 export default function OnboardingScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const { updateProfile } = useProfileStore();
   const { isAuthenticated } = useAuthStore();
-  const { 
-    setSniperPermission,
-    isSniperPermissionGranted
-  } = useSettingsStore();
   
   const [currentStep, setCurrentStep] = useState(0);
   const [minFare, setMinFare] = useState(10);
   const [maxPickupDistance, setMaxPickupDistance] = useState(5);
-  const [maxDrivingDistance, setMaxDrivingDistance] = useState(15);
   const [currentDemo, setCurrentDemo] = useState<'accept' | 'reject' | 'consider' | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   
-  // Single permission toggle
-  const [sniperPermission, setSniperPermissionLocal] = useState(false);
-  
   const handleNext = () => {
-    // If we're on the permissions step, check if permission is granted
-    if (currentStep === 3) {
-      if (!sniperPermission) {
-        Alert.alert(
-          "Permission Required",
-          "Please enable the Sniper permission to continue. This is required for the app to function properly.",
-          [{ text: "OK" }]
-        );
-        return;
-      }
-    }
-    
-    if (currentStep < 3) {
+    if (currentStep < 2) {
       setCurrentStep(currentStep + 1);
     } else {
       handleFinish();
@@ -66,14 +44,11 @@ export default function OnboardingScreen() {
     try {
       console.log("Finishing onboarding");
       
-      // Save permission to store
-      setSniperPermission(sniperPermission);
-      
       // Update the default profile with the onboarding settings
       updateProfile('1', {
         minFare,
         maxPickupDistance,
-        maxDrivingDistance,
+        maxDrivingDistance: 15, // Default value
       });
       
       await AsyncStorage.setItem('hasSeenOnboarding', 'true');
@@ -158,7 +133,7 @@ export default function OnboardingScreen() {
                 style={[styles.demoButton, styles.considerDemoButton]}
                 onPress={() => setCurrentDemo('consider')}
               >
-                <AlertTriangle size={24} color={colors.textPrimary} />
+                <X size={24} color={colors.textPrimary} />
                 <Text style={styles.demoButtonText}>Yellow Warning</Text>
                 <Text style={styles.demoButtonSubtext}>Place above trip details</Text>
                 <Text style={styles.viewDemoText}>View Demo</Text>
@@ -255,51 +230,6 @@ export default function OnboardingScreen() {
           </View>
         );
       
-      case 3:
-        return (
-          <View style={styles.stepContainer}>
-            <View style={styles.stepHeader}>
-              <Lock size={28} color={colors.primary} />
-              <Text style={styles.stepTitle}>Permission Required</Text>
-            </View>
-            
-            <Text style={styles.stepDescription}>
-              Rideshare Sniper needs one permission to function properly. This allows the app to display indicators over your rideshare app and help you make quick decisions.
-            </Text>
-            
-            <View style={styles.permissionItem}>
-              <View style={styles.permissionHeader}>
-                <Shield size={20} color={colors.primary} />
-                <Text style={styles.permissionTitle}>Sniper Permission</Text>
-                <ToggleSwitch
-                  value={sniperPermission}
-                  onValueChange={setSniperPermissionLocal}
-                />
-              </View>
-              <Text style={styles.permissionDescription}>
-                Allow Rideshare Sniper to display indicators and help you make quick trip decisions
-              </Text>
-            </View>
-            
-            <View style={styles.infoPanel}>
-              <Text style={styles.infoPanelTitle}>Privacy Commitment</Text>
-              <Text style={styles.infoPanelText}>
-                We never store or transmit your trip data. All processing happens locally on your device.
-                Your privacy and account security are our top priorities.
-              </Text>
-            </View>
-            
-            {!sniperPermission && (
-              <View style={styles.permissionWarning}>
-                <AlertTriangle size={20} color={colors.warning} />
-                <Text style={styles.permissionWarningText}>
-                  This permission is required for Rideshare Sniper to function properly.
-                </Text>
-              </View>
-            )}
-          </View>
-        );
-      
       default:
         return null;
     }
@@ -336,23 +266,18 @@ export default function OnboardingScreen() {
             )}
             
             <Pressable 
-              style={[
-                styles.nextButton, 
-                (currentStep === 3 && !sniperPermission) ? 
-                  styles.nextButtonDisabled : {}
-              ]} 
+              style={styles.nextButton} 
               onPress={handleNext}
-              disabled={currentStep === 3 && !sniperPermission}
             >
               <Text style={styles.nextButtonText}>
-                {currentStep < 3 ? 'NEXT' : 'COMPLETE SETUP'}
+                {currentStep < 2 ? 'NEXT' : 'COMPLETE SETUP'}
               </Text>
               <ChevronRight size={20} color={colors.textPrimary} />
             </Pressable>
           </View>
           
           <View style={styles.progressContainer}>
-            {[0, 1, 2, 3].map((step) => (
+            {[0, 1, 2].map((step) => (
               <View 
                 key={step}
                 style={[
@@ -566,46 +491,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 20,
   },
-  permissionItem: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  permissionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  permissionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    flex: 1,
-    marginLeft: 12,
-  },
-  permissionDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  permissionWarning: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 204, 0, 0.1)',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
-  },
-  permissionWarningText: {
-    fontSize: 14,
-    color: colors.warning,
-    marginLeft: 8,
-    flex: 1,
-  },
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -642,10 +527,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  nextButtonDisabled: {
-    backgroundColor: colors.surfaceLight,
-    opacity: 0.7,
   },
   nextButtonText: {
     fontSize: 16,

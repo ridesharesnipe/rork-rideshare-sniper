@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, Pressable, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch, Pressable, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Edit, Plus, Trash2, Bell, Battery, Eye, Shield, Lock, HelpCircle, AlertTriangle, X, DollarSign, MapPin, Navigation, RefreshCw } from 'lucide-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ChevronRight, Edit, Plus, Trash2, Bell, Battery, Eye, Shield, Lock, HelpCircle, X, DollarSign, MapPin, Navigation } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useProfileStore } from '@/store/profileStore';
@@ -28,8 +27,6 @@ export default function SettingsScreen() {
     setMinimalMode,
     setEmergencyDisable,
     setSniperPermission,
-    isSniperPermissionGranted,
-    resetPermission,
   } = useSettingsStore();
   
   const { profiles, deleteProfile } = useProfileStore();
@@ -37,9 +34,6 @@ export default function SettingsScreen() {
   
   const [showDemo, setShowDemo] = useState(false);
   const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
-  const [isResettingPermission, setIsResettingPermission] = useState(false);
-  
-  // Modal states for Privacy Policy and Terms of Service
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTermsOfService, setShowTermsOfService] = useState(false);
   
@@ -59,110 +53,13 @@ export default function SettingsScreen() {
   };
   
   const handleCompleteLogout = () => {
-    Alert.alert(
-      "Complete Logout",
-      "This will remove all your saved credentials. You'll need to log in again next time.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Complete Logout",
-          onPress: () => {
-            setRememberMe(false);
-            logout();
-          },
-          style: "destructive"
-        }
-      ]
-    );
+    setRememberMe(false);
+    logout();
   };
   
   const handleShowDemo = (type: 'accept' | 'reject' | 'consider') => {
     setDemoType(type);
     setShowDemo(true);
-  };
-  
-  const resetOnboarding = async () => {
-    try {
-      await AsyncStorage.setItem('hasSeenOnboarding', 'false');
-      Alert.alert(
-        "Success", 
-        "Onboarding reset. You'll see the tutorial again on next app start.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace('/onboarding')
-          }
-        ]
-      );
-    } catch (error) {
-      console.error('Failed to reset onboarding:', error);
-      Alert.alert("Error", "Failed to reset onboarding.");
-    }
-  };
-  
-  const resetOverlayPositions = async () => {
-    try {
-      await AsyncStorage.removeItem('overlayPositions');
-      Alert.alert("Success", "Overlay positions have been reset to default.");
-    } catch (error) {
-      console.error('Failed to reset overlay positions:', error);
-      Alert.alert("Error", "Failed to reset overlay positions.");
-    }
-  };
-
-  const handleResetPermission = () => {
-    Alert.alert(
-      "Reset Permission",
-      "This will reset the Sniper permission and clear all related settings. You'll need to go through the setup process again.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Reset",
-          onPress: async () => {
-            setIsResettingPermission(true);
-            try {
-              console.log('🔄 User initiated permission reset...');
-              
-              // Call the simplified reset function
-              await resetPermission();
-              
-              console.log('✅ Permission reset successful');
-              
-              // Show success and navigate to onboarding
-              Alert.alert(
-                "Permission Reset Complete", 
-                "The permission has been reset successfully. You will now go through the setup process again.",
-                [
-                  {
-                    text: "Continue",
-                    onPress: () => {
-                      console.log('🔄 Navigating to onboarding...');
-                      router.replace('/onboarding');
-                    }
-                  }
-                ]
-              );
-            } catch (error) {
-              console.error('❌ Permission reset failed:', error);
-              Alert.alert(
-                "Reset Failed", 
-                "There was an error resetting the permission. Please try restarting the app.",
-                [{ text: "OK" }]
-              );
-            } finally {
-              setIsResettingPermission(false);
-            }
-          },
-          style: "destructive"
-        }
-      ]
-    );
   };
   
   if (showDemo) {
@@ -262,49 +159,23 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>PERMISSION STATUS</Text>
         
-        <View style={styles.permissionStatusItem}>
-          <View style={styles.permissionStatusInfo}>
+        <View style={styles.settingItem}>
+          <View style={styles.settingIconContainer}>
             <Shield size={20} color={colors.textSecondary} />
-            <View style={styles.permissionStatusText}>
-              <Text style={styles.permissionStatusLabel}>Sniper Permission</Text>
-              <Text style={styles.permissionStatusDescription}>
-                Required for Rideshare Sniper to function properly
-              </Text>
-            </View>
           </View>
-          <View style={[
-            styles.permissionStatusIndicator,
-            sniperPermissionGranted ? styles.permissionGranted : styles.permissionDenied
-          ]}>
-            <Text style={styles.permissionStatusIndicatorText}>
-              {sniperPermissionGranted ? 'GRANTED' : 'REQUIRED'}
+          <View style={styles.settingTextContainer}>
+            <Text style={styles.settingLabel}>Sniper Permission</Text>
+            <Text style={styles.settingDescription}>
+              Allow Rideshare Sniper to function properly
             </Text>
           </View>
+          <Switch
+            value={sniperPermissionGranted}
+            onValueChange={setSniperPermission}
+            trackColor={{ false: colors.surfaceLight, true: colors.primary }}
+            thumbColor={colors.textPrimary}
+          />
         </View>
-        
-        {!isSniperPermissionGranted() && (
-          <View style={styles.permissionWarning}>
-            <AlertTriangle size={20} color={colors.warning} />
-            <Text style={styles.permissionWarningText}>
-              Permission required. Rideshare Sniper may not function properly.
-            </Text>
-          </View>
-        )}
-        
-        <Pressable 
-          style={[
-            styles.resetPermissionsButton,
-            isResettingPermission && styles.resetPermissionsButtonDisabled
-          ]} 
-          onPress={handleResetPermission}
-          disabled={isResettingPermission}
-          testID="reset-permissions-button"
-        >
-          <RefreshCw size={16} color="#fff" />
-          <Text style={styles.resetPermissionsButtonText}>
-            {isResettingPermission ? 'RESETTING...' : 'RESET PERMISSION'}
-          </Text>
-        </Pressable>
       </View>
       
       {/* DISPLAY OPTIONS SECTION */}
@@ -485,7 +356,7 @@ export default function SettingsScreen() {
           <View style={styles.helpItemContent}>
             <View style={styles.helpIconContainer}>
               <View style={[styles.demoIcon, styles.yellowIcon]}>
-                <AlertTriangle size={16} color={colors.textPrimary} />
+                <X size={16} color={colors.textPrimary} />
               </View>
             </View>
             <View style={styles.helpTextContainer}>
@@ -512,42 +383,6 @@ export default function SettingsScreen() {
               <Text style={styles.helpItemTitle}>Red X Demo</Text>
               <Text style={styles.helpItemDescription}>
                 Place near the close button for unprofitable trips
-              </Text>
-            </View>
-          </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
-        </Pressable>
-        
-        <Pressable 
-          style={styles.helpItem}
-          onPress={resetOnboarding}
-        >
-          <View style={styles.helpItemContent}>
-            <View style={styles.helpIconContainer}>
-              <HelpCircle size={20} color={colors.primary} />
-            </View>
-            <View style={styles.helpTextContainer}>
-              <Text style={styles.helpItemTitle}>Replay Full Tutorial</Text>
-              <Text style={styles.helpItemDescription}>
-                Go through the complete onboarding process again
-              </Text>
-            </View>
-          </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
-        </Pressable>
-        
-        <Pressable 
-          style={styles.helpItem}
-          onPress={resetOverlayPositions}
-        >
-          <View style={styles.helpItemContent}>
-            <View style={styles.helpIconContainer}>
-              <Navigation size={20} color={colors.primary} />
-            </View>
-            <View style={styles.helpTextContainer}>
-              <Text style={styles.helpItemTitle}>Reset Overlay Positions</Text>
-              <Text style={styles.helpItemDescription}>
-                Reset all overlay elements to their default positions
               </Text>
             </View>
           </View>
@@ -931,85 +766,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    letterSpacing: 0.5,
-  },
-  // Permission status styles
-  permissionStatusItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  permissionStatusInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  permissionStatusText: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  permissionStatusLabel: {
-    fontSize: 16,
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  permissionStatusDescription: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  permissionStatusIndicator: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  permissionGranted: {
-    backgroundColor: colors.primary,
-  },
-  permissionDenied: {
-    backgroundColor: colors.secondary,
-  },
-  permissionStatusIndicatorText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  permissionWarning: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 204, 0, 0.1)',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  permissionWarningText: {
-    fontSize: 14,
-    color: colors.warning,
-    marginLeft: 8,
-    flex: 1,
-  },
-  resetPermissionsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.warning,
-    borderRadius: 8,
-    paddingVertical: 12,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  resetPermissionsButtonDisabled: {
-    opacity: 0.7,
-  },
-  resetPermissionsButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-    marginLeft: 8,
     letterSpacing: 0.5,
   },
   // Original styles

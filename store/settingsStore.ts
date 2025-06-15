@@ -30,9 +30,6 @@ interface SettingsState {
   
   // Check if permission is granted
   isSniperPermissionGranted: () => boolean;
-  
-  // Reset permission (for troubleshooting)
-  resetPermission: () => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -100,40 +97,6 @@ export const useSettingsStore = create<SettingsState>()(
       isSniperPermissionGranted: () => {
         return get().sniperPermissionGranted;
       },
-      
-      // Reset permission (for troubleshooting) - simplified and more reliable
-      resetPermission: async () => {
-        try {
-          console.log('🔄 Starting permission reset...');
-          
-          // Step 1: Reset permission in state immediately
-          set({ sniperPermissionGranted: false });
-          console.log('✅ Permission reset in state');
-          
-          // Step 2: Clear related AsyncStorage items
-          const keysToRemove = [
-            'hasSeenOnboarding',
-            'overlayPositions'
-          ];
-          
-          for (const key of keysToRemove) {
-            try {
-              await AsyncStorage.removeItem(key);
-              console.log(`✅ Removed ${key}`);
-            } catch (error) {
-              console.warn(`⚠️ Failed to remove ${key}:`, error);
-              // Continue with other keys even if one fails
-            }
-          }
-          
-          console.log('✅ Permission reset completed successfully');
-        } catch (error) {
-          console.error('❌ Error during permission reset:', error);
-          // Even if there's an error, ensure the permission is reset in state
-          set({ sniperPermissionGranted: false });
-          throw error;
-        }
-      }
     }),
     {
       name: 'rideshare-sniper-settings',

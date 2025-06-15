@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert, Linking, Platform } from 'react-native';
-import { Play, AlertTriangle } from 'lucide-react-native';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
+import { Play } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { useSettingsStore } from '@/store/settingsStore';
 import * as Haptics from 'expo-haptics';
 import OverlayDemo from './OverlayDemo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Linking from 'expo-linking';
 
 export default function StartSniperButton() {
   const [showOverlayDemo, setShowOverlayDemo] = useState(false);
-  const { driverStatus, setDriverStatus, isSniperPermissionGranted } = useSettingsStore();
+  const { driverStatus, setDriverStatus } = useSettingsStore();
   const [overlayPositions, setOverlayPositions] = useState(null);
   
   // Load saved overlay positions on component mount
@@ -41,34 +42,12 @@ export default function StartSniperButton() {
       setDriverStatus('online');
     }
     
-    // Check if permission is granted
-    if (isSniperPermissionGranted()) {
-      // If permission is granted, automatically launch Uber and show overlay
-      setShowOverlayDemo(true);
-      
-      // Try to launch Uber app if installed (only on native platforms)
-      if (Platform.OS !== 'web') {
-        tryLaunchUber();
-      }
-    } else {
-      // If permission is not granted, show an alert to inform the user
-      Alert.alert(
-        "Permission Required",
-        "Please grant the Sniper permission before starting. This is required for the app to function properly.",
-        [
-          { 
-            text: "Go to Settings", 
-            onPress: () => {
-              // Navigate to settings would happen here
-              console.log("Navigate to Settings tab");
-            }
-          },
-          {
-            text: "Cancel",
-            style: "cancel"
-          }
-        ]
-      );
+    // Show overlay demo
+    setShowOverlayDemo(true);
+    
+    // Try to launch Uber app if installed (only on native platforms)
+    if (Platform.OS !== 'web') {
+      tryLaunchUber();
     }
   };
   
@@ -102,21 +81,9 @@ export default function StartSniperButton() {
         if (uberSupported) {
           Linking.openURL('uber://').catch(err => {
             console.log('Error opening Uber app:', err);
-            // If both Uber apps fail to open, show a message
-            Alert.alert(
-              "Uber App Not Found",
-              "Please install the Uber Driver or Uber app to use this feature.",
-              [{ text: "OK" }]
-            );
           });
         } else {
           console.log('Uber app not installed');
-          // If both Uber apps are not installed, show a message
-          Alert.alert(
-            "Uber App Not Found",
-            "Please install the Uber Driver or Uber app to use this feature.",
-            [{ text: "OK" }]
-          );
         }
       }).catch(err => {
         console.log('Error checking for Uber app:', err);
@@ -143,15 +110,6 @@ export default function StartSniperButton() {
             <Play size={24} color={colors.textPrimary} />
             <Text style={styles.buttonText}>START SNIPER</Text>
           </View>
-          
-          <View style={styles.infoContainer}>
-            <AlertTriangle size={14} color={colors.textSecondary} />
-            <Text style={styles.infoText}>
-              {isSniperPermissionGranted() 
-                ? "Launches Uber with overlay" 
-                : "Permission required"}
-            </Text>
-          </View>
         </Pressable>
       )}
     </>
@@ -177,16 +135,5 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginLeft: 12,
     letterSpacing: 1,
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  infoText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 4,
   },
 });

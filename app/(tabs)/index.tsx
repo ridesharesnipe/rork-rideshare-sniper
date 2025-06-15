@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Power, ChevronRight, Shield, Crosshair, Edit } from 'lucide-react-native';
 import colors from '@/constants/colors';
@@ -9,46 +9,14 @@ import StartSniperButton from '@/components/StartSniperButton';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { driverStatus, setDriverStatus, isSniperPermissionGranted } = useSettingsStore();
+  const { driverStatus, setDriverStatus } = useSettingsStore();
   const { getActiveProfile, activeProfileId } = useProfileStore();
   const { user } = useAuthStore();
-  const [showWelcome, setShowWelcome] = useState(false);
   
   const activeProfile = getActiveProfile();
-  
-  useEffect(() => {
-    // Check if this is the first time the user is seeing the dashboard
-    const checkFirstTimeUser = async () => {
-      try {
-        const hasSeenDashboard = await AsyncStorage.getItem(`hasSeenDashboard-${user?.id}`);
-        if (!hasSeenDashboard && user) {
-          setShowWelcome(true);
-          // Show welcome alert
-          Alert.alert(
-            `Welcome, ${user.name}!`,
-            "Thank you for joining Rideshare Sniper. We're excited to help you maximize your earnings and safety on the road.",
-            [
-              { 
-                text: "Get Started", 
-                onPress: async () => {
-                  await AsyncStorage.setItem(`hasSeenDashboard-${user.id}`, 'true');
-                  setShowWelcome(false);
-                }
-              }
-            ]
-          );
-        }
-      } catch (error) {
-        console.error("Error checking first time user:", error);
-      }
-    };
-    
-    checkFirstTimeUser();
-  }, [user]);
   
   const toggleDriverStatus = () => {
     setDriverStatus(driverStatus === 'online' ? 'offline' : 'online');
@@ -65,11 +33,6 @@ export default function HomeScreen() {
         params: { id: activeProfileId },
       });
     }
-  };
-  
-  const resetOnboarding = async () => {
-    await AsyncStorage.setItem('hasSeenOnboarding', 'false');
-    router.replace('/onboarding');
   };
   
   return (
@@ -92,22 +55,6 @@ export default function HomeScreen() {
       <View style={styles.taglineContainer}>
         <Text style={styles.tagline}>PRECISION. PROFIT. PROTECTION.</Text>
       </View>
-      
-      {/* PERMISSION STATUS ALERT */}
-      {!isSniperPermissionGranted() && (
-        <View style={styles.permissionAlert}>
-          <Text style={styles.permissionAlertTitle}>⚠️ PERMISSION REQUIRED</Text>
-          <Text style={styles.permissionAlertText}>
-            Sniper permission is required. Rideshare Sniper may not function properly.
-          </Text>
-          <Pressable 
-            style={styles.permissionAlertButton}
-            onPress={() => router.push('/(tabs)/settings')}
-          >
-            <Text style={styles.permissionAlertButtonText}>CHECK SETTINGS</Text>
-          </Pressable>
-        </View>
-      )}
       
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -219,10 +166,6 @@ export default function HomeScreen() {
             <Text style={styles.infoBold}>Red X:</Text> Unprofitable trips to reject
           </Text>
         </View>
-        
-        <Pressable style={styles.tutorialButton} onPress={resetOnboarding}>
-          <Text style={styles.tutorialButtonText}>REPLAY TUTORIAL</Text>
-        </Pressable>
       </View>
     </ScrollView>
   );
@@ -282,40 +225,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textSecondary,
     letterSpacing: 1,
-  },
-  permissionAlert: {
-    backgroundColor: 'rgba(255, 204, 0, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.warning,
-  },
-  permissionAlertTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.warning,
-    marginBottom: 8,
-  },
-  permissionAlertText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  permissionAlertButton: {
-    backgroundColor: colors.warning,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    alignSelf: 'flex-start',
-  },
-  permissionAlertButtonText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    letterSpacing: 0.5,
   },
   card: {
     backgroundColor: colors.surface,
@@ -468,18 +377,5 @@ const styles = StyleSheet.create({
   infoBold: {
     fontWeight: 'bold',
     color: colors.textPrimary,
-  },
-  tutorialButton: {
-    backgroundColor: colors.buttonBackground,
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  tutorialButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    letterSpacing: 0.5,
   },
 });
