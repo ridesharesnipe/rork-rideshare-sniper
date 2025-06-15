@@ -155,9 +155,9 @@ export default function SettingsScreen() {
         ))}
       </View>
       
-      {/* PERMISSION STATUS SECTION */}
+      {/* PERMISSION SECTION - Simplified to just one toggle */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>PERMISSION STATUS</Text>
+        <Text style={styles.sectionTitle}>PERMISSION</Text>
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
@@ -383,6 +383,24 @@ export default function SettingsScreen() {
               <Text style={styles.helpItemTitle}>Red X Demo</Text>
               <Text style={styles.helpItemDescription}>
                 Place near the close button for unprofitable trips
+              </Text>
+            </View>
+          </View>
+          <ChevronRight size={20} color={colors.textSecondary} />
+        </Pressable>
+        
+        <Pressable 
+          style={styles.helpItem}
+          onPress={() => router.push('/onboarding')}
+        >
+          <View style={styles.helpItemContent}>
+            <View style={styles.helpIconContainer}>
+              <HelpCircle size={20} color={colors.textSecondary} />
+            </View>
+            <View style={styles.helpTextContainer}>
+              <Text style={styles.helpItemTitle}>Full Tutorial</Text>
+              <Text style={styles.helpItemDescription}>
+                Go through the complete onboarding tutorial again
               </Text>
             </View>
           </View>

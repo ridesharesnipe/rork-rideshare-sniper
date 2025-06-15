@@ -10,7 +10,7 @@ import * as Linking from 'expo-linking';
 
 export default function StartSniperButton() {
   const [showOverlayDemo, setShowOverlayDemo] = useState(false);
-  const { driverStatus, setDriverStatus } = useSettingsStore();
+  const { driverStatus, setDriverStatus, sniperPermissionGranted } = useSettingsStore();
   const [overlayPositions, setOverlayPositions] = useState(null);
   
   // Load saved overlay positions on component mount
@@ -29,6 +29,12 @@ export default function StartSniperButton() {
   }, []);
   
   const handleStartSniper = async () => {
+    // Check if sniper permission is granted
+    if (!sniperPermissionGranted) {
+      alert("Please enable Sniper Permission in Settings to use this feature.");
+      return;
+    }
+    
     // Vibration feedback - only on native platforms
     if (Platform.OS !== 'web') {
       try {
