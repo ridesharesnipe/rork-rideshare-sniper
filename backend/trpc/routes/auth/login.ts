@@ -32,8 +32,11 @@ export default publicProcedure
     try {
       console.log('🔄 Backend login attempt for:', input.email);
       
+      // Normalize email to lowercase for case-insensitive comparison
+      const normalizedEmail = input.email.toLowerCase();
+      
       // Validate email format first
-      if (!input.email.includes('@') || !input.email.includes('.')) {
+      if (!normalizedEmail.includes('@') || !normalizedEmail.includes('.')) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Please enter a valid email address",
@@ -60,7 +63,7 @@ export default publicProcedure
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Check if user exists
-      const user = mockUsers[input.email.toLowerCase()];
+      const user = mockUsers[normalizedEmail];
       
       if (!user) {
         throw new TRPCError({

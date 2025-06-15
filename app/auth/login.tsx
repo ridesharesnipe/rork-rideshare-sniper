@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react-native';
@@ -16,6 +16,9 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [demoLoginInProgress, setDemoLoginInProgress] = useState(false);
   
+  // Use a ref to track if navigation has been triggered
+  const hasNavigated = useRef(false);
+  
   // Initialize auth store when component mounts if needed
   useEffect(() => {
     if (!isInitialized) {
@@ -26,8 +29,12 @@ export default function LoginScreen() {
   
   // Handle successful authentication
   useEffect(() => {
-    if (isAuthenticated && user && isInitialized) {
+    // Only proceed if authenticated, initialized, and navigation hasn't happened yet
+    if (isAuthenticated && user && isInitialized && !hasNavigated.current) {
       console.log('✅ User authenticated in login screen, navigating to tabs');
+      
+      // Set the navigation flag to prevent multiple navigations
+      hasNavigated.current = true;
       
       // Reset demo login state if it was in progress
       if (demoLoginInProgress) {
@@ -57,6 +64,13 @@ export default function LoginScreen() {
       );
     }
   }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress, email]);
+  
+  // Reset navigation flag when authentication state changes to false
+  useEffect(() => {
+    if (!isAuthenticated) {
+      hasNavigated.current = false;
+    }
+  }, [isAuthenticated]);
   
   // Handle login with entered credentials
   const handleLogin = async () => {
@@ -102,6 +116,9 @@ export default function LoginScreen() {
   // Demo credentials auto-login function
   const fillDemoCredentials = async () => {
     console.log('🔄 Starting demo credentials auto-login');
+    
+    // Reset navigation flag to allow navigation
+    hasNavigated.current = false;
     
     // Set demo login in progress flag
     setDemoLoginInProgress(true);

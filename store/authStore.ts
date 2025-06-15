@@ -140,6 +140,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: error?.message || "Network error. Please check your connection and try again."
           });
+          throw error; // Re-throw to allow component to handle it
         }
       },
       
@@ -188,6 +189,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: error?.message || "Network error. Please check your connection and try again."
           });
+          throw error; // Re-throw to allow component to handle it
         }
       },
       
@@ -214,6 +216,7 @@ export const useAuthStore = create<AuthState>()(
             error: error?.message || "Network error during logout. Please try again.",
             isLoading: false
           });
+          throw error; // Re-throw to allow component to handle it
         }
       },
       
@@ -267,6 +270,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: error?.message || "Network error. Please check your connection and try again."
           });
+          throw error; // Re-throw to allow component to handle it
         }
       },
       
@@ -306,7 +310,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: error?.message || "Network error. Please check your connection and try again."
           });
-          return null;
+          throw error; // Re-throw to allow component to handle it
         }
       },
     }),
