@@ -140,6 +140,7 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error: any) {
           console.error('Auth initialization error:', error);
+          // Even on error, mark as initialized to prevent getting stuck
           set({
             isLoading: false,
             isInitialized: true,
@@ -167,7 +168,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay (shorter for demo)
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 300)); // Reduced from 500ms
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -233,7 +234,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 800));
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -333,7 +334,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 800));
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -385,7 +386,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 800));
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           // For demo purposes, accept any 6-digit code
           if (verificationCode !== "123456") {

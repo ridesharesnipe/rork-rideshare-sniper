@@ -127,6 +127,7 @@ export const useSettingsStore = create<SettingsState>()(
       
       // Reset all permissions (for troubleshooting)
       resetPermissions: () => {
+        console.log('Resetting all permissions...');
         set({
           overlayPermissionGranted: false,
           locationPermissionGranted: false,

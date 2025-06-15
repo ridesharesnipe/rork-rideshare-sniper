@@ -38,22 +38,23 @@ export default function LoginScreen() {
       if (demoLoginInProgress || email === 'demo@example.com') {
         console.log('🔄 Demo login successful, redirecting to tabs');
         router.replace('/(tabs)');
-      } else {
-        // Show welcome back message for manual login
-        Alert.alert(
-          "Welcome Back!",
-          `Good to see you again, ${user.name}!`,
-          [
-            { 
-              text: "Continue", 
-              onPress: () => {
-                console.log('🔄 Redirecting to tabs from login');
-                router.replace('/(tabs)');
-              }
-            }
-          ]
-        );
+        return;
       }
+      
+      // Show welcome back message for manual login
+      Alert.alert(
+        "Welcome Back!",
+        `Good to see you again, ${user.name}!`,
+        [
+          { 
+            text: "Continue", 
+            onPress: () => {
+              console.log('🔄 Redirecting to tabs from login');
+              router.replace('/(tabs)');
+            }
+          }
+        ]
+      );
     }
   }, [isAuthenticated, user, isInitialized, router, demoLoginInProgress, email]);
   

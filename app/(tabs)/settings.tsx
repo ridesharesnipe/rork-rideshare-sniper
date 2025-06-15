@@ -113,6 +113,10 @@ export default function SettingsScreen() {
           onPress: () => {
             resetPermissions();
             Alert.alert("Permissions Reset", "All permissions have been reset. Please go through onboarding again to grant them.");
+            // Force navigation to onboarding after resetting permissions
+            setTimeout(() => {
+              resetOnboarding();
+            }, 500);
           },
           style: "destructive"
         }
@@ -286,8 +290,12 @@ export default function SettingsScreen() {
           </View>
         )}
         
-        <Pressable style={styles.resetPermissionsButton} onPress={handleResetPermissions}>
-          <RefreshCw size={16} color={colors.textSecondary} />
+        <Pressable 
+          style={styles.resetPermissionsButton} 
+          onPress={handleResetPermissions}
+          testID="reset-permissions-button"
+        >
+          <RefreshCw size={16} color="#fff" />
           <Text style={styles.resetPermissionsButtonText}>RESET PERMISSIONS</Text>
         </Pressable>
       </View>
@@ -980,15 +988,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceLight,
+    backgroundColor: colors.warning,
     borderRadius: 8,
     paddingVertical: 12,
-    marginTop: 8,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   resetPermissionsButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textSecondary,
+    color: '#fff',
     marginLeft: 8,
     letterSpacing: 0.5,
   },

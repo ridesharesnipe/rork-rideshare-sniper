@@ -23,13 +23,13 @@ export default function SplashScreen() {
         Animated.sequence([
           Animated.timing(crosshairScale, {
             toValue: 1.1,
-            duration: 800,
+            duration: 400, // Reduced from 800
             useNativeDriver: true,
             easing: Easing.out(Easing.ease),
           }),
           Animated.timing(crosshairScale, {
             toValue: 1,
-            duration: 800,
+            duration: 400, // Reduced from 800
             useNativeDriver: true,
             easing: Easing.out(Easing.ease),
           })
@@ -38,25 +38,25 @@ export default function SplashScreen() {
         // Fade in animations
         Animated.timing(textOpacity, {
           toValue: 1,
-          duration: 500,
+          duration: 300, // Reduced from 500
           useNativeDriver: true,
         }),
         Animated.timing(crosshairOpacity, {
           toValue: 1,
-          duration: 500,
+          duration: 300, // Reduced from 500
           useNativeDriver: true,
         }),
         Animated.timing(taglineOpacity, {
           toValue: 1,
-          duration: 800,
+          duration: 400, // Reduced from 800
           useNativeDriver: true,
-          delay: 200,
+          delay: 100, // Reduced from 200
         }),
         Animated.timing(bylineOpacity, {
           toValue: 1,
-          duration: 800,
+          duration: 400, // Reduced from 800
           useNativeDriver: true,
-          delay: 400,
+          delay: 200, // Reduced from 400
         }),
       ]).start();
       
@@ -65,12 +65,12 @@ export default function SplashScreen() {
     
     console.log('iOS/Web detected, using full animation sequence');
     
-    // iOS and web animation sequence
+    // iOS and web animation sequence - also shortened
     Animated.sequence([
       // Fade in the title
       Animated.timing(textOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 400, // Reduced from 800
         useNativeDriver: true,
         easing: Easing.out(Easing.ease),
       }),
@@ -79,13 +79,13 @@ export default function SplashScreen() {
       Animated.parallel([
         Animated.timing(crosshairOpacity, {
           toValue: 1,
-          duration: 600,
+          duration: 300, // Reduced from 600
           useNativeDriver: true,
           easing: Easing.out(Easing.ease),
         }),
         Animated.timing(crosshairScale, {
           toValue: 1,
-          duration: 1200,
+          duration: 600, // Reduced from 1200
           useNativeDriver: true,
           easing: Easing.out(Easing.ease),
         }),
@@ -94,7 +94,7 @@ export default function SplashScreen() {
       // Fade in the tagline
       Animated.timing(taglineOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 400, // Reduced from 800
         useNativeDriver: true,
         easing: Easing.out(Easing.ease),
       }),
@@ -102,7 +102,7 @@ export default function SplashScreen() {
       // Fade in the byline
       Animated.timing(bylineOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 400, // Reduced from 800
         useNativeDriver: true,
         easing: Easing.out(Easing.ease),
       }),

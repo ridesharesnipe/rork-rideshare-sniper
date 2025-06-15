@@ -14,13 +14,13 @@ export default function Index() {
     initialize();
   }, []);
 
-  // Set up splash screen timer - exactly 8 seconds
+  // Set up splash screen timer - reduced to 4 seconds (was 8 seconds)
   useEffect(() => {
-    console.log('🔄 Starting 8-second splash screen timer...');
+    console.log('🔄 Starting 4-second splash screen timer...');
     const splashTimer = setTimeout(() => {
-      console.log('✅ Splash screen timer complete (8 seconds)');
+      console.log('✅ Splash screen timer complete (4 seconds)');
       setSplashTimerComplete(true);
-    }, 8000);
+    }, 4000); // Reduced from 8000 to 4000
 
     return () => clearTimeout(splashTimer);
   }, []);
@@ -46,6 +46,6 @@ export default function Index() {
     }
   }, [isAuthenticated, isInitialized, splashTimerComplete, router]);
 
-  // Always show splash screen during the 8-second timer
+  // Always show splash screen during the timer
   return <SplashScreen />;
 }
