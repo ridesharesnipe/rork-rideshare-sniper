@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, PanResponder, Dimensions, Alert, Platform } from 'react-native';
-import { X, ChevronRight, DollarSign, MapPin, Clock } from 'lucide-react-native';
+import { X, ChevronRight, DollarSign, MapPin, Clock, ArrowLeft } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -178,7 +178,7 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
               <Text style={styles.instructionNumberText}>2</Text>
             </View>
             <Text style={styles.instructionStepText}>
-              Drag the info panel to a position where it won't block important information.
+              Drag the info panel to a position where it will not block important information.
             </Text>
           </View>
           
@@ -227,6 +227,16 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
           { opacity: fadeAnim }
         ]}
       >
+        {/* Back button */}
+        <Pressable 
+          style={styles.backButton}
+          onPress={handleClose}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <ArrowLeft size={24} color={colors.textPrimary} />
+          <Text style={styles.backButtonText}>Back</Text>
+        </Pressable>
+        
         {/* Close button */}
         <Pressable 
           style={styles.closeOverlayButton}
@@ -337,6 +347,24 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    zIndex: 1000,
+  },
+  backButtonText: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
   closeOverlayButton: {
     position: 'absolute',
     top: 40,
@@ -351,7 +379,7 @@ const styles = StyleSheet.create({
   },
   toggleMinimalButton: {
     position: 'absolute',
-    top: 40,
+    top: 100,
     left: 20,
     paddingVertical: 8,
     paddingHorizontal: 12,

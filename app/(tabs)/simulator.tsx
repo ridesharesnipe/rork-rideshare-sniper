@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Platform } from 'react-native';
-import { Play, Pause, RefreshCw, Info } from 'lucide-react-native';
+import { Play, Pause, RefreshCw, Info, ArrowLeft } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import colors from '@/constants/colors';
 import TripCard from '@/components/TripCard';
 import ProfileSelector from '@/components/ProfileSelector';
@@ -85,6 +86,7 @@ const generateRandomTrip = (): TripRequest => {
 };
 
 export default function SimulatorScreen() {
+  const router = useRouter();
   const [isRunning, setIsRunning] = useState(false);
   const [currentTrip, setCurrentTrip] = useState<TripRequest | null>(null);
   const [remainingTime, setRemainingTime] = useState(15);
@@ -209,6 +211,10 @@ export default function SimulatorScreen() {
     setShowMinimalMode(!showMinimalMode);
   };
   
+  const navigateBack = () => {
+    router.back();
+  };
+  
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -241,7 +247,12 @@ export default function SimulatorScreen() {
       ) : (
         <ScrollView>
           <View style={styles.header}>
+            <Pressable onPress={navigateBack} style={styles.backButton}>
+              <ArrowLeft size={20} color={colors.primary} />
+              <Text style={styles.backButtonText}>Back</Text>
+            </Pressable>
             <Text style={styles.title}>TRIP SIMULATOR</Text>
+            <View style={styles.placeholder} />
           </View>
           
           <View style={styles.card}>
@@ -363,8 +374,7 @@ export default function SimulatorScreen() {
             </View>
             
             <Text style={styles.demoDescription}>
-              See how Rideshare Sniper would appear as an overlay on your rideshare app.
-              Each element can be positioned exactly where you need it.
+              See how Rideshare Sniper would appear as an overlay on your rideshare app. Each element can be positioned exactly where you need it.
             </Text>
             
             <View style={styles.demoButtons}>
@@ -397,10 +407,7 @@ export default function SimulatorScreen() {
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>HOW TO USE THE SIMULATOR</Text>
             <Text style={styles.infoText}>
-              This simulator helps you test your profile settings with random trip requests.
-              Press Start to begin receiving simulated trip requests, then Accept or Reject
-              based on the recommendation. Adjust your profile settings to see how they
-              affect trip evaluations.
+              This simulator helps you test your profile settings with random trip requests. Press Start to begin receiving simulated trip requests, then Accept or Reject based on the recommendation. Adjust your profile settings to see how they affect trip evaluations.
             </Text>
           </View>
         </ScrollView>
@@ -420,6 +427,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: colors.primary,
+    marginLeft: 4,
+  },
+  placeholder: {
+    width: 60, // Match the width of the back button for centering
   },
   title: {
     fontSize: 20,

@@ -144,9 +144,16 @@ export const useAuthStore = create<AuthState>()(
             console.log('Calling login API...');
             
             // Wrap API call in a timeout promise to prevent hanging
-            const loginPromise = trpcClient.auth.login.mutate({
-              email: email.trim().toLowerCase(),
-              password
+            const loginPromise = new Promise(async (resolve, reject) => {
+              try {
+                const response = await trpcClient.auth.login.mutate({
+                  email: email.trim().toLowerCase(),
+                  password
+                });
+                resolve(response);
+              } catch (error) {
+                reject(error);
+              }
             });
             
             // Create a timeout promise
@@ -179,7 +186,8 @@ export const useAuthStore = create<AuthState>()(
             if (apiError.message.includes("timed out")) {
               throw new Error("Login request timed out. Please try again.");
             } else if (apiError.message.includes("Failed to fetch") || 
-                      apiError.message.includes("Network request failed")) {
+                      apiError.message.includes("Network request failed") ||
+                      apiError.message.includes("fetch")) {
               throw new Error("Network connection error. Please check your internet and try again.");
             } else {
               throw new Error(apiError?.message || "Failed to connect to server. Please check your connection.");
@@ -218,10 +226,17 @@ export const useAuthStore = create<AuthState>()(
           });
           
           // Call backend signup endpoint with timeout
-          const signupPromise = trpcClient.auth.signup.mutate({
-            email: email.trim().toLowerCase(),
-            password,
-            name: name.trim()
+          const signupPromise = new Promise(async (resolve, reject) => {
+            try {
+              const response = await trpcClient.auth.signup.mutate({
+                email: email.trim().toLowerCase(),
+                password,
+                name: name.trim()
+              });
+              resolve(response);
+            } catch (error) {
+              reject(error);
+            }
           });
           
           // Race against timeout
@@ -251,7 +266,8 @@ export const useAuthStore = create<AuthState>()(
           if (error.message.includes("timed out")) {
             errorMessage = "Signup request timed out. Please try again.";
           } else if (error.message.includes("Failed to fetch") || 
-                    error.message.includes("Network request failed")) {
+                    error.message.includes("Network request failed") ||
+                    error.message.includes("fetch")) {
             errorMessage = "Network connection error. Please check your internet and try again.";
           } else if (error.message) {
             errorMessage = error.message;
@@ -324,11 +340,18 @@ export const useAuthStore = create<AuthState>()(
           });
           
           // Call backend recovery endpoint with timeout
-          const recoveryPromise = trpcClient.auth.recovery.mutate({
-            recoveryType: "password",
-            email: email.trim().toLowerCase(),
-            resetCode: resetCode.trim(),
-            newPassword
+          const recoveryPromise = new Promise(async (resolve, reject) => {
+            try {
+              const response = await trpcClient.auth.recovery.mutate({
+                recoveryType: "password",
+                email: email.trim().toLowerCase(),
+                resetCode: resetCode.trim(),
+                newPassword
+              });
+              resolve(response);
+            } catch (error) {
+              reject(error);
+            }
           });
           
           // Race against timeout
@@ -353,7 +376,8 @@ export const useAuthStore = create<AuthState>()(
           if (error.message.includes("timed out")) {
             errorMessage = "Recovery request timed out. Please try again.";
           } else if (error.message.includes("Failed to fetch") || 
-                    error.message.includes("Network request failed")) {
+                    error.message.includes("Network request failed") ||
+                    error.message.includes("fetch")) {
             errorMessage = "Network connection error. Please check your internet and try again.";
           } else if (error.message) {
             errorMessage = error.message;
@@ -384,10 +408,17 @@ export const useAuthStore = create<AuthState>()(
           });
           
           // Call backend recovery endpoint with timeout
-          const recoveryPromise = trpcClient.auth.recovery.mutate({
-            recoveryType: "email",
-            phoneNumber: phoneNumber.trim(),
-            verificationCode: verificationCode.trim()
+          const recoveryPromise = new Promise(async (resolve, reject) => {
+            try {
+              const response = await trpcClient.auth.recovery.mutate({
+                recoveryType: "email",
+                phoneNumber: phoneNumber.trim(),
+                verificationCode: verificationCode.trim()
+              });
+              resolve(response);
+            } catch (error) {
+              reject(error);
+            }
           });
           
           // Race against timeout
@@ -414,7 +445,8 @@ export const useAuthStore = create<AuthState>()(
           if (error.message.includes("timed out")) {
             errorMessage = "Recovery request timed out. Please try again.";
           } else if (error.message.includes("Failed to fetch") || 
-                    error.message.includes("Network request failed")) {
+                    error.message.includes("Network request failed") ||
+                    error.message.includes("fetch")) {
             errorMessage = "Network connection error. Please check your internet and try again.";
           } else if (error.message) {
             errorMessage = error.message;

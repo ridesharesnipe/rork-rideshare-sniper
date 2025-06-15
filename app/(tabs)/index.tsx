@@ -102,8 +102,6 @@ export default function HomeScreen() {
             </View>
           </View>
         )}
-        
-        {/* GO ONLINE/OFFLINE button removed as requested */}
       </View>
       
       {/* START SNIPER BUTTON */}

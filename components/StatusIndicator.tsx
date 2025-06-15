@@ -12,7 +12,11 @@ export default function StatusIndicator() {
   // Set driver status to online when user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
+      console.log('User authenticated, setting driver status to online');
       setDriverStatus('online');
+    } else {
+      console.log('User not authenticated, setting driver status to offline');
+      setDriverStatus('offline');
     }
   }, [isAuthenticated, setDriverStatus]);
   
