@@ -1,0 +1,132 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
+import colors from '@/constants/colors';
+
+interface MinimalModeIndicatorProps {
+  recommendation: 'accept' | 'reject' | 'consider';
+  fare: number;
+  pickupDistance: number;
+  dropoffDistance: number;
+}
+
+export default function MinimalModeIndicator({
+  recommendation,
+  fare,
+  pickupDistance,
+  dropoffDistance,
+}: MinimalModeIndicatorProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [animation] = useState(new Animated.Value(0));
+  
+  const toggleExpanded = () => {
+    const toValue = expanded ? 0 : 1;
+    
+    Animated.timing(animation, {
+      toValue,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+    
+    setExpanded(!expanded);
+  };
+  
+  const getIndicatorColor = () => {
+    switch (recommendation) {
+      case 'accept':
+        return colors.primary;
+      case 'consider':
+        return colors.warning;
+      case 'reject':
+        return colors.secondary;
+      default:
+        return colors.textSecondary;
+    }
+  };
+  
+  const panelWidth = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [24, 140],
+  });
+  
+  const panelHeight = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [24, 80],
+  });
+  
+  const contentOpacity = animation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1],
+  });
+  
+  return (
+    <Pressable onPress={toggleExpanded}>
+      <Animated.View 
+        style={[
+          styles.container,
+          { 
+            backgroundColor: getIndicatorColor(),
+            width: panelWidth,
+            height: panelHeight,
+          }
+        ]}
+      >
+        <Animated.View style={[styles.content, { opacity: contentOpacity }]}>
+          <Text style={styles.fareAmount}>${fare.toFixed(2)}</Text>
+          
+          <View style={styles.distanceContainer}>
+            <View style={styles.distanceItem}>
+              <Text style={styles.distanceLabel}>PICKUP</Text>
+              <Text style={styles.distanceValue}>{pickupDistance.toFixed(1)} mi</Text>
+            </View>
+            
+            <View style={styles.distanceItem}>
+              <Text style={styles.distanceLabel}>DROPOFF</Text>
+              <Text style={styles.distanceValue}>{dropoffDistance.toFixed(1)} mi</Text>
+            </View>
+          </View>
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: colors.background,
+  },
+  content: {
+    padding: 8,
+    width: '100%',
+  },
+  fareAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  distanceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  distanceItem: {
+    flex: 1,
+  },
+  distanceLabel: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    opacity: 0.8,
+    marginBottom: 2,
+    letterSpacing: 0.5,
+  },
+  distanceValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+});
