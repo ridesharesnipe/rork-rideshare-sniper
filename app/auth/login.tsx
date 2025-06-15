@@ -16,7 +16,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [demoLoginInProgress, setDemoLoginInProgress] = useState(false);
   
-  // Initialize auth store when component mounts
+  // Initialize auth store when component mounts if needed
   useEffect(() => {
     if (!isInitialized) {
       console.log('🔄 Initializing auth from login screen...');
@@ -24,6 +24,7 @@ export default function LoginScreen() {
     }
   }, [isInitialized, initialize]);
   
+  // Handle successful authentication
   useEffect(() => {
     if (isAuthenticated && user && isInitialized) {
       console.log('✅ User authenticated in login screen, showing welcome');
@@ -42,8 +43,9 @@ export default function LoginScreen() {
         ]
       );
     }
-  }, [isAuthenticated, user, isInitialized]);
+  }, [isAuthenticated, user, isInitialized, router]);
   
+  // Handle login with entered credentials
   const handleLogin = async () => {
     console.log('🔄 Login attempt for:', email);
     clearError();
@@ -79,11 +81,13 @@ export default function LoginScreen() {
     setShowPassword(!showPassword);
   };
   
-  const fillDemoCredentials = () => {
+  // Demo credentials auto-login function
+  const fillDemoCredentials = async () => {
     console.log('🔄 Filling demo credentials and auto-login');
     
     // Set demo login in progress flag
     setDemoLoginInProgress(true);
+    clearError();
     
     // Fill in the credentials
     const demoEmail = 'demo@example.com';
@@ -92,18 +96,16 @@ export default function LoginScreen() {
     setEmail(demoEmail);
     setPassword(demoPassword);
     
-    // Directly attempt login with demo credentials instead of relying on state updates
-    setTimeout(() => {
+    try {
+      // Direct login with demo credentials
       console.log('🔄 Auto-login with demo credentials');
-      login(demoEmail, demoPassword)
-        .then(() => {
-          console.log('✅ Demo login successful');
-        })
-        .catch(error => {
-          console.error('❌ Demo login error:', error);
-          setDemoLoginInProgress(false);
-        });
-    }, 500);
+      await login(demoEmail, demoPassword);
+      console.log('✅ Demo login successful');
+      // Navigation is handled by the useEffect that watches isAuthenticated
+    } catch (error) {
+      console.error('❌ Demo login error:', error);
+      setDemoLoginInProgress(false);
+    }
   };
   
   // Show loading while initializing

@@ -106,6 +106,7 @@ export const useAuthStore = create<AuthState>()(
       isInitialized: false,
       
       initialize: async () => {
+        // Skip if already initialized
         if (get().isInitialized) {
           console.log('Auth already initialized, skipping');
           return;
@@ -166,7 +167,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 800));
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -232,7 +233,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 800));
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -328,7 +329,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 800));
           
           // Get users from storage
           const users = await getUsersFromStorage();
@@ -380,7 +381,7 @@ export const useAuthStore = create<AuthState>()(
           }
           
           // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 800));
           
           // For demo purposes, accept any 6-digit code
           if (verificationCode !== "123456") {

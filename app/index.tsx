@@ -6,53 +6,44 @@ import SplashScreen from '@/components/SplashScreen';
 export default function Index() {
   const router = useRouter();
   const { isAuthenticated, isInitialized, initialize } = useAuthStore();
-  const [splashComplete, setSplashComplete] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [splashTimerComplete, setSplashTimerComplete] = useState(false);
 
+  // Initialize auth store on component mount
   useEffect(() => {
-    // Initialize auth store immediately
     console.log('🔄 Initializing auth from index...');
     initialize();
   }, []);
 
+  // Set up splash screen timer - exactly 8 seconds
   useEffect(() => {
-    // Show splash screen for exactly 8 seconds
     console.log('🔄 Starting 8-second splash screen timer...');
     const splashTimer = setTimeout(() => {
       console.log('✅ Splash screen timer complete (8 seconds)');
-      setSplashComplete(true);
-    }, 8000); // Exactly 8 seconds
+      setSplashTimerComplete(true);
+    }, 8000);
 
-    return () => {
-      console.log('🧹 Cleaning up splash screen timer');
-      clearTimeout(splashTimer);
-    };
+    return () => clearTimeout(splashTimer);
   }, []);
 
+  // Handle navigation after splash screen
   useEffect(() => {
-    // Only navigate after both splash is complete AND auth is initialized
-    if (!splashComplete || !isInitialized || isNavigating) return;
-    
-    console.log('🔄 Both splash and auth are ready, navigating...');
-    setIsNavigating(true);
-    
-    // Small delay to ensure smooth transition
-    const navigationTimer = setTimeout(() => {
-      if (isAuthenticated) {
-        console.log('✅ User is authenticated, navigating to tabs');
-        router.replace('/(tabs)');
-      } else {
-        console.log('ℹ️ User is not authenticated, navigating to welcome');
-        router.replace('/welcome');
-      }
-    }, 200);
+    // Only proceed if both splash timer is complete AND auth is initialized
+    if (!splashTimerComplete || !isInitialized) {
+      return;
+    }
 
-    return () => {
-      console.log('🧹 Cleaning up navigation timer');
-      clearTimeout(navigationTimer);
-    };
-  }, [isAuthenticated, isInitialized, splashComplete, isNavigating]);
+    console.log('🔄 Splash complete and auth initialized, navigating...');
+    
+    // Navigate based on authentication status
+    if (isAuthenticated) {
+      console.log('✅ User is authenticated, navigating to tabs');
+      router.replace('/(tabs)');
+    } else {
+      console.log('ℹ️ User is not authenticated, navigating to welcome');
+      router.replace('/welcome');
+    }
+  }, [isAuthenticated, isInitialized, splashTimerComplete, router]);
 
-  // Show splash screen while loading or during the 8-second timer
+  // Always show splash screen during the 8-second timer
   return <SplashScreen />;
 }

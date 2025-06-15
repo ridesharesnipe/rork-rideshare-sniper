@@ -26,8 +26,8 @@ export default function RootLayout() {
   const { isAuthenticated, user, isInitialized, initialize } = useAuthStore();
   const { darkMode } = useSettingsStore();
 
+  // Initialize auth store on app start
   useEffect(() => {
-    // Initialize auth store on app start
     const initializeApp = async () => {
       try {
         console.log('🚀 Initializing app...');
@@ -38,8 +38,10 @@ export default function RootLayout() {
       }
     };
     
-    initializeApp();
-  }, []);
+    if (!isInitialized) {
+      initializeApp();
+    }
+  }, [isInitialized, initialize]);
 
   // Use the darkMode setting from the store
   const statusBarStyle = darkMode ? 'light' : 'dark';

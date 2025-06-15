@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import { Home, Settings, Activity, Crosshair, LogOut } from "lucide-react-native";
 import colors from "@/constants/colors";
@@ -10,15 +10,16 @@ export default function TabLayout() {
   const router = useRouter();
   
   // Redirect to login if not authenticated (only after initialization)
-  React.useEffect(() => {
+  useEffect(() => {
     if (isInitialized && !isAuthenticated) {
       console.log("Not authenticated, redirecting to login");
       router.replace('/auth/login');
     }
-  }, [isAuthenticated, isInitialized]);
+  }, [isAuthenticated, isInitialized, router]);
   
   const handleLogout = async () => {
     try {
+      console.log("Logging out user");
       await logout();
       router.replace('/auth/login');
     } catch (error) {
