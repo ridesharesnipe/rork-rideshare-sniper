@@ -374,7 +374,8 @@ export default function SimulatorScreen() {
             </View>
             
             <Text style={styles.demoDescription}>
-              See how Rideshare Sniper would appear as an overlay on your rideshare app. Each element can be positioned exactly where you need it.
+              See how Rideshare Sniper would appear as an overlay on your rideshare app. 
+              Each element can be positioned exactly where you need it.
             </Text>
             
             <View style={styles.demoButtons}>
@@ -407,7 +408,10 @@ export default function SimulatorScreen() {
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>HOW TO USE THE SIMULATOR</Text>
             <Text style={styles.infoText}>
-              This simulator helps you test your profile settings with random trip requests. Press Start to begin receiving simulated trip requests, then Accept or Reject based on the recommendation. Adjust your profile settings to see how they affect trip evaluations.
+              This simulator helps you test your profile settings with random trip requests. 
+              Press Start to begin receiving simulated trip requests, then Accept or Reject 
+              based on the recommendation. Adjust your profile settings to see how they 
+              affect trip evaluations.
             </Text>
           </View>
         </ScrollView>

@@ -227,7 +227,7 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
           { opacity: fadeAnim }
         ]}
       >
-        {/* Back button */}
+        {/* Back button - made more prominent */}
         <Pressable 
           style={styles.backButton}
           onPress={handleClose}
@@ -353,9 +353,9 @@ const styles = StyleSheet.create({
     left: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 20,
     zIndex: 1000,
   },
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: 16,
     fontWeight: '600',
-    marginLeft: 4,
+    marginLeft: 8,
   },
   closeOverlayButton: {
     position: 'absolute',

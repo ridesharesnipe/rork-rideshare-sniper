@@ -104,7 +104,7 @@ export default function HomeScreen() {
         )}
       </View>
       
-      {/* START SNIPER BUTTON */}
+      {/* START SNIPER BUTTON - removed "Go Online" button above it */}
       <StartSniperButton />
       
       <StatsCard
