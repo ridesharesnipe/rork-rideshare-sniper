@@ -2,21 +2,64 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, PanResponder } from 'react-native';
 import { AlertTriangle, ArrowLeft, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface OverlayDemoProps {
   recommendation: 'accept' | 'reject' | 'consider';
   onClose: () => void;
 }
 
+interface Position {
+  x: number;
+  y: number;
+}
+
 export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProps) {
   const [autoHideTimer, setAutoHideTimer] = useState<NodeJS.Timeout | null>(null);
   const [opacity] = useState(new Animated.Value(1));
   
-  // Position state for draggable elements
-  const [tacticalPanelPosition, setTacticalPanelPosition] = useState({ x: 0, y: 0 });
-  const [minimalIndicatorPosition, setMinimalIndicatorPosition] = useState({ x: 0, y: 0 });
-  const [acceptOverlayPosition, setAcceptOverlayPosition] = useState({ x: 0, y: 0 });
-  const [rejectXPosition, setRejectXPosition] = useState({ x: 0, y: 0 });
+  // Position state for draggable elements with initial default positions
+  const [tacticalPanelPosition, setTacticalPanelPosition] = useState<Position>({ x: 0, y: 0 });
+  const [minimalIndicatorPosition, setMinimalIndicatorPosition] = useState<Position>({ x: 0, y: 0 });
+  const [acceptOverlayPosition, setAcceptOverlayPosition] = useState<Position>({ x: 0, y: 0 });
+  const [rejectXPosition, setRejectXPosition] = useState<Position>({ x: 0, y: 0 });
+  
+  // Load saved positions from storage on component mount
+  useEffect(() => {
+    const loadPositions = async () => {
+      try {
+        const savedPositions = await AsyncStorage.getItem('overlayPositions');
+        if (savedPositions) {
+          const positions = JSON.parse(savedPositions);
+          setTacticalPanelPosition(positions.tacticalPanel || { x: 0, y: 0 });
+          setMinimalIndicatorPosition(positions.minimalIndicator || { x: 0, y: 0 });
+          setAcceptOverlayPosition(positions.acceptOverlay || { x: 0, y: 0 });
+          setRejectXPosition(positions.rejectX || { x: 0, y: 0 });
+        }
+      } catch (error) {
+        console.error('Failed to load overlay positions:', error);
+      }
+    };
+    loadPositions();
+  }, []);
+
+  // Save positions to storage when they change
+  useEffect(() => {
+    const savePositions = async () => {
+      try {
+        const positions = {
+          tacticalPanel: tacticalPanelPosition,
+          minimalIndicator: minimalIndicatorPosition,
+          acceptOverlay: acceptOverlayPosition,
+          rejectX: rejectXPosition,
+        };
+        await AsyncStorage.setItem('overlayPositions', JSON.stringify(positions));
+      } catch (error) {
+        console.error('Failed to save overlay positions:', error);
+      }
+    };
+    savePositions();
+  }, [tacticalPanelPosition, minimalIndicatorPosition, acceptOverlayPosition, rejectXPosition]);
   
   // Create pan responders for each draggable element
   const tacticalPanelPanResponder = PanResponder.create({

@@ -91,6 +91,16 @@ export default function SettingsScreen() {
     router.replace('/onboarding');
   };
   
+  const resetOverlayPositions = async () => {
+    try {
+      await AsyncStorage.removeItem('overlayPositions');
+      Alert.alert("Success", "Overlay positions have been reset to default.");
+    } catch (error) {
+      console.error('Failed to reset overlay positions:', error);
+      Alert.alert("Error", "Failed to reset overlay positions.");
+    }
+  };
+  
   if (showDemo) {
     return (
       <OverlayDemo 
@@ -461,6 +471,24 @@ export default function SettingsScreen() {
               <Text style={styles.helpItemTitle}>Replay Full Tutorial</Text>
               <Text style={styles.helpItemDescription}>
                 Go through the complete onboarding process again
+              </Text>
+            </View>
+          </View>
+          <ChevronRight size={20} color={colors.textSecondary} />
+        </Pressable>
+        
+        <Pressable 
+          style={styles.helpItem}
+          onPress={resetOverlayPositions}
+        >
+          <View style={styles.helpItemContent}>
+            <View style={styles.helpIconContainer}>
+              <Navigation size={20} color={colors.primary} />
+            </View>
+            <View style={styles.helpTextContainer}>
+              <Text style={styles.helpItemTitle}>Reset Overlay Positions</Text>
+              <Text style={styles.helpItemDescription}>
+                Reset all overlay elements to their default positions
               </Text>
             </View>
           </View>
