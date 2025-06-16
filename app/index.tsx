@@ -27,13 +27,13 @@ export default function Index() {
     }
   }, [initialize, isInitialized]);
 
-  // Set up splash screen timer - reduced to 2 seconds
+  // Set up splash screen timer - increased to 8 seconds
   useEffect(() => {
-    console.log('🔄 Starting 2-second splash screen timer...');
+    console.log('🔄 Starting 8-second splash screen timer...');
     const splashTimer = setTimeout(() => {
-      console.log('✅ Splash screen timer complete (2 seconds)');
+      console.log('✅ Splash screen timer complete (8 seconds)');
       setSplashTimerComplete(true);
-    }, 2000);
+    }, 8000);
 
     return () => clearTimeout(splashTimer);
   }, []);
