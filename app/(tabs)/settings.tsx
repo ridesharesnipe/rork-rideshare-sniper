@@ -363,8 +363,8 @@ export default function SettingsScreen() {
         >
           <View style={styles.helpItemContent}>
             <View style={styles.helpIconContainer}>
-              <View style={[styles.demoIcon, styles.yellowIcon]}>
-                <X size={16} color={colors.textPrimary} />
+              <View style={styles.warningIcon}>
+                <Text style={styles.warningIconText}>!</Text>
               </View>
             </View>
             <View style={styles.helpTextContainer}>
@@ -383,8 +383,8 @@ export default function SettingsScreen() {
         >
           <View style={styles.helpItemContent}>
             <View style={styles.helpIconContainer}>
-              <View style={[styles.demoIcon, styles.redIcon]}>
-                <X size={16} color={colors.textPrimary} />
+              <View style={styles.xIcon}>
+                <Text style={styles.xIconText}>X</Text>
               </View>
             </View>
             <View style={styles.helpTextContainer}>
@@ -988,18 +988,31 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: colors.textPrimary,
   },
-  demoIcon: {
+  warningIcon: {
     width: 24,
     height: 24,
     borderRadius: 12,
+    backgroundColor: colors.warning,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  yellowIcon: {
-    backgroundColor: colors.warning,
+  warningIconText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
-  redIcon: {
+  xIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  xIconText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
   // Modal styles
   modalContainer: {

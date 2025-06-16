@@ -168,36 +168,44 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>1</Text>
             </View>
-            <Text style={styles.instructionStepText}>
-              Drag the {recommendation === 'accept' ? 'green crosshair' : recommendation === 'reject' ? 'red X' : 'yellow warning'} to position it over the {recommendation === 'accept' ? 'Accept button' : recommendation === 'reject' ? 'Close button' : 'trip details'}.
-            </Text>
+            <View style={styles.instructionTextContainer}>
+              <Text style={styles.instructionStepText}>
+                Drag the {recommendation === 'accept' ? 'green crosshair' : recommendation === 'reject' ? 'red X' : 'yellow warning'} to position it over the {recommendation === 'accept' ? 'Accept button' : recommendation === 'reject' ? 'Close button' : 'trip details'}.
+              </Text>
+            </View>
           </View>
           
           <View style={styles.instructionStep}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>2</Text>
             </View>
-            <Text style={styles.instructionStepText}>
-              Drag the info panel to a position where it will not block important information.
-            </Text>
+            <View style={styles.instructionTextContainer}>
+              <Text style={styles.instructionStepText}>
+                Drag the info panel to a position where it will not block important information.
+              </Text>
+            </View>
           </View>
           
           <View style={styles.instructionStep}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>3</Text>
             </View>
-            <Text style={styles.instructionStepText}>
-              The overlay will automatically dim after 5 seconds. Tap anywhere to restore full visibility.
-            </Text>
+            <View style={styles.instructionTextContainer}>
+              <Text style={styles.instructionStepText}>
+                The overlay will automatically dim after 5 seconds. Tap anywhere to restore full visibility.
+              </Text>
+            </View>
           </View>
           
           <View style={styles.instructionStep}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>4</Text>
             </View>
-            <Text style={styles.instructionStepText}>
-              Toggle between full panel and minimal mode by double-tapping the indicator.
-            </Text>
+            <View style={styles.instructionTextContainer}>
+              <Text style={styles.instructionStepText}>
+                Toggle between full panel and minimal mode by double-tapping the indicator.
+              </Text>
+            </View>
           </View>
           
           <Pressable 
@@ -227,14 +235,13 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
           { opacity: fadeAnim }
         ]}
       >
-        {/* Back button - made more prominent */}
+        {/* Prominent Back Button */}
         <Pressable 
-          style={styles.backButton}
+          style={styles.prominentBackButton}
           onPress={handleClose}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
-          <ArrowLeft size={24} color={colors.textPrimary} />
-          <Text style={styles.backButtonText}>Back</Text>
+          <ArrowLeft size={24} color="#FFFFFF" />
+          <Text style={styles.prominentBackButtonText}>Back to App</Text>
         </Pressable>
         
         {/* Close button */}
@@ -347,6 +354,29 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
+  prominentBackButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    zIndex: 1000,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  prominentBackButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   backButton: {
     position: 'absolute',
     top: 40,
@@ -409,6 +439,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primary,
     borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   crosshairHorizontal: {
     position: 'absolute',
@@ -434,6 +469,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   rejectIndicator: {
     backgroundColor: colors.secondary,
@@ -450,6 +490,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     zIndex: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
   },
   panelHeader: {
     backgroundColor: colors.surfaceLight,
@@ -562,10 +607,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
+  instructionTextContainer: {
+    flex: 1,
+  },
   instructionStepText: {
     fontSize: 16,
     color: colors.textSecondary,
-    flex: 1,
     lineHeight: 22,
   },
   continueButton: {

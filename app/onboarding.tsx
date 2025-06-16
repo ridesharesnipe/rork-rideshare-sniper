@@ -133,7 +133,9 @@ export default function OnboardingScreen() {
                 style={[styles.demoButton, styles.considerDemoButton]}
                 onPress={() => setCurrentDemo('consider')}
               >
-                <X size={24} color={colors.textPrimary} />
+                <View style={styles.warningIcon}>
+                  <Text style={styles.warningIconText}>!</Text>
+                </View>
                 <Text style={styles.demoButtonText}>Yellow Warning</Text>
                 <Text style={styles.demoButtonSubtext}>Place above trip details</Text>
                 <Text style={styles.viewDemoText}>View Demo</Text>
@@ -143,7 +145,9 @@ export default function OnboardingScreen() {
                 style={[styles.demoButton, styles.rejectDemoButton]}
                 onPress={() => setCurrentDemo('reject')}
               >
-                <X size={24} color={colors.textPrimary} />
+                <View style={styles.xIcon}>
+                  <Text style={styles.xIconText}>X</Text>
+                </View>
                 <Text style={styles.demoButtonText}>Red X</Text>
                 <Text style={styles.demoButtonSubtext}>Place near close button</Text>
                 <Text style={styles.viewDemoText}>View Demo</Text>
@@ -415,6 +419,36 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     borderWidth: 2,
     borderColor: colors.textPrimary,
+  },
+  warningIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: colors.textPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  warningIconText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  xIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: colors.textPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  xIconText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
   demoButtonText: {
     fontSize: 14,

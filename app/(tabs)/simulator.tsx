@@ -383,6 +383,11 @@ export default function SimulatorScreen() {
                 style={[styles.demoButton, styles.acceptDemoButton]}
                 onPress={() => showDemo('accept')}
               >
+                <View style={styles.crosshairIcon}>
+                  <View style={styles.crosshairHorizontal} />
+                  <View style={styles.crosshairVertical} />
+                  <View style={styles.crosshairCenter} />
+                </View>
                 <Text style={styles.demoButtonText}>GREEN CROSSHAIR</Text>
                 <Text style={styles.demoButtonSubtext}>Place exactly where the Accept button is</Text>
               </Pressable>
@@ -391,6 +396,9 @@ export default function SimulatorScreen() {
                 style={[styles.demoButton, styles.considerDemoButton]}
                 onPress={() => showDemo('consider')}
               >
+                <View style={styles.warningIcon}>
+                  <Text style={styles.warningIconText}>!</Text>
+                </View>
                 <Text style={styles.demoButtonText}>YELLOW WARNING</Text>
                 <Text style={styles.demoButtonSubtext}>Place directly above the trip details</Text>
               </Pressable>
@@ -399,6 +407,9 @@ export default function SimulatorScreen() {
                 style={[styles.demoButton, styles.rejectDemoButton]}
                 onPress={() => showDemo('reject')}
               >
+                <View style={styles.xIcon}>
+                  <Text style={styles.xIconText}>X</Text>
+                </View>
                 <Text style={styles.demoButtonText}>RED X</Text>
                 <Text style={styles.demoButtonSubtext}>Place precisely over the decline button</Text>
               </Pressable>
@@ -636,12 +647,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'column',
   },
   demoButtonSubtext: {
     fontSize: 12,
     color: colors.textPrimary,
     marginTop: 4,
     opacity: 0.8,
+    textAlign: 'center',
   },
   acceptDemoButton: {
     backgroundColor: colors.primary,
@@ -657,6 +670,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
     letterSpacing: 0.5,
+    marginTop: 8,
   },
   infoCard: {
     backgroundColor: colors.surface,
@@ -679,5 +693,61 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  // New icon styles for demo buttons
+  crosshairIcon: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  crosshairHorizontal: {
+    position: 'absolute',
+    width: 24,
+    height: 2,
+    backgroundColor: colors.textPrimary,
+  },
+  crosshairVertical: {
+    position: 'absolute',
+    width: 2,
+    height: 24,
+    backgroundColor: colors.textPrimary,
+  },
+  crosshairCenter: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.textPrimary,
+  },
+  warningIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: colors.textPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  warningIconText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  xIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: colors.textPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  xIconText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
 });
