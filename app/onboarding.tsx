@@ -68,10 +68,10 @@ export default function OnboardingScreen() {
             </View>
             
             <Text style={styles.title}>RIDESHARE SNIPER</Text>
-            <Text style={styles.subtitle}>Quick decision making for drivers</Text>
+            <Text style={styles.subtitle}>Overlay Widget Tutorial</Text>
             
             <Text style={styles.description}>
-              Get instant visual feedback on trip requests with simple overlay indicators.
+              Learn how overlay widgets work with real Uber interface simulation.
             </Text>
             
             <View style={styles.demoContainer}>
@@ -83,7 +83,7 @@ export default function OnboardingScreen() {
                   <View style={styles.miniCrosshairH} />
                   <View style={styles.miniCrosshairV} />
                 </View>
-                <Text style={styles.demoButtonText}>Accept</Text>
+                <Text style={styles.demoButtonText}>Accept Widget</Text>
               </Pressable>
               
               <Pressable 
@@ -91,7 +91,7 @@ export default function OnboardingScreen() {
                 onPress={() => setCurrentDemo('consider')}
               >
                 <Text style={styles.demoIcon}>!</Text>
-                <Text style={styles.demoButtonText}>Consider</Text>
+                <Text style={styles.demoButtonText}>Consider Widget</Text>
               </Pressable>
               
               <Pressable 
@@ -99,7 +99,7 @@ export default function OnboardingScreen() {
                 onPress={() => setCurrentDemo('reject')}
               >
                 <Text style={styles.demoIcon}>×</Text>
-                <Text style={styles.demoButtonText}>Reject</Text>
+                <Text style={styles.demoButtonText}>Reject Widget</Text>
               </Pressable>
             </View>
           </View>
@@ -297,6 +297,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#FFFFFF',
+    textAlign: 'center',
   },
   stepIcon: {
     marginBottom: 24,
