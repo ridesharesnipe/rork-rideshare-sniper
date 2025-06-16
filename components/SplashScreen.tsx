@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import colors from '@/constants/colors';
 
-interface SplashScreenProps {
-  onFinish: () => void;
-}
-
-export default function SplashScreen({ onFinish }: SplashScreenProps) {
+export default function SplashScreen() {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.8));
   
@@ -24,13 +20,6 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
         useNativeDriver: true,
       }),
     ]).start();
-    
-    // Auto finish after 3 seconds
-    const timer = setTimeout(() => {
-      onFinish();
-    }, 3000);
-    
-    return () => clearTimeout(timer);
   }, []);
   
   return (

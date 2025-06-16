@@ -18,7 +18,6 @@ export default function Index() {
         console.log('✅ Auth initialized from index');
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
-        // Even on error, mark as initialized to prevent getting stuck
       }
     };
     
@@ -27,13 +26,13 @@ export default function Index() {
     }
   }, [initialize, isInitialized]);
 
-  // Set up splash screen timer - increased to 8 seconds
+  // Set up splash screen timer - 3 seconds
   useEffect(() => {
-    console.log('🔄 Starting 8-second splash screen timer...');
+    console.log('🔄 Starting 3-second splash screen timer...');
     const splashTimer = setTimeout(() => {
-      console.log('✅ Splash screen timer complete (8 seconds)');
+      console.log('✅ Splash screen timer complete (3 seconds)');
       setSplashTimerComplete(true);
-    }, 8000);
+    }, 3000);
 
     return () => clearTimeout(splashTimer);
   }, []);
