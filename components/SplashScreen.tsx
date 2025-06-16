@@ -1,146 +1,93 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import colors from '@/constants/colors';
 
-export default function SplashScreen() {
-  // Start with smaller initial values for Android to ensure animations complete
-  const crosshairScale = useRef(new Animated.Value(Platform.OS === 'android' ? 0.8 : 2)).current;
-  const crosshairOpacity = useRef(new Animated.Value(Platform.OS === 'android' ? 0.8 : 0)).current;
-  const textOpacity = useRef(new Animated.Value(Platform.OS === 'android' ? 0.8 : 0)).current;
-  const taglineOpacity = useRef(new Animated.Value(Platform.OS === 'android' ? 0.8 : 0)).current;
-  const bylineOpacity = useRef(new Animated.Value(Platform.OS === 'android' ? 0.8 : 0)).current;
+interface SplashScreenProps {
+  onFinish: () => void;
+}
 
+export default function SplashScreen({ onFinish }: SplashScreenProps) {
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(0.9));
+  const [rotateAnim] = useState(new Animated.Value(0));
+  
   useEffect(() => {
-    console.log(`SplashScreen mounted on ${Platform.OS}`);
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.ease),
+    }).start();
     
-    // Simplified animations for Android
-    if (Platform.OS === 'android') {
-      console.log('Android detected, using simplified animations');
-      
-      // Use parallel animations for better performance on Android
-      Animated.parallel([
-        // Scale animation
-        Animated.sequence([
-          Animated.timing(crosshairScale, {
-            toValue: 1.1,
-            duration: 400, // Reduced from 800
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease),
-          }),
-          Animated.timing(crosshairScale, {
-            toValue: 1,
-            duration: 400, // Reduced from 800
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease),
-          })
-        ]),
-        
-        // Fade in animations
-        Animated.timing(textOpacity, {
-          toValue: 1,
-          duration: 300, // Reduced from 500
-          useNativeDriver: true,
-        }),
-        Animated.timing(crosshairOpacity, {
-          toValue: 1,
-          duration: 300, // Reduced from 500
-          useNativeDriver: true,
-        }),
-        Animated.timing(taglineOpacity, {
-          toValue: 1,
-          duration: 400, // Reduced from 800
-          useNativeDriver: true,
-          delay: 100, // Reduced from 200
-        }),
-        Animated.timing(bylineOpacity, {
-          toValue: 1,
-          duration: 400, // Reduced from 800
-          useNativeDriver: true,
-          delay: 200, // Reduced from 400
-        }),
-      ]).start();
-      
-      return;
-    }
+    // Scale animation
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.ease),
+    }).start();
     
-    console.log('iOS/Web detected, using full animation sequence');
+    // Rotation animation for crosshair
+    Animated.timing(rotateAnim, {
+      toValue: 1,
+      duration: 1200,
+      useNativeDriver: true,
+      easing: Easing.inOut(Easing.ease),
+    }).start();
     
-    // iOS and web animation sequence - also shortened
-    Animated.sequence([
-      // Fade in the title
-      Animated.timing(textOpacity, {
-        toValue: 1,
-        duration: 400, // Reduced from 800
+    // Set timeout for splash screen duration (8 seconds)
+    const timer = setTimeout(() => {
+      // Fade out animation before finishing
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 500,
         useNativeDriver: true,
-        easing: Easing.out(Easing.ease),
-      }),
-      
-      // Fade in the crosshair and zoom in
-      Animated.parallel([
-        Animated.timing(crosshairOpacity, {
-          toValue: 1,
-          duration: 300, // Reduced from 600
-          useNativeDriver: true,
-          easing: Easing.out(Easing.ease),
-        }),
-        Animated.timing(crosshairScale, {
-          toValue: 1,
-          duration: 600, // Reduced from 1200
-          useNativeDriver: true,
-          easing: Easing.out(Easing.ease),
-        }),
-      ]),
-      
-      // Fade in the tagline
-      Animated.timing(taglineOpacity, {
-        toValue: 1,
-        duration: 400, // Reduced from 800
-        useNativeDriver: true,
-        easing: Easing.out(Easing.ease),
-      }),
-      
-      // Fade in the byline
-      Animated.timing(bylineOpacity, {
-        toValue: 1,
-        duration: 400, // Reduced from 800
-        useNativeDriver: true,
-        easing: Easing.out(Easing.ease),
-      }),
-    ]).start();
+      }).start(() => {
+        onFinish();
+      });
+    }, 8000); // 8 second splash screen
+    
+    return () => clearTimeout(timer);
   }, []);
-
+  
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+  
   return (
     <View style={styles.container}>
-      <Animated.Text style={[styles.title, { opacity: textOpacity }]}>
-        RIDESHARE SNIPER
-      </Animated.Text>
-      
       <Animated.View 
         style={[
-          styles.crosshairContainer, 
-          { 
-            opacity: crosshairOpacity,
-            transform: [{ scale: crosshairScale }] 
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [
+              { scale: scaleAnim }
+            ]
           }
         ]}
       >
-        <View style={styles.crosshairHorizontal} />
-        <View style={styles.crosshairVertical} />
-        <View style={styles.crosshairCenter} />
-        <View style={styles.crosshairRing} />
+        <Animated.View 
+          style={[
+            styles.crosshairContainer,
+            {
+              transform: [
+                { rotate: spin }
+              ]
+            }
+          ]}
+        >
+          <View style={styles.crosshairHorizontal} />
+          <View style={styles.crosshairVertical} />
+          <View style={styles.crosshairCenter} />
+          <View style={styles.crosshairRing} />
+        </Animated.View>
+        
+        <Text style={styles.title}>RIDESHARE SNIPER</Text>
+        <Text style={styles.tagline}>Precision. Profit. Protection.</Text>
       </Animated.View>
-      
-      <Animated.Text style={[styles.subtitle, { opacity: textOpacity }]}>
-        Your rideshare mission control
-      </Animated.Text>
-      
-      <Animated.Text style={[styles.tagline, { opacity: taglineOpacity }]}>
-        Precision. Profit. Protection.
-      </Animated.Text>
-      
-      <Animated.Text style={[styles.byline, { opacity: bylineOpacity }]}>
-        Built by a rideshare driver for rideshare drivers
-      </Animated.Text>
     </View>
   );
 }
@@ -152,60 +99,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.primary,
-    letterSpacing: 1.5,
-    marginBottom: 40,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 18,
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-    marginTop: 40,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  tagline: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    letterSpacing: 1,
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  byline: {
-    fontSize: 14,
-    fontStyle: 'italic',
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-    textAlign: 'center',
-    maxWidth: '80%',
+  content: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   crosshairContainer: {
     width: 120,
     height: 120,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 40,
   },
   crosshairHorizontal: {
     position: 'absolute',
     width: 120,
-    height: 2,
+    height: 3,
     backgroundColor: colors.primary,
   },
   crosshairVertical: {
     position: 'absolute',
-    width: 2,
+    width: 3,
     height: 120,
     backgroundColor: colors.primary,
   },
   crosshairCenter: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: colors.primary,
   },
   crosshairRing: {
@@ -213,7 +133,19 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: colors.primary,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 16,
+    letterSpacing: 2,
+  },
+  tagline: {
+    fontSize: 18,
+    color: colors.textSecondary,
+    letterSpacing: 1,
   },
 });

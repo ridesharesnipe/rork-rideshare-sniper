@@ -19,10 +19,13 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
   const windowWidth = Dimensions.get('window').width;
   const windowHeight = Dimensions.get('window').height;
   
-  // Default positions
+  // Default positions - positioned to match typical rideshare app UI
   const defaultPositions = {
-    indicator: { x: windowWidth * 0.5 - 20, y: windowHeight * 0.3 },
-    panel: { x: windowWidth * 0.1, y: windowHeight * 0.5 }
+    indicator: { 
+      x: recommendation === 'accept' ? windowWidth * 0.5 : windowWidth * 0.8, 
+      y: recommendation === 'accept' ? windowHeight * 0.8 : windowHeight * 0.5 
+    },
+    panel: { x: windowWidth * 0.1, y: windowHeight * 0.2 }
   };
   
   // Use saved positions or defaults
@@ -143,7 +146,7 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
       case 'consider':
         return (
           <View style={[styles.indicatorContainer, styles.considerIndicator]}>
-            <X size={20} color={colors.textPrimary} />
+            <Text style={styles.considerText}>!</Text>
           </View>
         );
     }
@@ -168,44 +171,36 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>1</Text>
             </View>
-            <View style={styles.instructionTextContainer}>
-              <Text style={styles.instructionStepText}>
-                Drag the {recommendation === 'accept' ? 'green crosshair' : recommendation === 'reject' ? 'red X' : 'yellow warning'} to position it over the {recommendation === 'accept' ? 'Accept button' : recommendation === 'reject' ? 'Close button' : 'trip details'}.
-              </Text>
-            </View>
+            <Text style={styles.instructionStepText}>
+              Drag the {recommendation === 'accept' ? 'green crosshair' : recommendation === 'reject' ? 'red X' : 'yellow warning'} to position it over the {recommendation === 'accept' ? 'Accept button' : recommendation === 'reject' ? 'Close button' : 'trip details'}.
+            </Text>
           </View>
           
           <View style={styles.instructionStep}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>2</Text>
             </View>
-            <View style={styles.instructionTextContainer}>
-              <Text style={styles.instructionStepText}>
-                Drag the info panel to a position where it will not block important information.
-              </Text>
-            </View>
+            <Text style={styles.instructionStepText}>
+              Drag the info panel to a position where it will not block important information.
+            </Text>
           </View>
           
           <View style={styles.instructionStep}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>3</Text>
             </View>
-            <View style={styles.instructionTextContainer}>
-              <Text style={styles.instructionStepText}>
-                The overlay will automatically dim after 5 seconds. Tap anywhere to restore full visibility.
-              </Text>
-            </View>
+            <Text style={styles.instructionStepText}>
+              The overlay will automatically dim after 5 seconds. Tap anywhere to restore full visibility.
+            </Text>
           </View>
           
           <View style={styles.instructionStep}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>4</Text>
             </View>
-            <View style={styles.instructionTextContainer}>
-              <Text style={styles.instructionStepText}>
-                Toggle between full panel and minimal mode by double-tapping the indicator.
-              </Text>
-            </View>
+            <Text style={styles.instructionStepText}>
+              Toggle between full panel and minimal mode by double-tapping the indicator.
+            </Text>
           </View>
           
           <Pressable 
@@ -237,27 +232,17 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
       >
         {/* Prominent Back Button */}
         <Pressable 
-          style={styles.prominentBackButton}
+          style={styles.backButton}
           onPress={handleClose}
         >
           <ArrowLeft size={24} color="#FFFFFF" />
-          <Text style={styles.prominentBackButtonText}>Back to App</Text>
-        </Pressable>
-        
-        {/* Close button */}
-        <Pressable 
-          style={styles.closeOverlayButton}
-          onPress={handleClose}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-        >
-          <X size={24} color={colors.textPrimary} />
+          <Text style={styles.backButtonText}>Back to App</Text>
         </Pressable>
         
         {/* Toggle minimal mode button */}
         <Pressable 
           style={styles.toggleMinimalButton}
           onPress={() => setShowMinimal(!showMinimal)}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
           <Text style={styles.toggleMinimalText}>
             {showMinimal ? "SHOW FULL" : "MINIMAL MODE"}
@@ -354,29 +339,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
-  prominentBackButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    zIndex: 1000,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  prominentBackButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
   backButton: {
     position: 'absolute',
     top: 40,
@@ -390,22 +352,10 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   backButtonText: {
-    color: colors.textPrimary,
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
-  },
-  closeOverlayButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
   },
   toggleMinimalButton: {
     position: 'absolute',
@@ -480,6 +430,11 @@ const styles = StyleSheet.create({
   },
   considerIndicator: {
     backgroundColor: colors.warning,
+  },
+  considerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
   draggablePanel: {
     position: 'absolute',
@@ -600,20 +555,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-    marginTop: 2,
   },
   instructionNumberText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
-  instructionTextContainer: {
-    flex: 1,
-  },
   instructionStepText: {
     fontSize: 16,
     color: colors.textSecondary,
     lineHeight: 22,
+    flex: 1,
   },
   continueButton: {
     backgroundColor: colors.primary,

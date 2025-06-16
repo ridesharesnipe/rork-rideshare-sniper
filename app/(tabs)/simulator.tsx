@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 20,
   },
-  // New icon styles for demo buttons
+  // Icon styles for demo buttons
   crosshairIcon: {
     width: 30,
     height: 30,
