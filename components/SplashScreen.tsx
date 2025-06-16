@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import colors from '@/constants/colors';
 
 interface SplashScreenProps {
@@ -8,53 +8,30 @@ interface SplashScreenProps {
 
 export default function SplashScreen({ onFinish }: SplashScreenProps) {
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [scaleAnim] = useState(new Animated.Value(0.9));
-  const [rotateAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(0.8));
   
   useEffect(() => {
-    // Fade in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-      easing: Easing.out(Easing.ease),
-    }).start();
-    
-    // Scale animation
-    Animated.timing(scaleAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-      easing: Easing.out(Easing.ease),
-    }).start();
-    
-    // Rotation animation for crosshair
-    Animated.timing(rotateAnim, {
-      toValue: 1,
-      duration: 1200,
-      useNativeDriver: true,
-      easing: Easing.inOut(Easing.ease),
-    }).start();
-    
-    // Set timeout for splash screen duration (8 seconds)
-    const timer = setTimeout(() => {
-      // Fade out animation before finishing
+    // Simple fade in animation
+    Animated.parallel([
       Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
+        toValue: 1,
+        duration: 1000,
         useNativeDriver: true,
-      }).start(() => {
-        onFinish();
-      });
-    }, 8000); // 8 second splash screen
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
+    // Auto finish after 3 seconds
+    const timer = setTimeout(() => {
+      onFinish();
+    }, 3000);
     
     return () => clearTimeout(timer);
   }, []);
-  
-  const spin = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
   
   return (
     <View style={styles.container}>
@@ -63,27 +40,17 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
           styles.content,
           {
             opacity: fadeAnim,
-            transform: [
-              { scale: scaleAnim }
-            ]
+            transform: [{ scale: scaleAnim }]
           }
         ]}
       >
-        <Animated.View 
-          style={[
-            styles.crosshairContainer,
-            {
-              transform: [
-                { rotate: spin }
-              ]
-            }
-          ]}
-        >
-          <View style={styles.crosshairHorizontal} />
-          <View style={styles.crosshairVertical} />
-          <View style={styles.crosshairCenter} />
-          <View style={styles.crosshairRing} />
-        </Animated.View>
+        <View style={styles.logo}>
+          <View style={styles.crosshair}>
+            <View style={styles.crosshairHorizontal} />
+            <View style={styles.crosshairVertical} />
+            <View style={styles.crosshairCenter} />
+          </View>
+        </View>
         
         <Text style={styles.title}>RIDESHARE SNIPER</Text>
         <Text style={styles.tagline}>Precision. Profit. Protection.</Text>
@@ -101,51 +68,44 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  crosshairContainer: {
-    width: 120,
-    height: 120,
+  logo: {
+    marginBottom: 32,
+  },
+  crosshair: {
+    width: 80,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 40,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 120,
+    width: 60,
     height: 3,
     backgroundColor: colors.primary,
   },
   crosshairVertical: {
     position: 'absolute',
     width: 3,
-    height: 120,
+    height: 60,
     backgroundColor: colors.primary,
   },
   crosshairCenter: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     backgroundColor: colors.primary,
   },
-  crosshairRing: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: colors.primary,
-  },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 16,
-    letterSpacing: 2,
+    marginBottom: 8,
+    letterSpacing: 1,
   },
   tagline: {
-    fontSize: 18,
+    fontSize: 14,
     color: colors.textSecondary,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
 });

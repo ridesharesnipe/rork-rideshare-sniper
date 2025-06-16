@@ -1,61 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Platform } from 'react-native';
-import { Play, Pause, RefreshCw, Info, ArrowLeft } from 'lucide-react-native';
+import { Play, Pause, RefreshCw, ArrowLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import colors from '@/constants/colors';
 import TripCard from '@/components/TripCard';
 import ProfileSelector from '@/components/ProfileSelector';
-import MinimalModeIndicator from '@/components/MinimalModeIndicator';
 import { useProfileStore } from '@/store/profileStore';
-import { useSettingsStore } from '@/store/settingsStore';
 import { TripRequest } from '@/types';
 import { evaluateTrip } from '@/utils/tripEvaluator';
 import * as Haptics from 'expo-haptics';
 import OverlayDemo from '@/components/OverlayDemo';
 
-// Mock pickup and dropoff locations
-const pickupLocations = [
-  "Downtown",
-  "Airport",
-  "Shopping Mall",
-  "Hotel District",
-  "Convention Center",
-  "University Campus",
-  "Business Park",
-  "Residential Area",
-  "Train Station",
-  "Entertainment District"
-];
-
-const dropoffLocations = [
-  "City Center",
-  "Suburban Area",
-  "Beach Resort",
-  "Industrial Zone",
-  "Sports Stadium",
-  "Medical Center",
-  "Tech Campus",
-  "Financial District",
-  "Restaurant Row",
-  "Apartment Complex"
-];
-
-const passengerNames = [
-  "Alex",
-  "Jamie",
-  "Taylor",
-  "Jordan",
-  "Casey",
-  "Morgan",
-  "Riley",
-  "Avery",
-  "Quinn",
-  "Dakota"
-];
-
-const platforms = ["uber", "lyft", "other"] as const;
-
-// Mock trip generator
+// Mock data generators
 const generateRandomTrip = (): TripRequest => {
   const id = Date.now().toString();
   const estimatedFare = Math.round(Math.random() * 30 + 5);
@@ -63,12 +19,6 @@ const generateRandomTrip = (): TripRequest => {
   const dropoffDistance = Math.round(Math.random() * 15 * 10) / 10;
   const estimatedDuration = Math.round((dropoffDistance / 0.5) + 5);
   const passengerRating = Math.round(Math.random() * 2 * 10 + 30) / 10;
-  
-  // Get random items from arrays
-  const pickupLocation = pickupLocations[Math.floor(Math.random() * pickupLocations.length)];
-  const dropoffLocation = dropoffLocations[Math.floor(Math.random() * dropoffLocations.length)];
-  const passengerName = passengerNames[Math.floor(Math.random() * passengerNames.length)];
-  const platform = platforms[Math.floor(Math.random() * platforms.length)];
   
   return {
     id,
@@ -78,10 +28,10 @@ const generateRandomTrip = (): TripRequest => {
     estimatedDuration,
     passengerRating,
     timestamp: Date.now(),
-    pickupLocation,
-    dropoffLocation,
-    passengerName,
-    platform
+    pickupLocation: "Downtown",
+    dropoffLocation: "Airport",
+    passengerName: "Alex",
+    platform: "uber"
   };
 };
 
@@ -94,11 +44,9 @@ export default function SimulatorScreen() {
   const [rejectedTrips, setRejectedTrips] = useState<TripRequest[]>([]);
   const [showOverlayDemo, setShowOverlayDemo] = useState(false);
   const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
-  const [showMinimalMode, setShowMinimalMode] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { getActiveProfile } = useProfileStore();
-  const { minimalMode } = useSettingsStore();
   
   const startSimulation = () => {
     setIsRunning(true);
@@ -207,14 +155,6 @@ export default function SimulatorScreen() {
     setShowOverlayDemo(true);
   };
   
-  const toggleMinimalMode = () => {
-    setShowMinimalMode(!showMinimalMode);
-  };
-  
-  const navigateBack = () => {
-    router.back();
-  };
-  
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -233,10 +173,6 @@ export default function SimulatorScreen() {
     0
   );
   
-  const averageFare = acceptedTrips.length > 0
-    ? totalEarnings / acceptedTrips.length
-    : 0;
-  
   return (
     <View style={styles.container}>
       {showOverlayDemo ? (
@@ -247,11 +183,11 @@ export default function SimulatorScreen() {
       ) : (
         <ScrollView>
           <View style={styles.header}>
-            <Pressable onPress={navigateBack} style={styles.backButton}>
+            <Pressable onPress={() => router.back()} style={styles.backButton}>
               <ArrowLeft size={20} color={colors.primary} />
               <Text style={styles.backButtonText}>Back</Text>
             </Pressable>
-            <Text style={styles.title}>TRIP SIMULATOR</Text>
+            <Text style={styles.title}>SIMULATOR</Text>
             <View style={styles.placeholder} />
           </View>
           
@@ -263,7 +199,7 @@ export default function SimulatorScreen() {
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{acceptedTrips.length + rejectedTrips.length}</Text>
-              <Text style={styles.statLabel}>Total Trips</Text>
+              <Text style={styles.statLabel}>Total</Text>
             </View>
             
             <View style={styles.statItem}>
@@ -274,11 +210,6 @@ export default function SimulatorScreen() {
             <View style={styles.statItem}>
               <Text style={styles.statValue}>${totalEarnings.toFixed(2)}</Text>
               <Text style={styles.statLabel}>Earnings</Text>
-            </View>
-            
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>${averageFare.toFixed(2)}</Text>
-              <Text style={styles.statLabel}>Avg. Fare</Text>
             </View>
           </View>
           
@@ -309,121 +240,53 @@ export default function SimulatorScreen() {
             </Pressable>
           </View>
           
-          <Pressable 
-            style={styles.displayModeButton}
-            onPress={toggleMinimalMode}
-          >
-            <Text style={styles.displayModeButtonText}>
-              {showMinimalMode ? 'SHOW FULL PANEL' : 'SHOW MINIMAL MODE'}
-            </Text>
-          </Pressable>
-          
           {currentTrip && tripEvaluation ? (
-            showMinimalMode ? (
-              <View style={styles.minimalModeContainer}>
-                <Text style={styles.minimalModeLabel}>MINIMAL MODE INDICATOR</Text>
-                <View style={styles.minimalModeDemo}>
-                  <MinimalModeIndicator
-                    recommendation={tripEvaluation.recommendation}
-                    fare={currentTrip.estimatedFare}
-                    pickupDistance={currentTrip.pickupDistance}
-                    dropoffDistance={currentTrip.dropoffDistance}
-                  />
-                  <Text style={styles.minimalModeHint}>Tap to expand</Text>
-                </View>
-                
-                <View style={styles.minimalModeActions}>
-                  <Pressable
-                    style={[styles.minimalModeAction, styles.rejectAction]}
-                    onPress={handleRejectTrip}
-                  >
-                    <Text style={styles.minimalModeActionText}>REJECT</Text>
-                  </Pressable>
-                  
-                  <Pressable
-                    style={[styles.minimalModeAction, styles.acceptAction]}
-                    onPress={handleAcceptTrip}
-                  >
-                    <Text style={styles.minimalModeActionText}>ACCEPT</Text>
-                  </Pressable>
-                </View>
-              </View>
-            ) : (
-              <TripCard
-                trip={currentTrip}
-                evaluation={tripEvaluation}
-                onAccept={handleAcceptTrip}
-                onReject={handleRejectTrip}
-                remainingTime={remainingTime}
-              />
-            )
+            <TripCard
+              trip={currentTrip}
+              evaluation={tripEvaluation}
+              onAccept={handleAcceptTrip}
+              onReject={handleRejectTrip}
+              remainingTime={remainingTime}
+            />
           ) : (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
-                {acceptedTrips.length > 0 || rejectedTrips.length > 0
-                  ? "No active trip request"
-                  : "Press START to begin simulation"}
+                Press START to begin simulation
               </Text>
             </View>
           )}
           
           <View style={styles.demoSection}>
-            <View style={styles.demoHeader}>
-              <Text style={styles.demoTitle}>OVERLAY DEMOS</Text>
-              <Info size={16} color={colors.textSecondary} />
-            </View>
-            
-            <Text style={styles.demoDescription}>
-              See how Rideshare Sniper would appear as an overlay on your rideshare app. 
-              Each element can be positioned exactly where you need it.
-            </Text>
+            <Text style={styles.demoTitle}>OVERLAY DEMOS</Text>
             
             <View style={styles.demoButtons}>
               <Pressable 
-                style={[styles.demoButton, styles.acceptDemoButton]}
+                style={[styles.demoButton, { backgroundColor: colors.primary }]}
                 onPress={() => showDemo('accept')}
               >
-                <View style={styles.crosshairIcon}>
-                  <View style={styles.crosshairHorizontal} />
-                  <View style={styles.crosshairVertical} />
-                  <View style={styles.crosshairCenter} />
+                <View style={styles.miniCrosshair}>
+                  <View style={styles.miniCrosshairH} />
+                  <View style={styles.miniCrosshairV} />
                 </View>
                 <Text style={styles.demoButtonText}>GREEN CROSSHAIR</Text>
-                <Text style={styles.demoButtonSubtext}>Place exactly where the Accept button is</Text>
               </Pressable>
               
               <Pressable 
-                style={[styles.demoButton, styles.considerDemoButton]}
+                style={[styles.demoButton, { backgroundColor: colors.warning }]}
                 onPress={() => showDemo('consider')}
               >
-                <View style={styles.warningIcon}>
-                  <Text style={styles.warningIconText}>!</Text>
-                </View>
+                <Text style={styles.demoIcon}>!</Text>
                 <Text style={styles.demoButtonText}>YELLOW WARNING</Text>
-                <Text style={styles.demoButtonSubtext}>Place directly above the trip details</Text>
               </Pressable>
               
               <Pressable 
-                style={[styles.demoButton, styles.rejectDemoButton]}
+                style={[styles.demoButton, { backgroundColor: colors.secondary }]}
                 onPress={() => showDemo('reject')}
               >
-                <View style={styles.xIcon}>
-                  <Text style={styles.xIconText}>X</Text>
-                </View>
+                <Text style={styles.demoIcon}>×</Text>
                 <Text style={styles.demoButtonText}>RED X</Text>
-                <Text style={styles.demoButtonSubtext}>Place precisely over the decline button</Text>
               </Pressable>
             </View>
-          </View>
-          
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>HOW TO USE THE SIMULATOR</Text>
-            <Text style={styles.infoText}>
-              This simulator helps you test your profile settings with random trip requests. 
-              Press Start to begin receiving simulated trip requests, then Accept or Reject 
-              based on the recommendation. Adjust your profile settings to see how they 
-              affect trip evaluations.
-            </Text>
           </View>
         </ScrollView>
       )}
@@ -453,7 +316,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   placeholder: {
-    width: 60, // Match the width of the back button for centering
+    width: 60,
   },
   title: {
     fontSize: 20,
@@ -532,69 +395,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     letterSpacing: 0.5,
   },
-  displayModeButton: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  displayModeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    letterSpacing: 0.5,
-  },
-  minimalModeContainer: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-  },
-  minimalModeLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 16,
-    letterSpacing: 0.5,
-  },
-  minimalModeDemo: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  minimalModeHint: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 8,
-  },
-  minimalModeActions: {
-    flexDirection: 'row',
-    width: '100%',
-  },
-  minimalModeAction: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  rejectAction: {
-    backgroundColor: colors.secondary,
-  },
-  acceptAction: {
-    backgroundColor: colors.primary,
-  },
-  minimalModeActionText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    letterSpacing: 0.5,
-  },
   emptyContainer: {
     backgroundColor: colors.surface,
     borderRadius: 16,
@@ -621,23 +421,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  demoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
   demoTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginRight: 8,
-    letterSpacing: 0.5,
-  },
-  demoDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
     marginBottom: 16,
-    lineHeight: 20,
+    letterSpacing: 0.5,
   },
   demoButtons: {
     flexDirection: 'column',
@@ -647,107 +436,38 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    flexDirection: 'column',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  demoButtonSubtext: {
-    fontSize: 12,
-    color: colors.textPrimary,
-    marginTop: 4,
-    opacity: 0.8,
-    textAlign: 'center',
+  miniCrosshair: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
-  acceptDemoButton: {
-    backgroundColor: colors.primary,
+  miniCrosshairH: {
+    position: 'absolute',
+    width: 16,
+    height: 2,
+    backgroundColor: '#FFFFFF',
   },
-  considerDemoButton: {
-    backgroundColor: colors.warning,
+  miniCrosshairV: {
+    position: 'absolute',
+    width: 2,
+    height: 16,
+    backgroundColor: '#FFFFFF',
   },
-  rejectDemoButton: {
-    backgroundColor: colors.secondary,
+  demoIcon: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginRight: 8,
   },
   demoButtonText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: '#FFFFFF',
     letterSpacing: 0.5,
-    marginTop: 8,
-  },
-  infoCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 12,
-    letterSpacing: 0.5,
-  },
-  infoText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  // Icon styles for demo buttons
-  crosshairIcon: {
-    width: 30,
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  crosshairHorizontal: {
-    position: 'absolute',
-    width: 24,
-    height: 2,
-    backgroundColor: colors.textPrimary,
-  },
-  crosshairVertical: {
-    position: 'absolute',
-    width: 2,
-    height: 24,
-    backgroundColor: colors.textPrimary,
-  },
-  crosshairCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.textPrimary,
-  },
-  warningIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: colors.textPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  warningIconText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  xIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: colors.textPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  xIconText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
   },
 });
