@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated, PanResponder, Dimensions, Alert, Platform } from 'react-native';
-import { X, ChevronRight, DollarSign, MapPin, Clock, ArrowLeft } from 'lucide-react-native';
+import { View, Text, StyleSheet, Pressable, Animated, PanResponder, Dimensions, Platform } from 'react-native';
+import { X, ChevronRight, ArrowLeft } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -22,18 +22,14 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
   // Default positions - positioned to match typical rideshare app UI
   const defaultPositions = {
     indicator: { 
-      x: recommendation === 'accept' ? windowWidth * 0.5 : windowWidth * 0.8, 
-      y: recommendation === 'accept' ? windowHeight * 0.8 : windowHeight * 0.5 
-    },
-    panel: { x: windowWidth * 0.1, y: windowHeight * 0.2 }
+      x: recommendation === 'accept' ? windowWidth * 0.65 : windowWidth * 0.8, 
+      y: recommendation === 'accept' ? windowHeight * 0.85 : windowHeight * 0.5 
+    }
   };
   
   // Use saved positions or defaults
   const [indicatorPosition, setIndicatorPosition] = useState(
     initialPositions?.indicator || defaultPositions.indicator
-  );
-  const [panelPosition, setPanelPosition] = useState(
-    initialPositions?.panel || defaultPositions.panel
   );
   
   // Auto-hide timer
@@ -72,8 +68,7 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
   const handleClose = async () => {
     try {
       const positions = {
-        indicator: indicatorPosition,
-        panel: panelPosition
+        indicator: indicatorPosition
       };
       await AsyncStorage.setItem('overlayPositions', JSON.stringify(positions));
     } catch (error) {
@@ -89,28 +84,6 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
       setIndicatorPosition({
         x: indicatorPosition.x + gestureState.dx,
         y: indicatorPosition.y + gestureState.dy
-      });
-    },
-    onPanResponderRelease: () => {
-      // Reset auto-hide timer
-      if (autoHideActive) {
-        setAutoHideActive(false);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }
-    }
-  });
-  
-  // Pan responder for the panel
-  const panelPanResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, gestureState) => {
-      setPanelPosition({
-        x: panelPosition.x + gestureState.dx,
-        y: panelPosition.y + gestureState.dy
       });
     },
     onPanResponderRelease: () => {
@@ -158,13 +131,13 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
       <View style={styles.instructionsContainer}>
         <View style={styles.instructionsCard}>
           <Text style={styles.instructionsTitle}>
-            {launchAttempted ? "Uber Driver App Launched" : "Overlay Demo Mode"}
+            {launchAttempted ? "Rideshare App Launched" : "Overlay Demo Mode"}
           </Text>
           
           <Text style={styles.instructionsText}>
             {launchAttempted 
-              ? "The Uber Driver app has been launched. This overlay will appear on top of the app to help you evaluate trip requests."
-              : "This is a demonstration of how the overlay will appear on top of your rideshare app. You can drag the elements to position them where you want."}
+              ? "The rideshare app has been launched. This overlay will appear on top of the app to help you evaluate trip requests."
+              : "This is a demonstration of how the overlay will appear on top of your rideshare app. You can drag the indicator to position it where you want."}
           </Text>
           
           <View style={styles.instructionStep}>
@@ -181,25 +154,7 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
               <Text style={styles.instructionNumberText}>2</Text>
             </View>
             <Text style={styles.instructionStepText}>
-              Drag the info panel to a position where it will not block important information.
-            </Text>
-          </View>
-          
-          <View style={styles.instructionStep}>
-            <View style={styles.instructionNumber}>
-              <Text style={styles.instructionNumberText}>3</Text>
-            </View>
-            <Text style={styles.instructionStepText}>
               The overlay will automatically dim after 5 seconds. Tap anywhere to restore full visibility.
-            </Text>
-          </View>
-          
-          <View style={styles.instructionStep}>
-            <View style={styles.instructionNumber}>
-              <Text style={styles.instructionNumberText}>4</Text>
-            </View>
-            <Text style={styles.instructionStepText}>
-              Toggle between full panel and minimal mode by double-tapping the indicator.
             </Text>
           </View>
           
@@ -230,23 +185,13 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
           { opacity: fadeAnim }
         ]}
       >
-        {/* Prominent Back Button */}
+        {/* Back Button */}
         <Pressable 
           style={styles.backButton}
           onPress={handleClose}
         >
           <ArrowLeft size={24} color="#FFFFFF" />
           <Text style={styles.backButtonText}>Back to App</Text>
-        </Pressable>
-        
-        {/* Toggle minimal mode button */}
-        <Pressable 
-          style={styles.toggleMinimalButton}
-          onPress={() => setShowMinimal(!showMinimal)}
-        >
-          <Text style={styles.toggleMinimalText}>
-            {showMinimal ? "SHOW FULL" : "MINIMAL MODE"}
-          </Text>
         </Pressable>
         
         {/* Draggable indicator */}
@@ -262,69 +207,6 @@ export default function OverlayDemo({ recommendation, onClose, initialPositions,
         >
           {renderIndicator()}
         </Animated.View>
-        
-        {/* Draggable panel - only show if not in minimal mode */}
-        {!showMinimal && (
-          <Animated.View
-            style={[
-              styles.draggablePanel,
-              {
-                left: panelPosition.x,
-                top: panelPosition.y,
-              }
-            ]}
-            {...panelPanResponder.panHandlers}
-          >
-            <View style={styles.panelHeader}>
-              <Text style={styles.panelTitle}>TRIP EVALUATION</Text>
-            </View>
-            
-            <View style={styles.panelContent}>
-              <View style={styles.panelRow}>
-                <View style={styles.panelIconContainer}>
-                  <DollarSign size={16} color={colors.textPrimary} />
-                </View>
-                <Text style={styles.panelLabel}>Fare:</Text>
-                <Text style={styles.panelValue}>
-                  {recommendation === 'accept' ? '$18.50' : recommendation === 'consider' ? '$12.75' : '$8.25'}
-                </Text>
-              </View>
-              
-              <View style={styles.panelRow}>
-                <View style={styles.panelIconContainer}>
-                  <MapPin size={16} color={colors.textPrimary} />
-                </View>
-                <Text style={styles.panelLabel}>Pickup:</Text>
-                <Text style={styles.panelValue}>
-                  {recommendation === 'accept' ? '1.2 mi' : recommendation === 'consider' ? '3.5 mi' : '4.8 mi'}
-                </Text>
-              </View>
-              
-              <View style={styles.panelRow}>
-                <View style={styles.panelIconContainer}>
-                  <Clock size={16} color={colors.textPrimary} />
-                </View>
-                <Text style={styles.panelLabel}>Duration:</Text>
-                <Text style={styles.panelValue}>
-                  {recommendation === 'accept' ? '15 min' : recommendation === 'consider' ? '22 min' : '35 min'}
-                </Text>
-              </View>
-            </View>
-            
-            <View style={[
-              styles.panelFooter,
-              recommendation === 'accept' ? styles.acceptFooter : 
-              recommendation === 'consider' ? styles.considerFooter : 
-              styles.rejectFooter
-            ]}>
-              <Text style={styles.panelRecommendation}>
-                {recommendation === 'accept' ? 'ACCEPT TRIP' : 
-                 recommendation === 'consider' ? 'CONSIDER TRIP' : 
-                 'REJECT TRIP'}
-              </Text>
-            </View>
-          </Animated.View>
-        )}
       </Animated.View>
     </Pressable>
   );
@@ -356,23 +238,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
-  },
-  toggleMinimalButton: {
-    position: 'absolute',
-    top: 100,
-    left: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-  },
-  toggleMinimalText: {
-    color: colors.textPrimary,
-    fontSize: 12,
-    fontWeight: '600',
   },
   draggableIndicator: {
     position: 'absolute',
@@ -435,81 +300,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.textPrimary,
-  },
-  draggablePanel: {
-    position: 'absolute',
-    width: 200,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-    zIndex: 50,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  panelHeader: {
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  panelTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  panelContent: {
-    padding: 12,
-  },
-  panelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  panelIconContainer: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  panelLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    width: 70,
-  },
-  panelValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    flex: 1,
-    textAlign: 'right',
-  },
-  panelFooter: {
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  acceptFooter: {
-    backgroundColor: colors.primary,
-  },
-  considerFooter: {
-    backgroundColor: colors.warning,
-  },
-  rejectFooter: {
-    backgroundColor: colors.secondary,
-  },
-  panelRecommendation: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    letterSpacing: 0.5,
   },
   instructionsContainer: {
     flex: 1,
