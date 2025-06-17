@@ -12,7 +12,8 @@ export default function TutorialScreen() {
   const [currentStep, setCurrentStep] = useState(0);
   const [minFare, setMinFare] = useState(10);
   const [maxPickupDistance, setMaxPickupDistance] = useState(5);
-  const [currentDemo, setCurrentDemo] = useState<'accept' | 'reject' | 'consider' | null>(null);
+  const [showDemo, setShowDemo] = useState(false);
+  const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
   
   const handleNext = () => {
     if (currentStep < 2) {
@@ -28,6 +29,11 @@ export default function TutorialScreen() {
     } else {
       router.back();
     }
+  };
+  
+  const handleShowDemo = (type: 'accept' | 'reject' | 'consider') => {
+    setDemoType(type);
+    setShowDemo(true);
   };
   
   const renderStep = () => {
@@ -53,7 +59,7 @@ export default function TutorialScreen() {
             <View style={styles.demoContainer}>
               <Pressable 
                 style={[styles.demoButton, { backgroundColor: colors.primary }]}
-                onPress={() => setCurrentDemo('accept')}
+                onPress={() => handleShowDemo('accept')}
               >
                 <View style={styles.miniCrosshair}>
                   <View style={styles.miniCrosshairH} />
@@ -64,7 +70,7 @@ export default function TutorialScreen() {
               
               <Pressable 
                 style={[styles.demoButton, { backgroundColor: colors.warning }]}
-                onPress={() => setCurrentDemo('consider')}
+                onPress={() => handleShowDemo('consider')}
               >
                 <Text style={styles.demoIcon}>!</Text>
                 <Text style={styles.demoButtonText}>Consider Widget</Text>
@@ -72,7 +78,7 @@ export default function TutorialScreen() {
               
               <Pressable 
                 style={[styles.demoButton, { backgroundColor: colors.secondary }]}
-                onPress={() => setCurrentDemo('reject')}
+                onPress={() => handleShowDemo('reject')}
               >
                 <Text style={styles.demoIcon}>×</Text>
                 <Text style={styles.demoButtonText}>Reject Widget</Text>
@@ -148,10 +154,11 @@ export default function TutorialScreen() {
   
   return (
     <View style={styles.container}>
-      {currentDemo ? (
+      {showDemo ? (
         <OverlayDemo 
-          recommendation={currentDemo} 
-          onClose={() => setCurrentDemo(null)} 
+          visible={showDemo}
+          recommendation={demoType} 
+          onClose={() => setShowDemo(false)} 
         />
       ) : (
         <>

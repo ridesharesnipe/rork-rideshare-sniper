@@ -17,6 +17,7 @@ const { width, height } = Dimensions.get('window');
 interface OverlayDemoProps {
   visible: boolean;
   onClose: () => void;
+  recommendation?: 'accept' | 'reject' | 'consider';
 }
 
 interface Position {
@@ -24,7 +25,7 @@ interface Position {
   y: number;
 }
 
-const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
+const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendation = 'accept' }) => {
   const [rejectPosition, setRejectPosition] = useState<Position>({ x: 0, y: 0 });
   const pan = useRef(new Animated.ValueXY()).current;
   
@@ -34,8 +35,8 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
       onPanResponderGrant: () => {
         // Store the current position as offset
         pan.setOffset({
-          x: (pan.x as any)._value || 0,
-          y: (pan.y as any)._value || 0
+          x: pan.x._value || 0,
+          y: pan.y._value || 0
         });
         // Reset the value to avoid jumps
         pan.setValue({ x: 0, y: 0 });
@@ -50,14 +51,61 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
       onPanResponderRelease: () => {
         pan.flattenOffset();
         // Update the position state with current values
-        const x = (pan.x as any)._value || 0;
-        const y = (pan.y as any)._value || 0;
+        const x = pan.x._value || 0;
+        const y = pan.y._value || 0;
         setRejectPosition({ x, y });
       }
     })
   ).current;
 
   if (!visible) return null;
+
+  const getOverlayContent = () => {
+    switch (recommendation) {
+      case 'accept':
+        return (
+          <View style={styles.acceptOverlay}>
+            <View style={styles.crosshair}>
+              <View style={styles.crosshairHorizontal} />
+              <View style={styles.crosshairVertical} />
+              <View style={styles.crosshairCenter} />
+            </View>
+          </View>
+        );
+      case 'consider':
+        return (
+          <View style={styles.considerOverlay}>
+            <Text style={styles.considerIcon}>!</Text>
+          </View>
+        );
+      case 'reject':
+        return (
+          <Animated.View
+            style={[styles.rejectOverlay, {
+              transform: [{ translateX: pan.x }, { translateY: pan.y }]
+            }]}
+            {...panResponder.panHandlers}
+          >
+            <X size={24} color="#fff" />
+          </Animated.View>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getInstructionText = () => {
+    switch (recommendation) {
+      case 'accept':
+        return "Green crosshair indicates a profitable trip worth accepting";
+      case 'consider':
+        return "Yellow warning shows borderline trips that need consideration";
+      case 'reject':
+        return "Drag the red X to position it correctly over the Uber interface";
+      default:
+        return "";
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -170,21 +218,14 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
           <Text style={styles.tacticalValueGreen}>5.00</Text>
         </View>
         
-        {/* Draggable Reject Button Overlay */}
-        <Animated.View
-          style={[styles.rejectButton, {
-            transform: [{ translateX: pan.x }, { translateY: pan.y }]
-          }]}
-          {...panResponder.panHandlers}
-        >
-          <X size={24} color="#fff" />
-        </Animated.View>
+        {/* Dynamic Overlay Content */}
+        {getOverlayContent()}
       </View>
       
       {/* Instructions */}
       <View style={styles.instructions}>
         <Text style={styles.instructionsText}>
-          Drag the red X to position it correctly over the Uber interface
+          {getInstructionText()}
         </Text>
       </View>
       
@@ -448,7 +489,60 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  rejectButton: {
+  acceptOverlay: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1001,
+  },
+  crosshair: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crosshairHorizontal: {
+    position: 'absolute',
+    width: 30,
+    height: 3,
+    backgroundColor: colors.primary,
+  },
+  crosshairVertical: {
+    position: 'absolute',
+    width: 3,
+    height: 30,
+    backgroundColor: colors.primary,
+  },
+  crosshairCenter: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+  },
+  considerOverlay: {
+    position: 'absolute',
+    top: -20,
+    right: -20,
+    backgroundColor: colors.warning,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+    zIndex: 1001,
+  },
+  considerIcon: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  rejectOverlay: {
     position: 'absolute',
     top: -20,
     right: -20,

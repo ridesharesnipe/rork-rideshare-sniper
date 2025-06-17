@@ -71,6 +71,7 @@ export default function SettingsScreen() {
   if (showDemo) {
     return (
       <OverlayDemo 
+        visible={showDemo}
         recommendation={demoType} 
         onClose={() => setShowDemo(false)} 
       />
