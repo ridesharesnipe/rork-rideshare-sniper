@@ -28,6 +28,7 @@ interface Position {
 const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendation = 'accept' }) => {
   const [rejectPosition, setRejectPosition] = useState<Position>({ x: 0, y: 0 });
   const pan = useRef(new Animated.ValueXY()).current;
+  const currentPosition = useRef<Position>({ x: 0, y: 0 });
   
   const panResponder = useRef(
     PanResponder.create({
@@ -35,8 +36,8 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
       onPanResponderGrant: () => {
         // Store the current position as offset
         pan.setOffset({
-          x: pan.x._value || 0,
-          y: pan.y._value || 0
+          x: currentPosition.current.x,
+          y: currentPosition.current.y
         });
         // Reset the value to avoid jumps
         pan.setValue({ x: 0, y: 0 });
@@ -48,12 +49,13 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         ],
         { useNativeDriver: false }
       ),
-      onPanResponderRelease: () => {
+      onPanResponderRelease: (evt, gestureState) => {
         pan.flattenOffset();
-        // Update the position state with current values
-        const x = pan.x._value || 0;
-        const y = pan.y._value || 0;
-        setRejectPosition({ x, y });
+        // Update the position state with gesture values
+        const newX = currentPosition.current.x + gestureState.dx;
+        const newY = currentPosition.current.y + gestureState.dy;
+        currentPosition.current = { x: newX, y: newY };
+        setRejectPosition({ x: newX, y: newY });
       }
     })
   ).current;
