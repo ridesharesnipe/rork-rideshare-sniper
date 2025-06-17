@@ -19,8 +19,13 @@ interface OverlayDemoProps {
   onClose: () => void;
 }
 
+interface Position {
+  x: number;
+  y: number;
+}
+
 const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
-  const [rejectPosition, setRejectPosition] = useState({ x: 0, y: 0 });
+  const [rejectPosition, setRejectPosition] = useState<Position>({ x: 0, y: 0 });
   const pan = useRef(new Animated.ValueXY()).current;
   
   const panResponder = useRef(
@@ -28,8 +33,8 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
       onStartShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         pan.setOffset({
-          x: pan.x._value,
-          y: pan.y._value
+          x: pan.x as unknown as number,
+          y: pan.y as unknown as number
         });
         pan.setValue({ x: 0, y: 0 });
       },
@@ -43,8 +48,8 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
       onPanResponderRelease: () => {
         pan.flattenOffset();
         setRejectPosition({ 
-          x: pan.x._value, 
-          y: pan.y._value 
+          x: pan.x as unknown as number, 
+          y: pan.y as unknown as number 
         });
       }
     })

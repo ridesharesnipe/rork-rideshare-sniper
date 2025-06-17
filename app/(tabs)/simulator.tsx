@@ -1,14 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, SafeAreaView, Slider } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, SafeAreaView } from 'react-native';
 import { Stack } from 'expo-router';
 import { Settings, Play, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import OverlayDemo from '@/components/OverlayDemo';
+import Slider from '@/components/Slider';
+
+interface CriteriaState {
+  minFare: number;
+  maxPickupDistance: number;
+  maxPickupTime: number;
+  minRating: number;
+  acceptShare: boolean;
+}
 
 export default function SimulatorScreen() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [isPositionMode, setIsPositionMode] = useState(false);
-  const [criteria, setCriteria] = useState({
+  const [criteria, setCriteria] = useState<CriteriaState>({
     minFare: 5.00,
     maxPickupDistance: 5.0,
     maxPickupTime: 10,
@@ -16,7 +25,7 @@ export default function SimulatorScreen() {
     acceptShare: true,
   });
 
-  const updateCriteria = (key, value) => {
+  const updateCriteria = (key: keyof CriteriaState, value: number | boolean) => {
     setCriteria(prev => ({
       ...prev,
       [key]: value
@@ -64,7 +73,7 @@ export default function SimulatorScreen() {
                   maximumValue={20}
                   step={0.5}
                   value={criteria.minFare}
-                  onValueChange={(value) => updateCriteria('minFare', value)}
+                  onValueChange={(value: number) => updateCriteria('minFare', value)}
                   minimumTrackTintColor={colors.primary}
                   maximumTrackTintColor="#d3d3d3"
                   thumbTintColor={colors.primary}
@@ -82,7 +91,7 @@ export default function SimulatorScreen() {
                   maximumValue={10}
                   step={0.5}
                   value={criteria.maxPickupDistance}
-                  onValueChange={(value) => updateCriteria('maxPickupDistance', value)}
+                  onValueChange={(value: number) => updateCriteria('maxPickupDistance', value)}
                   minimumTrackTintColor={colors.primary}
                   maximumTrackTintColor="#d3d3d3"
                   thumbTintColor={colors.primary}
@@ -100,7 +109,7 @@ export default function SimulatorScreen() {
                   maximumValue={20}
                   step={1}
                   value={criteria.maxPickupTime}
-                  onValueChange={(value) => updateCriteria('maxPickupTime', value)}
+                  onValueChange={(value: number) => updateCriteria('maxPickupTime', value)}
                   minimumTrackTintColor={colors.primary}
                   maximumTrackTintColor="#d3d3d3"
                   thumbTintColor={colors.primary}
@@ -118,7 +127,7 @@ export default function SimulatorScreen() {
                   maximumValue={5.0}
                   step={0.1}
                   value={criteria.minRating}
-                  onValueChange={(value) => updateCriteria('minRating', value)}
+                  onValueChange={(value: number) => updateCriteria('minRating', value)}
                   minimumTrackTintColor={colors.primary}
                   maximumTrackTintColor="#d3d3d3"
                   thumbTintColor={colors.primary}
@@ -131,7 +140,7 @@ export default function SimulatorScreen() {
               <Text style={styles.settingLabel}>Accept Shared Rides</Text>
               <Switch
                 value={criteria.acceptShare}
-                onValueChange={(value) => updateCriteria('acceptShare', value)}
+                onValueChange={(value: boolean) => updateCriteria('acceptShare', value)}
                 trackColor={{ false: '#767577', true: colors.primary }}
                 thumbColor={criteria.acceptShare ? '#fff' : '#f4f3f4'}
               />
