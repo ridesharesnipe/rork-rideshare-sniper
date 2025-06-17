@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, SafeAreaView } from 'react-native';
 import { Stack } from 'expo-router';
-import { Settings, Play, X } from 'lucide-react-native';
+import { Settings, Play } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import OverlayDemo from '@/components/OverlayDemo';
+import InteractiveDemo from '@/components/InteractiveDemo';
 import Slider from '@/components/Slider';
 
 interface CriteriaState {
@@ -16,6 +17,7 @@ interface CriteriaState {
 
 export default function SimulatorScreen() {
   const [showOverlay, setShowOverlay] = useState(false);
+  const [showInteractiveDemo, setShowInteractiveDemo] = useState(false);
   const [isPositionMode, setIsPositionMode] = useState(false);
   const [criteria, setCriteria] = useState<CriteriaState>({
     minFare: 5.00,
@@ -31,6 +33,24 @@ export default function SimulatorScreen() {
       [key]: value
     }));
   };
+
+  if (showInteractiveDemo) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen 
+          options={{
+            title: 'Interactive Demo',
+            headerRight: () => (
+              <TouchableOpacity style={styles.headerButton} onPress={() => setShowInteractiveDemo(false)}>
+                <Text style={styles.backButtonText}>Back</Text>
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <InteractiveDemo />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,6 +79,14 @@ export default function SimulatorScreen() {
           >
             <Play size={24} color="white" style={styles.buttonIcon} />
             <Text style={styles.demoButtonText}>Show Demo Overlay</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.demoButton, { backgroundColor: colors.primary }]} 
+            onPress={() => setShowInteractiveDemo(true)}
+          >
+            <Play size={24} color="white" style={styles.buttonIcon} />
+            <Text style={styles.demoButtonText}>Interactive Trip Demo</Text>
           </TouchableOpacity>
 
           <View style={styles.settingsCard}>
@@ -189,6 +217,10 @@ const styles = StyleSheet.create({
   headerButton: {
     padding: 8,
   },
+  backButtonText: {
+    color: colors.textPrimary,
+    fontSize: 16,
+  },
   scrollView: {
     flex: 1,
   },
@@ -214,7 +246,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     borderRadius: 12,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   buttonIcon: {
     marginRight: 8,
