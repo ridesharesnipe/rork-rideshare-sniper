@@ -106,7 +106,7 @@ export default function Welcome() {
 
           <Animated.View style={[styles.taglineContainer, { opacity: fadeAnim2 }]}>
             <Text style={styles.tagline}>
-              Made by a rideshare driver for rideshare drivers
+              Built by a rideshare driver for rideshare drivers
             </Text>
           </Animated.View>
 

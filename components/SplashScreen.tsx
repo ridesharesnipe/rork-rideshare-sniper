@@ -36,7 +36,7 @@ export default function SplashScreen() {
         <Text style={styles.title}>RIDESHARE SNIPER</Text>
         
         <Animated.Text style={[styles.tagline, { opacity: taglineAnim }]}>
-          Made by a rideshare driver for rideshare drivers
+          Built by a rideshare driver for rideshare drivers
         </Animated.Text>
       </Animated.View>
     </View>

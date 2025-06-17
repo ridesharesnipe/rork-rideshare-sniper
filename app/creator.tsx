@@ -69,7 +69,7 @@ export default function CreatorScreen() {
               Why I Built Rideshare Sniper
             </Animated.Text>
             <Animated.Text style={[styles.subtitle, { opacity: fadeAnim1 }]}>
-              Made by a rideshare driver for rideshare drivers
+              Built by a rideshare driver for rideshare drivers
             </Animated.Text>
           </View>
 

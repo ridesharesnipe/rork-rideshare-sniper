@@ -300,7 +300,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         
         {/* Accept Button */}
         <TouchableOpacity style={styles.acceptButton}>
-          <Text style={styles.acceptText}>Accept</Text>
+          <Text style={styles.acceptButtonText}>Accept</Text>
         </TouchableOpacity>
       </View>
       
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
   },
-  acceptText: {
+  acceptButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
@@ -666,6 +666,11 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: 'white',
+  },
+  acceptText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   instructions: {
     position: 'absolute',
