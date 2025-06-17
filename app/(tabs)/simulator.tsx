@@ -68,7 +68,6 @@ export default function SimulatorScreen() {
               <Text style={styles.settingLabel}>Minimum Fare</Text>
               <View style={styles.sliderContainer}>
                 <Slider
-                  style={styles.slider}
                   minimumValue={1}
                   maximumValue={20}
                   step={0.5}
@@ -86,7 +85,6 @@ export default function SimulatorScreen() {
               <Text style={styles.settingLabel}>Max Pickup Distance</Text>
               <View style={styles.sliderContainer}>
                 <Slider
-                  style={styles.slider}
                   minimumValue={1}
                   maximumValue={10}
                   step={0.5}
@@ -104,7 +102,6 @@ export default function SimulatorScreen() {
               <Text style={styles.settingLabel}>Max Pickup Time</Text>
               <View style={styles.sliderContainer}>
                 <Slider
-                  style={styles.slider}
                   minimumValue={1}
                   maximumValue={20}
                   step={1}
@@ -122,7 +119,6 @@ export default function SimulatorScreen() {
               <Text style={styles.settingLabel}>Minimum Rating</Text>
               <View style={styles.sliderContainer}>
                 <Slider
-                  style={styles.slider}
                   minimumValue={3.0}
                   maximumValue={5.0}
                   step={0.1}

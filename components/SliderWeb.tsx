@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 import colors from '@/constants/colors';
 
 interface SliderProps {
@@ -11,7 +11,7 @@ interface SliderProps {
   minimumTrackTintColor?: string;
   maximumTrackTintColor?: string;
   thumbTintColor?: string;
-  style?: any;
+  style?: ViewStyle;
 }
 
 // A simple web-compatible slider implementation

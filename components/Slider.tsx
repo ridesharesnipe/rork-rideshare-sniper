@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, ViewStyle } from 'react-native';
 import colors from '@/constants/colors';
 
 // Use different slider implementations for web vs native
@@ -14,6 +14,10 @@ interface SliderProps {
   maximumValue: number;
   step: number;
   onValueChange: (value: number) => void;
+  minimumTrackTintColor?: string;
+  maximumTrackTintColor?: string;
+  thumbTintColor?: string;
+  style?: ViewStyle;
 }
 
 export default function Slider({
@@ -22,9 +26,13 @@ export default function Slider({
   maximumValue,
   step,
   onValueChange,
+  minimumTrackTintColor = colors.primary,
+  maximumTrackTintColor = colors.surfaceLight,
+  thumbTintColor = colors.primary,
+  style,
 }: SliderProps) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <SliderComponent
         style={styles.slider}
         value={value}
@@ -32,9 +40,9 @@ export default function Slider({
         maximumValue={maximumValue}
         step={step}
         onValueChange={onValueChange}
-        minimumTrackTintColor={colors.primary}
-        maximumTrackTintColor={colors.surfaceLight}
-        thumbTintColor={colors.primary}
+        minimumTrackTintColor={minimumTrackTintColor}
+        maximumTrackTintColor={maximumTrackTintColor}
+        thumbTintColor={thumbTintColor}
       />
     </View>
   );
