@@ -35,24 +35,30 @@ export default function SplashScreen() {
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <Animated.View style={[styles.logo, { opacity: crosshairAnim }]}>
           <View style={styles.crosshair}>
-            {/* Outer ring */}
+            {/* Outer targeting ring */}
             <View style={styles.crosshairOuterRing} />
             
             {/* Main crosshair lines */}
             <View style={styles.crosshairHorizontal} />
             <View style={styles.crosshairVertical} />
             
-            {/* Inner ring */}
+            {/* Inner targeting ring */}
             <View style={styles.crosshairInnerRing} />
             
             {/* Center dot */}
             <View style={styles.crosshairCenter} />
             
-            {/* Tick marks */}
-            <View style={[styles.tickMark, styles.tickTop]} />
-            <View style={[styles.tickMark, styles.tickBottom]} />
-            <View style={[styles.tickMark, styles.tickLeft]} />
-            <View style={[styles.tickMark, styles.tickRight]} />
+            {/* Range finder marks */}
+            <View style={[styles.rangeMark, styles.rangeTop]} />
+            <View style={[styles.rangeMark, styles.rangeBottom]} />
+            <View style={[styles.rangeMark, styles.rangeLeft]} />
+            <View style={[styles.rangeMark, styles.rangeRight]} />
+            
+            {/* Corner brackets */}
+            <View style={[styles.cornerBracket, styles.topLeft]} />
+            <View style={[styles.cornerBracket, styles.topRight]} />
+            <View style={[styles.cornerBracket, styles.bottomLeft]} />
+            <View style={[styles.cornerBracket, styles.bottomRight]} />
           </View>
         </Animated.View>
         
@@ -80,71 +86,102 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   crosshair: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     alignItems: 'center',
     justifyContent: 'center',
   },
   crosshairOuterRing: {
     position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     borderWidth: 2,
     borderColor: colors.primary,
-    opacity: 0.6,
+    opacity: 0.7,
   },
   crosshairInnerRing: {
     position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     borderWidth: 1.5,
     borderColor: colors.primary,
-    opacity: 0.8,
+    opacity: 0.9,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 80,
+    width: 110,
     height: 2,
     backgroundColor: colors.primary,
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 80,
+    height: 110,
     backgroundColor: colors.primary,
   },
   crosshairCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: colors.primary,
     zIndex: 1,
   },
-  tickMark: {
+  rangeMark: {
     position: 'absolute',
     backgroundColor: colors.primary,
   },
-  tickTop: {
-    width: 3,
-    height: 12,
-    top: 8,
+  rangeTop: {
+    width: 4,
+    height: 16,
+    top: 6,
   },
-  tickBottom: {
-    width: 3,
-    height: 12,
-    bottom: 8,
+  rangeBottom: {
+    width: 4,
+    height: 16,
+    bottom: 6,
   },
-  tickLeft: {
-    width: 12,
-    height: 3,
-    left: 8,
+  rangeLeft: {
+    width: 16,
+    height: 4,
+    left: 6,
   },
-  tickRight: {
-    width: 12,
-    height: 3,
-    right: 8,
+  rangeRight: {
+    width: 16,
+    height: 4,
+    right: 6,
+  },
+  cornerBracket: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  topLeft: {
+    top: 15,
+    left: 15,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+  topRight: {
+    top: 15,
+    right: 15,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+  },
+  bottomLeft: {
+    bottom: 15,
+    left: 15,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+  },
+  bottomRight: {
+    bottom: 15,
+    right: 15,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
   },
   title: {
     fontSize: 28,

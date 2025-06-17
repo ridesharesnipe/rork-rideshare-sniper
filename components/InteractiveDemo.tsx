@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { X } from 'lucide-react-native';
+import { X, Plus } from 'lucide-react-native';
 import colors from '@/constants/colors';
 
 type DemoState = 'green' | 'yellow' | 'red';
@@ -11,13 +11,13 @@ const InteractiveDemo: React.FC = () => {
   const getScreenshotUrl = () => {
     switch (activeDemo) {
       case 'green':
-        return 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop';
+        return 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=400&h=300&auto=format&fit=crop';
       case 'yellow':
-        return 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=1000&auto=format&fit=crop';
+        return 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=400&h=300&auto=format&fit=crop';
       case 'red':
-        return 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop';
+        return 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=400&h=300&auto=format&fit=crop';
       default:
-        return 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop';
+        return 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=400&h=300&auto=format&fit=crop';
     }
   };
 
@@ -96,13 +96,11 @@ const InteractiveDemo: React.FC = () => {
     if (activeDemo === 'red') return null;
 
     const backgroundColor = activeDemo === 'green' ? colors.primary : colors.warning;
-    const borderColor = activeDemo === 'green' ? '#45a049' : '#ffb300';
     const text = activeDemo === 'green' ? 'GOOD TRIP' : 'MAYBE';
 
     return (
-      <View style={[styles.acceptOverlay, { backgroundColor, borderColor }]}>
+      <View style={[styles.acceptOverlay, { backgroundColor }]}>
         <View style={styles.crosshair}>
-          <View style={styles.crosshairOuterRing} />
           <View style={styles.crosshairHorizontal} />
           <View style={styles.crosshairVertical} />
           <View style={styles.crosshairCenter} />
@@ -138,43 +136,56 @@ const InteractiveDemo: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.screenshotContainer}>
-        <Image
-          source={{ uri: getScreenshotUrl() }}
-          style={styles.screenshot}
-          resizeMode="cover"
-        />
+      <View style={styles.simulatorContainer}>
+        <Text style={styles.simulatorTitle}>Uber Interface Simulation</Text>
         
-        {/* Price per mile widget - top left */}
-        {renderPricePerMileWidget()}
-        
-        {/* Accept overlay - only for green and yellow */}
-        {renderAcceptOverlay()}
-        
-        {/* Reject overlay - always visible */}
-        <View style={styles.rejectOverlay}>
-          <X size={24} color="#fff" />
-        </View>
-        
-        {/* Simulated Uber trip card */}
-        <View style={styles.tripCard}>
-          <Text style={styles.fareText}>{tripData.fare}</Text>
-          <Text style={styles.timeDistanceText}>{tripData.timeDistance}</Text>
-          <View style={styles.locationContainer}>
-            <View style={styles.locationDot} />
-            <Text style={styles.locationText}>
-              Bristol Forest Way & Waterford Chase Pkwy, Orlando
-            </Text>
+        <View style={styles.uberScreenshot}>
+          <Image
+            source={{ uri: getScreenshotUrl() }}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+          />
+          
+          {/* Price per mile widget - top left */}
+          {renderPricePerMileWidget()}
+          
+          {/* Simulated Uber trip card */}
+          <View style={styles.tripCard}>
+            <Text style={styles.fareText}>{tripData.fare}</Text>
+            <Text style={styles.timeDistanceText}>{tripData.timeDistance}</Text>
+            <View style={styles.locationContainer}>
+              <View style={styles.locationDot} />
+              <Text style={styles.locationText}>
+                Bristol Forest Way & Waterford Chase Pkwy
+              </Text>
+            </View>
+            <View style={styles.routeLine} />
+            <View style={styles.locationContainer}>
+              <View style={styles.locationSquare} />
+              <Text style={styles.locationText}>{tripData.tripDistance}</Text>
+            </View>
+            <Text style={styles.locationText2}>N Alafaya Trl, Orlando</Text>
+            
+            {/* Accept button with overlay */}
+            <View style={styles.buttonRow}>
+              <TouchableOpacity style={styles.acceptButton}>
+                <Text style={styles.acceptButtonText}>Accept</Text>
+              </TouchableOpacity>
+              
+              {/* Reject button */}
+              <TouchableOpacity style={styles.rejectButton}>
+                <X size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.routeLine} />
-          <View style={styles.locationContainer}>
-            <View style={styles.locationSquare} />
-            <Text style={styles.locationText}>{tripData.tripDistance}</Text>
+          
+          {/* Accept overlay - positioned over accept button */}
+          {renderAcceptOverlay()}
+          
+          {/* Reject overlay - positioned over reject button */}
+          <View style={styles.rejectOverlay}>
+            <X size={24} color="#fff" />
           </View>
-          <Text style={styles.locationText2}>N Alafaya Trl, Orlando</Text>
-          <TouchableOpacity style={styles.acceptButton}>
-            <Text style={styles.acceptButtonText}>Accept</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -221,21 +232,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-  screenshotContainer: {
-    position: 'relative',
-    height: 500,
-    marginBottom: 16,
-    backgroundColor: colors.surfaceLight,
+  simulatorContainer: {
+    padding: 16,
   },
-  screenshot: {
+  simulatorTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  uberScreenshot: {
+    position: 'relative',
+    height: 400,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.surfaceLight,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  backgroundImage: {
+    position: 'absolute',
     width: '100%',
-    height: '100%',
-    opacity: 0.9,
+    height: '60%',
+    top: 0,
+    opacity: 0.3,
   },
   pricePerMileWidget: {
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: 16,
+    left: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -248,84 +277,8 @@ const styles = StyleSheet.create({
   },
   pricePerMileText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-  },
-  acceptOverlay: {
-    position: 'absolute',
-    bottom: 80,
-    left: '7.5%',
-    width: '85%',
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    zIndex: 1001,
-  },
-  crosshair: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  crosshairOuterRing: {
-    position: 'absolute',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'white',
-    opacity: 0.6,
-  },
-  crosshairHorizontal: {
-    position: 'absolute',
-    width: 30,
-    height: 2,
-    backgroundColor: 'white',
-  },
-  crosshairVertical: {
-    position: 'absolute',
-    width: 2,
-    height: 30,
-    backgroundColor: 'white',
-  },
-  crosshairCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'white',
-  },
-  acceptText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  rejectOverlay: {
-    position: 'absolute',
-    top: 270,
-    right: 15,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.secondary,
-    borderWidth: 2,
-    borderColor: '#d32f2f',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    zIndex: 1001,
   },
   tripCard: {
     position: 'absolute',
@@ -333,74 +286,156 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     padding: 20,
-    elevation: 5,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    zIndex: 1000,
   },
   fareText: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 4,
+    color: '#000',
   },
   timeDistanceText: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: 14,
+    marginBottom: 8,
+    color: '#666',
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   locationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#000',
-    marginRight: 10,
-    marginTop: 4,
+    marginRight: 8,
+    marginTop: 3,
   },
   locationSquare: {
-    width: 10,
-    height: 10,
+    width: 8,
+    height: 8,
     backgroundColor: '#000',
-    marginRight: 10,
-    marginTop: 4,
+    marginRight: 8,
+    marginTop: 3,
   },
   locationText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#555',
     flexShrink: 1,
     flex: 1,
   },
   locationText2: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#555',
-    marginLeft: 20,
+    marginLeft: 16,
+    marginBottom: 12,
   },
   routeLine: {
     width: 2,
-    height: 20,
+    height: 16,
     backgroundColor: '#000',
-    marginLeft: 5,
+    marginLeft: 4,
     marginVertical: 2,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   acceptButton: {
     backgroundColor: '#2979ff',
     borderRadius: 8,
-    padding: 16,
+    padding: 14,
+    flex: 1,
     alignItems: 'center',
-    marginTop: 10,
+    marginRight: 12,
   },
   acceptButtonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+  rejectButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  acceptOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 76,
+    height: 44,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 1001,
+  },
+  crosshair: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  crosshairHorizontal: {
+    position: 'absolute',
+    width: 20,
+    height: 2,
+    backgroundColor: 'white',
+  },
+  crosshairVertical: {
+    position: 'absolute',
+    width: 2,
+    height: 20,
+    backgroundColor: 'white',
+  },
+  crosshairCenter: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'white',
+  },
+  acceptText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  rejectOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 1001,
   },
   explanationContainer: {
     backgroundColor: colors.surface,
@@ -416,7 +451,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   explanationTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginBottom: 12,
