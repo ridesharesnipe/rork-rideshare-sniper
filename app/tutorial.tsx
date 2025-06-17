@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { DollarSign, MapPin, ChevronRight, ChevronLeft, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import Slider from '@/components/Slider';
@@ -154,6 +154,13 @@ export default function TutorialScreen() {
   
   return (
     <View style={styles.container}>
+      <Stack.Screen 
+        options={{ 
+          title: 'Tutorial',
+          headerShown: false
+        }} 
+      />
+      
       {showDemo ? (
         <OverlayDemo 
           visible={showDemo}
@@ -208,6 +215,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
+    paddingTop: 60,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
