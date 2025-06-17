@@ -5,13 +5,24 @@ import colors from '@/constants/colors';
 import { useOverlayStore } from '@/store/overlayStore';
 
 export default function TripOverlay() {
-  const { overlayVisible, tripQuality, acceptPosition, rejectPosition, updatePosition, positioningMode } = useOverlayStore();
+  const { overlayVisible, tripQuality, acceptPosition, rejectPosition, updatePosition, positioningMode, hideOverlay } = useOverlayStore();
   
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
   const acceptPan = useRef({ x: acceptPosition.x, y: acceptPosition.y });
   const rejectPan = useRef({ x: rejectPosition.x, y: rejectPosition.y });
+
+  // Auto-hide overlay after 15 seconds (simulating Uber's timeout)
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (overlayVisible && !positioningMode) {
+      timeout = setTimeout(() => {
+        hideOverlay();
+      }, 15000);
+    }
+    return () => clearTimeout(timeout);
+  }, [overlayVisible, positioningMode, hideOverlay]);
 
   const acceptPanResponder = useRef(
     PanResponder.create({
@@ -69,6 +80,7 @@ export default function TripOverlay() {
           if (!positioningMode) {
             // Simulate tap on Uber accept button - in a real app, this would pass through
             console.log('Accept button tapped');
+            hideOverlay();
           }
         }}
       >
@@ -93,7 +105,7 @@ export default function TripOverlay() {
           if (!positioningMode) {
             // Simulate tap on Uber reject button
             console.log('Reject button tapped');
-            useOverlayStore.getState().hideOverlay();
+            hideOverlay();
           }
         }}
       >
