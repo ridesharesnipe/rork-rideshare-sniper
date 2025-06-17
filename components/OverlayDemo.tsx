@@ -92,7 +92,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
   const getOverlayContent = () => {
     return (
       <>
-        {recommendation !== 'red' && (
+        {recommendation !== 'reject' && (
           <Animated.View
             style={[styles.acceptOverlay, {
               transform: [{ translateX: acceptPan.x }, { translateY: acceptPan.y }]
@@ -540,11 +540,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     zIndex: 1001,
   },
-  acceptText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   crosshair: {
     width: 40,
     height: 40,
@@ -637,5 +632,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
 export default OverlayDemo;
