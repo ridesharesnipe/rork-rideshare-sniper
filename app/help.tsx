@@ -275,9 +275,9 @@ export default function HelpScreen() {
           
           <Pressable 
             style={styles.tutorialButton}
-            onPress={() => router.push('/onboarding')}
+            onPress={() => router.push('/tutorial')}
           >
-            <Text style={styles.tutorialButtonText}>GO TO FULL TUTORIAL</Text>
+            <Text style={styles.tutorialButtonText}>GO TO INTERACTIVE TUTORIAL</Text>
           </Pressable>
           
           <Text style={styles.contactInfo}>

@@ -64,8 +64,8 @@ export default function SettingsScreen() {
     router.push('/help');
   };
   
-  const navigateToOnboarding = () => {
-    router.push('/onboarding');
+  const navigateToTutorial = () => {
+    router.push('/tutorial');
   };
   
   if (showDemo) {
@@ -270,7 +270,7 @@ export default function SettingsScreen() {
         
         <Pressable 
           style={styles.helpItem}
-          onPress={navigateToOnboarding}
+          onPress={navigateToTutorial}
         >
           <View style={styles.helpItemContent}>
             <View style={styles.helpIconContainer}>
