@@ -67,16 +67,18 @@ export default function SimulatorScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Minimum Fare</Text>
               <View style={styles.sliderContainer}>
-                <Slider
-                  minimumValue={1}
-                  maximumValue={20}
-                  step={0.5}
-                  value={criteria.minFare}
-                  onValueChange={(value: number) => updateCriteria('minFare', value)}
-                  minimumTrackTintColor={colors.primary}
-                  maximumTrackTintColor="#d3d3d3"
-                  thumbTintColor={colors.primary}
-                />
+                <View style={styles.sliderWrapper}>
+                  <Slider
+                    minimumValue={1}
+                    maximumValue={20}
+                    step={0.5}
+                    value={criteria.minFare}
+                    onValueChange={(value: number) => updateCriteria('minFare', value)}
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor="#d3d3d3"
+                    thumbTintColor={colors.primary}
+                  />
+                </View>
                 <Text style={styles.settingValue}>${criteria.minFare.toFixed(2)}</Text>
               </View>
             </View>
@@ -84,16 +86,18 @@ export default function SimulatorScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Max Pickup Distance</Text>
               <View style={styles.sliderContainer}>
-                <Slider
-                  minimumValue={1}
-                  maximumValue={10}
-                  step={0.5}
-                  value={criteria.maxPickupDistance}
-                  onValueChange={(value: number) => updateCriteria('maxPickupDistance', value)}
-                  minimumTrackTintColor={colors.primary}
-                  maximumTrackTintColor="#d3d3d3"
-                  thumbTintColor={colors.primary}
-                />
+                <View style={styles.sliderWrapper}>
+                  <Slider
+                    minimumValue={1}
+                    maximumValue={10}
+                    step={0.5}
+                    value={criteria.maxPickupDistance}
+                    onValueChange={(value: number) => updateCriteria('maxPickupDistance', value)}
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor="#d3d3d3"
+                    thumbTintColor={colors.primary}
+                  />
+                </View>
                 <Text style={styles.settingValue}>{criteria.maxPickupDistance.toFixed(1)} mi</Text>
               </View>
             </View>
@@ -101,16 +105,18 @@ export default function SimulatorScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Max Pickup Time</Text>
               <View style={styles.sliderContainer}>
-                <Slider
-                  minimumValue={1}
-                  maximumValue={20}
-                  step={1}
-                  value={criteria.maxPickupTime}
-                  onValueChange={(value: number) => updateCriteria('maxPickupTime', value)}
-                  minimumTrackTintColor={colors.primary}
-                  maximumTrackTintColor="#d3d3d3"
-                  thumbTintColor={colors.primary}
-                />
+                <View style={styles.sliderWrapper}>
+                  <Slider
+                    minimumValue={1}
+                    maximumValue={20}
+                    step={1}
+                    value={criteria.maxPickupTime}
+                    onValueChange={(value: number) => updateCriteria('maxPickupTime', value)}
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor="#d3d3d3"
+                    thumbTintColor={colors.primary}
+                  />
+                </View>
                 <Text style={styles.settingValue}>{criteria.maxPickupTime} min</Text>
               </View>
             </View>
@@ -118,16 +124,18 @@ export default function SimulatorScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Minimum Rating</Text>
               <View style={styles.sliderContainer}>
-                <Slider
-                  minimumValue={3.0}
-                  maximumValue={5.0}
-                  step={0.1}
-                  value={criteria.minRating}
-                  onValueChange={(value: number) => updateCriteria('minRating', value)}
-                  minimumTrackTintColor={colors.primary}
-                  maximumTrackTintColor="#d3d3d3"
-                  thumbTintColor={colors.primary}
-                />
+                <View style={styles.sliderWrapper}>
+                  <Slider
+                    minimumValue={3.0}
+                    maximumValue={5.0}
+                    step={0.1}
+                    value={criteria.minRating}
+                    onValueChange={(value: number) => updateCriteria('minRating', value)}
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor="#d3d3d3"
+                    thumbTintColor={colors.primary}
+                  />
+                </View>
                 <Text style={styles.settingValue}>{criteria.minRating.toFixed(1)}⭐</Text>
               </View>
             </View>
@@ -240,7 +248,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  slider: {
+  sliderWrapper: {
     flex: 1,
     height: 40,
   },

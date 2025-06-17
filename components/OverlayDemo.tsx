@@ -34,8 +34,8 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
       onPanResponderGrant: () => {
         // Store the current position as offset
         pan.setOffset({
-          x: pan.x._value || 0,
-          y: pan.y._value || 0
+          x: (pan.x as any)._value || 0,
+          y: (pan.y as any)._value || 0
         });
         // Reset the value to avoid jumps
         pan.setValue({ x: 0, y: 0 });
@@ -50,8 +50,8 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
       onPanResponderRelease: () => {
         pan.flattenOffset();
         // Update the position state with current values
-        const x = pan.x._value || 0;
-        const y = pan.y._value || 0;
+        const x = (pan.x as any)._value || 0;
+        const y = (pan.y as any)._value || 0;
         setRejectPosition({ x, y });
       }
     })
