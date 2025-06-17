@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { DollarSign, MapPin, ChevronRight, ChevronLeft, X } from 'lucide-react-native';
@@ -14,6 +14,11 @@ export default function TutorialScreen() {
   const [maxPickupDistance, setMaxPickupDistance] = useState(5);
   const [showDemo, setShowDemo] = useState(false);
   const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
+  
+  // Debug log to check current step
+  useEffect(() => {
+    console.log("Current tutorial step:", currentStep);
+  }, [currentStep]);
   
   const handleNext = () => {
     if (currentStep < 2) {
@@ -148,7 +153,16 @@ export default function TutorialScreen() {
         );
       
       default:
-        return null;
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={styles.errorText}>
+              Error: Invalid tutorial step. Please restart the tutorial.
+            </Text>
+            <Pressable style={styles.resetButton} onPress={() => setCurrentStep(0)}>
+              <Text style={styles.resetButtonText}>Restart Tutorial</Text>
+            </Pressable>
+          </View>
+        );
     }
   };
   
@@ -421,5 +435,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginRight: 8,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.secondary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  resetButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  resetButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
 });
