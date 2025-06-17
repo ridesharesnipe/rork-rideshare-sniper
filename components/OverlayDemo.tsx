@@ -7,7 +7,8 @@ import {
   TouchableOpacity, 
   Dimensions,
   PanResponder,
-  Animated
+  Animated,
+  ScrollView
 } from 'react-native';
 import { X, Star } from 'lucide-react-native';
 import colors from '@/constants/colors';
@@ -134,12 +135,43 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
     }
   };
 
+  const getExplanationContent = () => {
+    switch (recommendation) {
+      case 'accept':
+        return {
+          title: "Green Crosshair - Accept",
+          description: "The green crosshair appears when a trip meets all your criteria for profitability. This includes fare amount, pickup distance, and rider rating. Position this over the accept button in the Uber app to quickly take good trips.",
+          imageUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop'
+        };
+      case 'consider':
+        return {
+          title: "Yellow Warning - Consider",
+          description: "The yellow warning indicator shows when a trip is borderline. It may meet most but not all of your criteria. Review the trip details before deciding. Position this over the accept button if you choose to take it.",
+          imageUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=1000&auto=format&fit=crop'
+        };
+      case 'reject':
+        return {
+          title: "Red X - Reject",
+          description: "The red X appears when a trip does not meet your minimum standards for profitability. This could be due to low fare, long pickup distance, or poor rider rating. Position this over the reject button in the Uber app to decline bad trips.",
+          imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop'
+        };
+      default:
+        return {
+          title: "Overlay Demo",
+          description: "This is a demo of the overlay functionality. Drag the widgets to position them over Uber's interface.",
+          imageUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop'
+        };
+    }
+  };
+
+  const explanation = getExplanationContent();
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Map Background with Route */}
       <View style={styles.mapContainer}>
         <Image 
-          source={{ uri: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop' }}
+          source={{ uri: explanation.imageUrl }}
           style={styles.mapImage}
           resizeMode="cover"
         />
@@ -256,6 +288,12 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         </Text>
       </View>
       
+      {/* Explanation Section */}
+      <View style={styles.explanationContainer}>
+        <Text style={styles.explanationTitle}>{explanation.title}</Text>
+        <Text style={styles.explanationText}>{explanation.description}</Text>
+      </View>
+      
       {/* Close button for the entire demo */}
       <TouchableOpacity 
         style={styles.demoCloseButton} 
@@ -263,7 +301,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
       >
         <Text style={styles.demoCloseText}>Close Demo</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -565,46 +603,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: 'white',
   },
-  considerOverlay: {
-    position: 'absolute',
-    bottom: 100,
-    width: '85%',
-    height: 56,
-    backgroundColor: colors.warning,
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: '#ffb300',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    zIndex: 1001,
-  },
-  considerIcon: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  rejectOverlay: {
-    position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.secondary,
-    borderWidth: 2,
-    borderColor: '#d32f2f',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    zIndex: 1001,
-  },
   instructions: {
     position: 'absolute',
     bottom: 250,
@@ -616,6 +614,34 @@ const styles = StyleSheet.create({
   },
   instructionsText: {
     color: 'white',
+    textAlign: 'center',
+  },
+  explanationContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    padding: 15,
+    borderRadius: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    zIndex: -1,
+  },
+  explanationTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  explanationText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
     textAlign: 'center',
   },
   demoCloseButton: {
