@@ -102,6 +102,7 @@ const InteractiveDemo: React.FC = () => {
     return (
       <View style={[styles.acceptOverlay, { backgroundColor, borderColor }]}>
         <View style={styles.crosshair}>
+          <View style={styles.crosshairOuterRing} />
           <View style={styles.crosshairHorizontal} />
           <View style={styles.crosshairVertical} />
           <View style={styles.crosshairCenter} />
@@ -275,22 +276,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 8,
   },
+  crosshairOuterRing: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'white',
+    opacity: 0.6,
+  },
   crosshairHorizontal: {
     position: 'absolute',
     width: 30,
-    height: 3,
+    height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
-    width: 3,
+    width: 2,
     height: 30,
     backgroundColor: 'white',
   },
   crosshairCenter: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: 'white',
   },
   acceptText: {

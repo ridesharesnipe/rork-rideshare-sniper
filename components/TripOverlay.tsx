@@ -116,7 +116,12 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
           }
         }}
       >
-        <Check size={24} color="white" style={styles.icon} />
+        <View style={styles.crosshair}>
+          <View style={styles.crosshairOuterRing} />
+          <View style={styles.crosshairHorizontal} />
+          <View style={styles.crosshairVertical} />
+          <View style={styles.crosshairCenter} />
+        </View>
         <Text style={styles.acceptButtonText}>{text}</Text>
       </TouchableOpacity>
     );
@@ -204,8 +209,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  icon: {
+  crosshair: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
+  },
+  crosshairOuterRing: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'white',
+    opacity: 0.6,
+  },
+  crosshairHorizontal: {
+    position: 'absolute',
+    width: 30,
+    height: 2,
+    backgroundColor: 'white',
+  },
+  crosshairVertical: {
+    position: 'absolute',
+    width: 2,
+    height: 30,
+    backgroundColor: 'white',
+  },
+  crosshairCenter: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'white',
   },
   rejectButton: {
     position: 'absolute',
