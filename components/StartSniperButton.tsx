@@ -1,10 +1,11 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, View, Linking, Platform } from 'react-native';
 import { Radar } from 'lucide-react-native';
 import colors from '@/constants/colors';
+import { useOverlayStore } from '@/store/overlayStore';
 
 interface StartSniperButtonProps {
-  onPress: () => void;
+  onPress?: () => void;
   isActive?: boolean;
 }
 
@@ -12,13 +13,32 @@ const StartSniperButton: React.FC<StartSniperButtonProps> = ({
   onPress, 
   isActive = false 
 }) => {
+  const { showOverlay, hideOverlay } = useOverlayStore();
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      // Default behavior if no onPress prop is provided
+      if (!isActive) {
+        // Launch Uber app
+        const uberUrl = Platform.OS === 'android' ? 'uber://' : 'uber://';
+        Linking.openURL(uberUrl).catch(err => console.error("Failed to open Uber app", err));
+        // Show overlay (for demo purposes, assuming a good trip)
+        showOverlay('green');
+      } else {
+        hideOverlay();
+      }
+    }
+  };
+
   return (
     <TouchableOpacity 
       style={[
         styles.button,
         isActive ? styles.activeButton : null
       ]} 
-      onPress={onPress}
+      onPress={handlePress}
     >
       <View style={styles.content}>
         <Radar size={24} color={isActive ? '#000' : 'white'} style={styles.icon} />

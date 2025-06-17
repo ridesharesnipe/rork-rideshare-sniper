@@ -6,19 +6,24 @@ import colors from '@/constants/colors';
 import StartSniperButton from '@/components/StartSniperButton';
 import StatusIndicator from '@/components/StatusIndicator';
 import OverlayDemo from '@/components/OverlayDemo';
+import TripOverlay from '@/components/TripOverlay';
+import { useOverlayStore } from '@/store/overlayStore';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [isActive, setIsActive] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const { showOverlay: showTripOverlay, hideOverlay, togglePositioningMode, positioningMode } = useOverlayStore();
   
   const toggleSniper = () => {
     if (!isActive) {
       // When activating, show the overlay demo
       setShowOverlay(true);
+      showTripOverlay('green'); // Default to green for demo
     } else {
       // When deactivating, hide the overlay
       setShowOverlay(false);
+      hideOverlay();
     }
     setIsActive(!isActive);
   };
@@ -38,12 +43,19 @@ export default function HomeScreen() {
             onPress: () => {
               setIsActive(false);
               setShowOverlay(false);
+              hideOverlay();
             },
             style: "destructive"
           }
         ]
       );
     }
+  };
+
+  const simulateTrip = (quality: 'green' | 'yellow' | 'red') => {
+    showTripOverlay(quality);
+    setIsActive(true);
+    setShowOverlay(false); // Hide demo overlay if active
   };
 
   return (
@@ -140,6 +152,39 @@ export default function HomeScreen() {
           >
             <Text style={styles.helpButtonText}>Need Help?</Text>
           </TouchableOpacity>
+          
+          {/* Test Buttons for Overlay Simulation */}
+          <View style={styles.testButtonsContainer}>
+            <Text style={styles.testTitle}>Test Overlays</Text>
+            <View style={styles.testButtonsRow}>
+              <TouchableOpacity 
+                style={[styles.testButton, { backgroundColor: colors.primary }]}
+                onPress={() => simulateTrip('green')}
+              >
+                <Text style={styles.testButtonText}>Good Trip</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.testButton, { backgroundColor: colors.warning }]}
+                onPress={() => simulateTrip('yellow')}
+              >
+                <Text style={styles.testButtonText}>Maybe Trip</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.testButton, { backgroundColor: colors.secondary }]}
+                onPress={() => simulateTrip('red')}
+              >
+                <Text style={styles.testButtonText}>Bad Trip</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity 
+              style={[styles.testButton, styles.positionButton, positioningMode && styles.positionButtonActive]}
+              onPress={togglePositioningMode}
+            >
+              <Text style={[styles.testButtonText, positioningMode && styles.positionTextActive]}>
+                {positioningMode ? 'Lock Position' : 'Position Mode'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
       
@@ -149,8 +194,12 @@ export default function HomeScreen() {
         onClose={() => {
           setShowOverlay(false);
           setIsActive(false);
+          hideOverlay();
         }} 
       />
+      
+      {/* Trip Overlay */}
+      <TripOverlay />
     </SafeAreaView>
   );
 }
@@ -260,5 +309,45 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  testButtonsContainer: {
+    marginTop: 20,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+  },
+  testTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 12,
+  },
+  testButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  testButton: {
+    flex: 1,
+    marginHorizontal: 4,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  testButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  positionButton: {
+    backgroundColor: colors.textSecondary,
+    padding: 12,
+    marginTop: 8,
+  },
+  positionButtonActive: {
+    backgroundColor: colors.primary,
+  },
+  positionTextActive: {
+    color: 'white',
   },
 });
