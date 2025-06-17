@@ -21,29 +21,40 @@ const InteractiveDemo: React.FC = () => {
     }
   };
 
-  const getFareText = () => {
+  const getTripData = () => {
     switch (activeDemo) {
       case 'green':
-        return '$18.50';
+        return {
+          fare: '$18.50',
+          pickup: '2.1 mi',
+          pricePerMile: '$3.42',
+          timeDistance: '9 mins (2.1 mi)',
+          tripDistance: '13 mins (4.4 mi)'
+        };
       case 'yellow':
-        return '$7.25';
+        return {
+          fare: '$7.25',
+          pickup: '3.8 mi',
+          pricePerMile: '$1.91',
+          timeDistance: '9 mins (3.8 mi)',
+          tripDistance: '13 mins (4.4 mi)'
+        };
       case 'red':
-        return '$4.31';
+        return {
+          fare: '$4.31',
+          pickup: '3.2 mi',
+          pricePerMile: '$1.35',
+          timeDistance: '9 mins (3.2 mi)',
+          tripDistance: '13 mins (4.4 mi)'
+        };
       default:
-        return '$4.31';
-    }
-  };
-
-  const getPickupText = () => {
-    switch (activeDemo) {
-      case 'green':
-        return '2.1 mi';
-      case 'yellow':
-        return '3.8 mi';
-      case 'red':
-        return '3.2 mi';
-      default:
-        return '3.2 mi';
+        return {
+          fare: '$4.31',
+          pickup: '3.2 mi',
+          pricePerMile: '$1.35',
+          timeDistance: '9 mins (3.2 mi)',
+          tripDistance: '13 mins (4.4 mi)'
+        };
     }
   };
 
@@ -52,21 +63,33 @@ const InteractiveDemo: React.FC = () => {
       case 'green':
         return {
           title: '✅ GREEN OVERLAY - ACCEPT THIS TRIP',
-          text: '• Fare: $18.50 (above $5 minimum ✓)\n• Pickup: 2.1 miles (under 5 mile limit ✓)\n• Decision: All criteria met - GOOD TRIP!\n• Driver action: Tap green overlay to accept',
+          text: '• Fare: $18.50 (above $5 minimum ✓)\n• Pickup: 2.1 miles (under 5 mile limit ✓)\n• Price per mile: $3.42 (excellent rate ✓)\n• Decision: All criteria met - GOOD TRIP!\n• Driver action: Tap green overlay to accept',
         };
       case 'yellow':
         return {
           title: '🟡 YELLOW OVERLAY - CONSIDER THIS TRIP',
-          text: '• Fare: $7.25 (close to minimum)\n• Pickup: 3.8 miles (reasonable distance)\n• Decision: Partially meets criteria - YOUR CHOICE\n• Driver action: Quick decision based on situation',
+          text: '• Fare: $7.25 (close to minimum)\n• Pickup: 3.8 miles (reasonable distance)\n• Price per mile: $1.91 (borderline rate)\n• Decision: Partially meets criteria - YOUR CHOICE\n• Driver action: Quick decision based on situation',
         };
       case 'red':
         return {
           title: '🔴 RED OVERLAY - SKIP THIS TRIP',
-          text: '• Fare: $4.31 (below $5 minimum ✗)\n• Pickup: 3.2 miles (fare too low for distance)\n• Decision: Does not meet criteria - DECLINE\n• Driver action: Tap red X or let timer expire\n• Safety: Red X prevents accidental accepts',
+          text: '• Fare: $4.31 (below $5 minimum ✗)\n• Pickup: 3.2 miles (fare too low for distance)\n• Price per mile: $1.35 (poor rate ✗)\n• Decision: Does not meet criteria - DECLINE\n• Driver action: Tap red X or let timer expire\n• Safety: Red X prevents accidental accepts',
         };
       default:
         return { title: '', text: '' };
     }
+  };
+
+  const renderPricePerMileWidget = () => {
+    const tripData = getTripData();
+    const widgetColor = activeDemo === 'green' ? colors.primary : 
+                       activeDemo === 'yellow' ? colors.warning : colors.secondary;
+    
+    return (
+      <View style={[styles.pricePerMileWidget, { backgroundColor: widgetColor }]}>
+        <Text style={styles.pricePerMileText}>{tripData.pricePerMile}/mi</Text>
+      </View>
+    );
   };
 
   const renderAcceptOverlay = () => {
@@ -89,6 +112,7 @@ const InteractiveDemo: React.FC = () => {
   };
 
   const explanation = getExplanation();
+  const tripData = getTripData();
 
   return (
     <ScrollView style={styles.container}>
@@ -119,13 +143,22 @@ const InteractiveDemo: React.FC = () => {
           style={styles.screenshot}
           resizeMode="cover"
         />
+        
+        {/* Price per mile widget - top left */}
+        {renderPricePerMileWidget()}
+        
+        {/* Accept overlay - only for green and yellow */}
         {renderAcceptOverlay()}
+        
+        {/* Reject overlay - always visible */}
         <View style={styles.rejectOverlay}>
           <X size={24} color="#fff" />
         </View>
+        
+        {/* Simulated Uber trip card */}
         <View style={styles.tripCard}>
-          <Text style={styles.fareText}>{getFareText()}</Text>
-          <Text style={styles.timeDistanceText}>9 mins ({getPickupText()})</Text>
+          <Text style={styles.fareText}>{tripData.fare}</Text>
+          <Text style={styles.timeDistanceText}>{tripData.timeDistance}</Text>
           <View style={styles.locationContainer}>
             <View style={styles.locationDot} />
             <Text style={styles.locationText}>
@@ -135,7 +168,7 @@ const InteractiveDemo: React.FC = () => {
           <View style={styles.routeLine} />
           <View style={styles.locationContainer}>
             <View style={styles.locationSquare} />
-            <Text style={styles.locationText}>13 mins (4.4 mi)</Text>
+            <Text style={styles.locationText}>{tripData.tripDistance}</Text>
           </View>
           <Text style={styles.locationText2}>N Alafaya Trl, Orlando</Text>
           <TouchableOpacity style={styles.acceptButton}>
@@ -197,6 +230,25 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     opacity: 0.9,
+  },
+  pricePerMileWidget: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 1002,
+  },
+  pricePerMileText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   acceptOverlay: {
     position: 'absolute',

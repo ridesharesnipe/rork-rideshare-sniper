@@ -4,7 +4,17 @@ import { Check, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { useOverlayStore } from '@/store/overlayStore';
 
-export default function TripOverlay() {
+interface TripData {
+  fare: number;
+  pickupDistance: number;
+  totalDistance: number;
+}
+
+interface TripOverlayProps {
+  tripData?: TripData;
+}
+
+export default function TripOverlay({ tripData }: TripOverlayProps) {
   const { overlayVisible, tripQuality, acceptPosition, rejectPosition, updatePosition, positioningMode, hideOverlay } = useOverlayStore();
   
   const screenWidth = Dimensions.get('window').width;
@@ -54,6 +64,28 @@ export default function TripOverlay() {
     })
   ).current;
 
+  // Calculate price per mile if trip data is available
+  const calculatePricePerMile = () => {
+    if (!tripData) return null;
+    const totalMiles = tripData.pickupDistance + tripData.totalDistance;
+    const pricePerMile = tripData.fare / totalMiles;
+    return pricePerMile.toFixed(2);
+  };
+
+  const renderPricePerMileWidget = () => {
+    const pricePerMile = calculatePricePerMile();
+    if (!pricePerMile) return null;
+
+    const widgetColor = tripQuality === 'green' ? colors.primary : 
+                       tripQuality === 'yellow' ? colors.warning : colors.secondary;
+    
+    return (
+      <View style={[styles.pricePerMileWidget, { backgroundColor: widgetColor }]}>
+        <Text style={styles.pricePerMileText}>${pricePerMile}/mi</Text>
+      </View>
+    );
+  };
+
   if (!overlayVisible) {
     return null;
   }
@@ -92,7 +124,13 @@ export default function TripOverlay() {
 
   return (
     <View style={styles.overlayContainer}>
+      {/* Price per mile widget */}
+      {renderPricePerMileWidget()}
+      
+      {/* Accept overlay */}
       {renderAcceptButton()}
+      
+      {/* Reject overlay */}
       <TouchableOpacity
         style={[
           styles.rejectButton,
@@ -125,6 +163,26 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     pointerEvents: 'none',
   },
+  pricePerMileWidget: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 1002,
+    pointerEvents: 'none',
+  },
+  pricePerMileText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   acceptButton: {
     position: 'absolute',
     width: '85%',
@@ -139,6 +197,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    pointerEvents: 'auto',
   },
   acceptButtonText: {
     color: 'white',
@@ -163,6 +222,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    pointerEvents: 'auto',
   },
   positioningMode: {
     opacity: 0.5,

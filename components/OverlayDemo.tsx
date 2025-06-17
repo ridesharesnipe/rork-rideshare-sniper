@@ -90,6 +90,51 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
 
   if (!visible) return null;
 
+  const getTripData = () => {
+    switch (recommendation) {
+      case 'accept':
+        return {
+          fare: '$18.50',
+          pricePerMile: '$3.42',
+          rating: '5.00',
+          imageUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop'
+        };
+      case 'consider':
+        return {
+          fare: '$7.25',
+          pricePerMile: '$1.91',
+          rating: '4.8',
+          imageUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=1000&auto=format&fit=crop'
+        };
+      case 'reject':
+        return {
+          fare: '$4.31',
+          pricePerMile: '$1.35',
+          rating: '5.00',
+          imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop'
+        };
+      default:
+        return {
+          fare: '$4.31',
+          pricePerMile: '$1.35',
+          rating: '5.00',
+          imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop'
+        };
+    }
+  };
+
+  const renderPricePerMileWidget = () => {
+    const tripData = getTripData();
+    const widgetColor = recommendation === 'accept' ? colors.primary : 
+                       recommendation === 'consider' ? colors.warning : colors.secondary;
+    
+    return (
+      <View style={[styles.pricePerMileWidget, { backgroundColor: widgetColor }]}>
+        <Text style={styles.pricePerMileText}>{tripData.pricePerMile}/mi</Text>
+      </View>
+    );
+  };
+
   const getOverlayContent = () => {
     return (
       <>
@@ -142,41 +187,41 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
       case 'accept':
         return {
           title: "Green Crosshair - Accept",
-          description: "The green crosshair appears when a trip meets all your criteria for profitability. This includes fare amount, pickup distance, and rider rating. Position this over the accept button in the Uber app to quickly take good trips.",
-          imageUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop'
+          description: "The green crosshair appears when a trip meets all your criteria for profitability. This includes fare amount, pickup distance, and rider rating. Position this over the accept button in the Uber app to quickly take good trips."
         };
       case 'consider':
         return {
           title: "Yellow Warning - Consider",
-          description: "The yellow warning indicator shows when a trip is borderline. It may meet most but not all of your criteria. Review the trip details before deciding. Position this over the accept button if you choose to take it.",
-          imageUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=1000&auto=format&fit=crop'
+          description: "The yellow warning indicator shows when a trip is borderline. It may meet most but not all of your criteria. Review the trip details before deciding. Position this over the accept button if you choose to take it."
         };
       case 'reject':
         return {
           title: "Red X - Reject",
-          description: "The red X appears when a trip does not meet your minimum standards for profitability. This could be due to low fare, long pickup distance, or poor rider rating. Position this over the reject button in the Uber app to decline bad trips.",
-          imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop'
+          description: "The red X appears when a trip does not meet your minimum standards for profitability. This could be due to low fare, long pickup distance, or poor rider rating. Position this over the reject button in the Uber app to decline bad trips."
         };
       default:
         return {
           title: "Overlay Demo",
-          description: "This is a demo of the overlay functionality. Drag the widgets to position them over Uber's interface.",
-          imageUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop'
+          description: "This is a demo of the overlay functionality. Drag the widgets to position them over Uber's interface."
         };
     }
   };
 
   const explanation = getExplanationContent();
+  const tripData = getTripData();
 
   return (
     <ScrollView style={styles.container}>
       {/* Map Background with Route */}
       <View style={styles.mapContainer}>
         <Image 
-          source={{ uri: explanation.imageUrl }}
+          source={{ uri: tripData.imageUrl }}
           style={styles.mapImage}
           resizeMode="cover"
         />
+        
+        {/* Price per mile widget - top left */}
+        {renderPricePerMileWidget()}
         
         {/* Route Line Overlay */}
         <View style={styles.routeLine} />
@@ -220,12 +265,12 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         </View>
         
         {/* Fare */}
-        <Text style={styles.fareText}>$4.31</Text>
+        <Text style={styles.fareText}>{tripData.fare}</Text>
         
         {/* Rating */}
         <View style={styles.ratingContainer}>
           <Star size={16} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
-          <Text style={styles.ratingText}>5.00</Text>
+          <Text style={styles.ratingText}>{tripData.rating}</Text>
         </View>
         
         {/* Trip Details */}
@@ -264,7 +309,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         <Text style={styles.tacticalHeader}>TACTICAL PANEL</Text>
         <View style={styles.tacticalRow}>
           <Text style={styles.tacticalLabel}>FARE:</Text>
-          <Text style={recommendation === 'accept' ? styles.tacticalValueGreen : recommendation === 'consider' ? styles.tacticalValueYellow : styles.tacticalValueRed}>$4.31</Text>
+          <Text style={recommendation === 'accept' ? styles.tacticalValueGreen : recommendation === 'consider' ? styles.tacticalValueYellow : styles.tacticalValueRed}>{tripData.fare}</Text>
         </View>
         <View style={styles.tacticalRow}>
           <Text style={styles.tacticalLabel}>PICKUP:</Text>
@@ -276,7 +321,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         </View>
         <View style={styles.tacticalRow}>
           <Text style={styles.tacticalLabel}>RATING:</Text>
-          <Text style={styles.tacticalValueGreen}>5.00</Text>
+          <Text style={styles.tacticalValueGreen}>{tripData.rating}</Text>
         </View>
         
         {/* Dynamic Overlay Content */}
@@ -325,6 +370,25 @@ const styles = StyleSheet.create({
     height: '100%',
     opacity: 0.9,
     backgroundColor: '#e1e6ea',
+  },
+  pricePerMileWidget: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 1002,
+  },
+  pricePerMileText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   routeLine: {
     position: 'absolute',
