@@ -4,13 +4,22 @@ import colors from '@/constants/colors';
 
 export default function SplashScreen() {
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [taglineAnim] = useState(new Animated.Value(0));
   
   useEffect(() => {
+    // Animate the main title first
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
       useNativeDriver: true,
-    }).start();
+    }).start(() => {
+      // Then animate the tagline
+      Animated.timing(taglineAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+    });
   }, []);
   
   return (
@@ -25,6 +34,10 @@ export default function SplashScreen() {
         </View>
         
         <Text style={styles.title}>RIDESHARE SNIPER</Text>
+        
+        <Animated.Text style={[styles.tagline, { opacity: taglineAnim }]}>
+          Made by a rideshare driver for rideshare drivers
+        </Animated.Text>
       </Animated.View>
     </View>
   );
@@ -72,5 +85,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.primary,
     letterSpacing: 1,
+    marginBottom: 12,
+  },
+  tagline: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    maxWidth: 280,
+    fontWeight: '500',
   },
 });

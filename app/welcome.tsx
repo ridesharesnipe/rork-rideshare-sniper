@@ -106,7 +106,7 @@ export default function Welcome() {
 
           <Animated.View style={[styles.taglineContainer, { opacity: fadeAnim2 }]}>
             <Text style={styles.tagline}>
-              No ads. No tracking. No distractions.
+              Made by a rideshare driver for rideshare drivers
             </Text>
           </Animated.View>
 

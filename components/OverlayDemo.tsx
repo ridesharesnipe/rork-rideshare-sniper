@@ -1,486 +1,486 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, PanResponder, Dimensions, Image } from 'react-native';
-import { X, ArrowLeft, Star, MapPin, Clock } from 'lucide-react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Image, 
+  TouchableOpacity, 
+  Dimensions,
+  PanResponder,
+  Animated
+} from 'react-native';
+import { X, Star } from 'lucide-react-native';
 import colors from '@/constants/colors';
 
-type OverlayDemoProps = {
-  recommendation: 'accept' | 'reject' | 'consider';
-  onClose: () => void;
-};
+const { width, height } = Dimensions.get('window');
 
-export default function OverlayDemo({ recommendation, onClose }: OverlayDemoProps) {
-  const windowWidth = Dimensions.get('window').width;
-  const windowHeight = Dimensions.get('window').height;
+interface OverlayDemoProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose }) => {
+  const [rejectPosition, setRejectPosition] = useState({ x: 0, y: 0 });
+  const pan = useRef(new Animated.ValueXY()).current;
   
-  // Default positions for different recommendations
-  const getDefaultPosition = () => {
-    switch (recommendation) {
-      case 'accept':
-        return { x: windowWidth * 0.5 - 20, y: windowHeight * 0.85 }; // Over Accept button
-      case 'reject':
-        return { x: windowWidth * 0.9 - 20, y: windowHeight * 0.3 }; // Over close button
-      case 'consider':
-        return { x: windowWidth * 0.5 - 20, y: windowHeight * 0.6 }; // Over trip details
-    }
-  };
-  
-  const [indicatorPosition, setIndicatorPosition] = useState(getDefaultPosition());
-  
-  // Pan responder for dragging the indicator
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: (_, gestureState) => {
-      setIndicatorPosition({
-        x: indicatorPosition.x + gestureState.dx,
-        y: indicatorPosition.y + gestureState.dy
-      });
-    },
-  });
-  
-  // Render the appropriate indicator
-  const renderIndicator = () => {
-    switch (recommendation) {
-      case 'accept':
-        return (
-          <View style={styles.acceptIndicator}>
-            <View style={styles.crosshairHorizontal} />
-            <View style={styles.crosshairVertical} />
-            <View style={styles.crosshairCenter} />
-          </View>
-        );
-      case 'reject':
-        return (
-          <View style={styles.rejectIndicator}>
-            <X size={24} color="#FFFFFF" />
-          </View>
-        );
-      case 'consider':
-        return (
-          <View style={styles.considerIndicator}>
-            <Text style={styles.considerText}>!</Text>
-          </View>
-        );
-    }
-  };
-  
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: pan.x._value,
+          y: pan.y._value
+        });
+        pan.setValue({ x: 0, y: 0 });
+      },
+      onPanResponderMove: Animated.event(
+        [
+          null,
+          { dx: pan.x, dy: pan.y }
+        ],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        pan.flattenOffset();
+        setRejectPosition({ 
+          x: pan.x._value, 
+          y: pan.y._value 
+        });
+      }
+    })
+  ).current;
+
+  if (!visible) return null;
+
   return (
     <View style={styles.container}>
-      {/* Simulated Uber Interface */}
-      <View style={styles.uberInterface}>
-        {/* Map Area */}
-        <View style={styles.mapArea}>
-          <View style={styles.mapPlaceholder}>
-            <Text style={styles.mapText}>UBER MAP VIEW</Text>
-            <View style={styles.routeLine} />
-            <View style={[styles.mapPin, styles.pickupPin]} />
-            <View style={[styles.mapPin, styles.dropoffPin]} />
+      {/* Map Background with Route */}
+      <View style={styles.mapContainer}>
+        <Image 
+          source={{ uri: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop' }}
+          style={styles.mapImage}
+          resizeMode="cover"
+        />
+        
+        {/* Route Line Overlay */}
+        <View style={styles.routeLine} />
+        
+        {/* Pickup Point (Blue) */}
+        <View style={[styles.mapMarker, styles.pickupMarker]}>
+          <View style={styles.markerInner}>
+            <View style={styles.personIcon} />
           </View>
         </View>
         
-        {/* Trip Request Card */}
-        <View style={styles.tripCard}>
-          <View style={styles.tripHeader}>
-            <View style={styles.shareSection}>
-              <View style={styles.shareIcon}>
-                <Text style={styles.shareText}>👥</Text>
-              </View>
-              <Text style={styles.shareLabel}>Share</Text>
-              <Text style={styles.exclusiveLabel}>Exclusive</Text>
-            </View>
-            <Pressable style={styles.closeButton}>
-              <X size={20} color="#666" />
-            </Pressable>
+        {/* Destination Point (Black) */}
+        <View style={[styles.mapMarker, styles.destMarker]}>
+          <View style={styles.markerInner}>
+            <View style={styles.squareIcon} />
           </View>
-          
-          <Text style={styles.fareAmount}>$4.31</Text>
-          
-          <View style={styles.ratingSection}>
-            <Star size={16} color="#FFD700" fill="#FFD700" />
-            <Text style={styles.ratingText}>5.00</Text>
+        </View>
+        
+        {/* Navigation Arrow */}
+        <View style={styles.navArrow}>
+          <View style={styles.arrowCircle}>
+            <View style={styles.arrowTriangle} />
           </View>
-          
-          <View style={styles.tripDetails}>
-            <View style={styles.tripDetailRow}>
-              <Clock size={16} color="#666" />
-              <Text style={styles.tripDetailText}>9 mins (3.2 mi)</Text>
-            </View>
-            
-            <View style={styles.locationSection}>
-              <View style={styles.locationRow}>
-                <View style={styles.pickupDot} />
-                <Text style={styles.locationText}>Bristol Forest Way & Waterford Chase Pkwy, Orlando</Text>
-              </View>
-              
-              <View style={styles.locationRow}>
-                <View style={styles.dropoffDot} />
-                <Text style={styles.locationText}>N Alafaya Trl, Orlando</Text>
-              </View>
-              
-              <Text style={styles.tripDuration}>13 mins (4.4 mi)</Text>
-            </View>
-          </View>
-          
-          <Pressable style={styles.acceptButton}>
-            <Text style={styles.acceptButtonText}>Accept</Text>
-          </Pressable>
         </View>
       </View>
       
-      {/* Back Button */}
-      <Pressable style={styles.backButton} onPress={onClose}>
-        <ArrowLeft size={20} color="#FFFFFF" />
-        <Text style={styles.backButtonText}>Back</Text>
-      </Pressable>
-      
-      {/* Draggable Indicator */}
-      <View
-        style={[
-          styles.draggableIndicator,
-          {
-            left: indicatorPosition.x,
-            top: indicatorPosition.y,
-          }
-        ]}
-        {...panResponder.panHandlers}
-      >
-        {renderIndicator()}
+      {/* Trip Card - Exact match to screenshot */}
+      <View style={styles.tripCard}>
+        {/* Header with Share and X */}
+        <View style={styles.cardHeader}>
+          <View style={styles.shareButton}>
+            <Text style={styles.shareIcon}>👤</Text>
+            <Text style={styles.shareText}>Share</Text>
+          </View>
+          
+          <Text style={styles.exclusiveText}>Exclusive</Text>
+          
+          <TouchableOpacity style={styles.closeButton}>
+            <X size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
+        
+        {/* Fare */}
+        <Text style={styles.fareText}>$4.31</Text>
+        
+        {/* Rating */}
+        <View style={styles.ratingContainer}>
+          <Star size={16} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
+          <Text style={styles.ratingText}>5.00</Text>
+        </View>
+        
+        {/* Trip Details */}
+        <View style={styles.tripDetails}>
+          <Text style={styles.timeDistanceText}>9 mins (3.2 mi)</Text>
+          
+          <View style={styles.locationContainer}>
+            <View style={styles.locationDot} />
+            <Text style={styles.locationText}>
+              Bristol Forest Way & Waterford Chase Pkwy, Orlando
+            </Text>
+          </View>
+          
+          <View style={styles.routeLine2} />
+          
+          <View style={styles.locationContainer}>
+            <View style={styles.locationSquare} />
+            <Text style={styles.locationText}>
+              13 mins (4.4 mi)
+            </Text>
+          </View>
+          
+          <Text style={styles.locationText2}>
+            N Alafaya Trl, Orlando
+          </Text>
+        </View>
+        
+        {/* Accept Button */}
+        <TouchableOpacity style={styles.acceptButton}>
+          <Text style={styles.acceptText}>Accept</Text>
+        </TouchableOpacity>
       </View>
       
-      {/* Tactical Panel */}
+      {/* Tactical Panel - Our overlay */}
       <View style={styles.tacticalPanel}>
-        <Text style={styles.tacticalTitle}>TACTICAL PANEL</Text>
+        <Text style={styles.tacticalHeader}>TACTICAL PANEL</Text>
         <View style={styles.tacticalRow}>
           <Text style={styles.tacticalLabel}>FARE:</Text>
-          <Text style={styles.tacticalValue}>$4.31</Text>
+          <Text style={styles.tacticalValueGreen}>$4.31</Text>
         </View>
         <View style={styles.tacticalRow}>
           <Text style={styles.tacticalLabel}>PICKUP:</Text>
-          <Text style={styles.tacticalValue}>3.2 mi</Text>
+          <Text style={styles.tacticalValueYellow}>3.2 mi</Text>
         </View>
         <View style={styles.tacticalRow}>
           <Text style={styles.tacticalLabel}>TRIP:</Text>
-          <Text style={styles.tacticalValue}>4.4 mi</Text>
+          <Text style={styles.tacticalValueGreen}>4.4 mi</Text>
         </View>
         <View style={styles.tacticalRow}>
           <Text style={styles.tacticalLabel}>RATING:</Text>
-          <Text style={styles.tacticalValue}>5.00</Text>
+          <Text style={styles.tacticalValueGreen}>5.00</Text>
         </View>
+        
+        {/* Draggable Reject Button Overlay */}
+        <Animated.View
+          style={[styles.rejectButton, {
+            transform: [{ translateX: pan.x }, { translateY: pan.y }]
+          }]}
+          {...panResponder.panHandlers}
+        >
+          <X size={24} color="#fff" />
+        </Animated.View>
       </View>
       
-      {/* Simple instruction */}
-      <View style={styles.instructionContainer}>
-        <Text style={styles.instructionText}>
-          Drag the {recommendation === 'accept' ? 'green crosshair' : recommendation === 'reject' ? 'red X' : 'yellow warning'} to position it correctly over the Uber interface
+      {/* Instructions */}
+      <View style={styles.instructions}>
+        <Text style={styles.instructionsText}>
+          Drag the red X to position it correctly over the Uber interface
         </Text>
       </View>
+      
+      {/* Close button for the entire demo */}
+      <TouchableOpacity 
+        style={styles.demoCloseButton} 
+        onPress={onClose}
+      >
+        <Text style={styles.demoCloseText}>Close Demo</Text>
+      </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#000000',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f5f5f5',
+    zIndex: 1000,
   },
-  uberInterface: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  mapArea: {
-    flex: 1,
-    backgroundColor: '#F0F0F0',
-  },
-  mapPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  mapContainer: {
+    width: '100%',
+    height: '60%',
     position: 'relative',
   },
-  mapText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#999',
-    marginBottom: 20,
+  mapImage: {
+    width: '100%',
+    height: '100%',
+    opacity: 0.9,
+    backgroundColor: '#e1e6ea',
   },
   routeLine: {
     position: 'absolute',
-    width: 200,
-    height: 3,
-    backgroundColor: '#000',
-    transform: [{ rotate: '45deg' }],
+    width: '70%',
+    height: 6,
+    backgroundColor: '#333',
+    top: '50%',
+    left: '15%',
+    borderRadius: 3,
+    transform: [{ rotate: '-5deg' }],
   },
-  mapPin: {
+  mapMarker: {
     position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  pickupPin: {
+  pickupMarker: {
+    backgroundColor: '#2979ff',
+    top: '40%',
+    right: '30%',
+  },
+  destMarker: {
     backgroundColor: '#000',
     top: '30%',
     left: '20%',
   },
-  dropoffPin: {
-    backgroundColor: '#4285F4',
-    top: '60%',
-    right: '20%',
+  markerInner: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  personIcon: {
+    width: 12,
+    height: 12,
+    backgroundColor: '#2979ff',
+    borderRadius: 6,
+  },
+  squareIcon: {
+    width: 10,
+    height: 10,
+    backgroundColor: '#000',
+  },
+  navArrow: {
+    position: 'absolute',
+    bottom: '20%',
+    right: '15%',
+  },
+  arrowCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowTriangle: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 16,
+    borderStyle: 'solid',
+    backgroundColor: 'transparent',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#333',
+    transform: [{ rotate: '90deg' }],
   },
   tripCard: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 20,
+    paddingBottom: 30,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowRadius: 4,
   },
-  tripHeader: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 15,
   },
-  shareSection: {
+  shareButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#000',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
   },
   shareIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
+    color: 'white',
+    fontSize: 14,
+    marginRight: 4,
   },
   shareText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-  },
-  shareLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginRight: 8,
-  },
-  exclusiveLabel: {
+    color: 'white',
+    fontWeight: 'bold',
     fontSize: 14,
-    color: '#4285F4',
-    backgroundColor: '#E3F2FD',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+  },
+  exclusiveText: {
+    color: '#2979ff',
+    fontSize: 16,
   },
   closeButton: {
-    padding: 4,
+    padding: 5,
   },
-  fareAmount: {
-    fontSize: 32,
+  fareText: {
+    fontSize: 36,
     fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
+    marginBottom: 5,
   },
-  ratingSection: {
+  ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 15,
+  },
+  starIcon: {
+    marginRight: 5,
   },
   ratingText: {
     fontSize: 16,
-    color: '#000',
-    marginLeft: 4,
+    fontWeight: 'bold',
   },
   tripDetails: {
     marginBottom: 20,
   },
-  tripDetailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  tripDetailText: {
+  timeDistanceText: {
     fontSize: 16,
-    color: '#666',
-    marginLeft: 8,
+    marginBottom: 10,
   },
-  locationSection: {
-    marginTop: 8,
-  },
-  locationRow: {
+  locationContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 5,
   },
-  pickupDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  locationDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#000',
-    marginTop: 6,
-    marginRight: 12,
+    marginRight: 10,
+    marginTop: 4,
   },
-  dropoffDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#4285F4',
-    marginTop: 6,
-    marginRight: 12,
+  locationSquare: {
+    width: 10,
+    height: 10,
+    backgroundColor: '#000',
+    marginRight: 10,
+    marginTop: 4,
   },
   locationText: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
+    flexShrink: 1,
     flex: 1,
   },
-  tripDuration: {
+  locationText2: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
     marginLeft: 20,
-    marginTop: 4,
+  },
+  routeLine2: {
+    width: 2,
+    height: 20,
+    backgroundColor: '#000',
+    marginLeft: 5,
+    marginVertical: 2,
   },
   acceptButton: {
-    backgroundColor: '#4285F4',
+    backgroundColor: '#2979ff',
     borderRadius: 8,
-    paddingVertical: 16,
+    padding: 16,
     alignItems: 'center',
   },
-  acceptButtonText: {
+  acceptText: {
+    color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    zIndex: 1000,
-  },
-  backButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    marginLeft: 4,
-  },
-  draggableIndicator: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    zIndex: 100,
-  },
-  acceptIndicator: {
-    width: 40,
-    height: 40,
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 8,
-  },
-  crosshairHorizontal: {
-    position: 'absolute',
-    width: 24,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-  },
-  crosshairVertical: {
-    position: 'absolute',
-    width: 2,
-    height: 24,
-    backgroundColor: '#FFFFFF',
-  },
-  crosshairCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#FFFFFF',
-  },
-  rejectIndicator: {
-    width: 40,
-    height: 40,
-    backgroundColor: colors.secondary,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 8,
-  },
-  considerIndicator: {
-    width: 40,
-    height: 40,
-    backgroundColor: colors.warning,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 8,
-  },
-  considerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
   },
   tacticalPanel: {
     position: 'absolute',
-    top: 100,
+    top: 80,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 8,
-    padding: 12,
-    minWidth: 120,
-    zIndex: 50,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    borderRadius: 10,
+    padding: 10,
+    width: 150,
   },
-  tacticalTitle: {
-    fontSize: 10,
+  tacticalHeader: {
+    color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 5,
     textAlign: 'center',
-    letterSpacing: 1,
   },
   tacticalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginVertical: 2,
   },
   tacticalLabel: {
-    fontSize: 10,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    color: 'white',
+    fontSize: 12,
   },
-  tacticalValue: {
-    fontSize: 10,
+  tacticalValueGreen: {
     color: colors.primary,
+    fontSize: 12,
     fontWeight: 'bold',
   },
-  instructionContainer: {
+  tacticalValueYellow: {
+    color: colors.warning,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  rejectButton: {
     position: 'absolute',
-    bottom: 100,
+    top: -20,
+    right: -20,
+    backgroundColor: colors.secondary,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+    zIndex: 1001,
+  },
+  instructions: {
+    position: 'absolute',
+    bottom: 250,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 10,
+    borderRadius: 8,
   },
-  instructionText: {
-    color: '#FFFFFF',
-    fontSize: 14,
+  instructionsText: {
+    color: 'white',
     textAlign: 'center',
   },
+  demoCloseButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    backgroundColor: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  demoCloseText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
 });
+
+export default OverlayDemo;

@@ -1,169 +1,157 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Shield, Crosshair, Edit, HelpCircle } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Alert } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Settings, Info, ChevronRight, Radar } from 'lucide-react-native';
 import colors from '@/constants/colors';
-import ProfileSelector from '@/components/ProfileSelector';
-import StatsCard from '@/components/StatsCard';
 import StartSniperButton from '@/components/StartSniperButton';
-import { useSettingsStore } from '@/store/settingsStore';
-import { useProfileStore } from '@/store/profileStore';
-import { useAuthStore } from '@/store/authStore';
 import StatusIndicator from '@/components/StatusIndicator';
+import OverlayDemo from '@/components/OverlayDemo';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { driverStatus } = useSettingsStore();
-  const { getActiveProfile, activeProfileId } = useProfileStore();
-  const { user } = useAuthStore();
+  const [isActive, setIsActive] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   
-  const activeProfile = getActiveProfile();
-  
-  const navigateToSimulator = () => {
-    router.push('/simulator');
+  const toggleSniper = () => {
+    if (!isActive) {
+      // When activating, show the overlay demo
+      setShowOverlay(true);
+    } else {
+      // When deactivating, hide the overlay
+      setShowOverlay(false);
+    }
+    setIsActive(!isActive);
   };
-  
-  const navigateToEditProfile = () => {
-    if (activeProfileId) {
-      router.push({
-        pathname: '/profile/edit',
-        params: { id: activeProfileId },
-      });
+
+  const handleEmergencyStop = () => {
+    if (isActive) {
+      Alert.alert(
+        "Emergency Stop",
+        "Are you sure you want to stop the Sniper?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "Stop",
+            onPress: () => {
+              setIsActive(false);
+              setShowOverlay(false);
+            },
+            style: "destructive"
+          }
+        ]
+      );
     }
   };
-  
-  const navigateToHelp = () => {
-    router.push('/help');
-  };
-  
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>RIDESHARE SNIPER</Text>
-          {user && (
-            <Text style={styles.welcomeText}>Hello, {user.name}</Text>
-          )}
-        </View>
-        <View style={styles.statusContainer}>
-          <View style={[styles.statusDot, driverStatus === 'online' ? styles.statusOnline : styles.statusOffline]} />
-          <Text style={styles.statusText}>
-            {driverStatus === 'online' ? 'ONLINE' : 'OFFLINE'}
-          </Text>
-        </View>
-      </View>
-      
-      <View style={styles.taglineContainer}>
-        <Text style={styles.tagline}>PRECISION. PROFIT. PROTECTION.</Text>
-      </View>
-      
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>ACTIVE PROFILE</Text>
-          <Pressable 
-            style={styles.editButton} 
-            onPress={navigateToEditProfile}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Edit size={16} color={colors.primary} />
-            <Text style={styles.editButtonText}>Edit Filters</Text>
-          </Pressable>
-        </View>
-        
-        <ProfileSelector />
-        
-        {activeProfile && (
-          <View style={styles.profileDetails}>
-            <Text style={styles.filtersSectionTitle}>TRIP FILTERS:</Text>
-            
-            <View style={styles.profileDetail}>
-              <Text style={styles.profileDetailLabel}>Min. Fare</Text>
-              <Text style={styles.profileDetailValue}>${activeProfile.minFare}</Text>
-            </View>
-            
-            <View style={styles.profileDetail}>
-              <Text style={styles.profileDetailLabel}>Max Pickup</Text>
-              <Text style={styles.profileDetailValue}>{activeProfile.maxPickupDistance} mi</Text>
-            </View>
-            
-            <View style={styles.profileDetail}>
-              <Text style={styles.profileDetailLabel}>Max Driving</Text>
-              <Text style={styles.profileDetailValue}>{activeProfile.maxDrivingDistance} mi</Text>
-            </View>
-            
-            <View style={styles.profileDetail}>
-              <Text style={styles.profileDetailLabel}>Min $/Mile</Text>
-              <Text style={styles.profileDetailValue}>${activeProfile.minFarePerMile}</Text>
-            </View>
-            
-            <View style={styles.profileDetail}>
-              <Text style={styles.profileDetailLabel}>Min $/Min</Text>
-              <Text style={styles.profileDetailValue}>${activeProfile.minFarePerMinute}</Text>
-            </View>
-          </View>
-        )}
-      </View>
-      
-      {/* START SNIPER BUTTON - removed "Go Online" button above it */}
-      <StartSniperButton />
-      
-      <StatsCard
-        totalTrips={12}
-        acceptedTrips={8}
-        rejectedTrips={4}
-        totalEarnings={187.45}
-        averageFare={23.43}
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen 
+        options={{
+          title: 'Rideshare Sniper',
+          headerRight: () => (
+            <TouchableOpacity 
+              style={styles.headerButton}
+              onPress={() => router.push('/settings')}
+            >
+              <Settings size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+          ),
+        }}
       />
-      
-      <View style={styles.buttonRow}>
-        <Pressable style={styles.simulatorButton} onPress={navigateToSimulator}>
-          <View style={styles.simulatorButtonContent}>
-            <Crosshair size={20} color={colors.textPrimary} />
-            <Text style={styles.simulatorButtonText}>TRY SIMULATOR</Text>
+
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+          <StatusIndicator isActive={isActive} />
+          
+          <View style={styles.buttonContainer}>
+            <StartSniperButton 
+              onPress={toggleSniper}
+              isActive={isActive}
+            />
+            
+            {isActive && (
+              <TouchableOpacity 
+                style={styles.emergencyButton}
+                onPress={handleEmergencyStop}
+              >
+                <Text style={styles.emergencyButtonText}>Emergency Stop</Text>
+              </TouchableOpacity>
+            )}
           </View>
-        </Pressable>
-        
-        <Pressable style={styles.helpButton} onPress={navigateToHelp}>
-          <View style={styles.helpButtonContent}>
-            <HelpCircle size={20} color={colors.textPrimary} />
-            <Text style={styles.helpButtonText}>HELP & TUTORIALS</Text>
+          
+          <View style={styles.statsCard}>
+            <Text style={styles.statsTitle}>Today's Stats</Text>
+            
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statLabel}>Trips</Text>
+              </View>
+              
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>$0.00</Text>
+                <Text style={styles.statLabel}>Earnings</Text>
+              </View>
+              
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statLabel}>Hours</Text>
+              </View>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.viewStatsButton}
+              onPress={() => router.push('/stats')}
+            >
+              <Text style={styles.viewStatsText}>View Detailed Stats</Text>
+              <ChevronRight size={20} color={colors.primary} />
+            </TouchableOpacity>
           </View>
-        </Pressable>
-      </View>
+          
+          <View style={styles.tipsCard}>
+            <View style={styles.tipsHeader}>
+              <Text style={styles.tipsTitle}>Pro Tips</Text>
+              <Info size={20} color={colors.primary} />
+            </View>
+            
+            <Text style={styles.tipText}>
+              • Position the overlay buttons to match your rideshare app
+            </Text>
+            <Text style={styles.tipText}>
+              • Green means the trip meets all your criteria
+            </Text>
+            <Text style={styles.tipText}>
+              • Yellow means it's close but not perfect
+            </Text>
+            <Text style={styles.tipText}>
+              • Red means the trip doesn't meet your standards
+            </Text>
+            <Text style={styles.tipText}>
+              • Made by a rideshare driver for rideshare drivers
+            </Text>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.helpButton}
+            onPress={() => router.push('/help')}
+          >
+            <Text style={styles.helpButtonText}>Need Help?</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
       
-      <View style={styles.infoCard}>
-        <View style={styles.infoHeader}>
-          <Shield size={20} color={colors.primary} />
-          <Text style={styles.infoTitle}>SAFETY FIRST DESIGN</Text>
-        </View>
-        
-        <Text style={styles.infoText}>
-          Rideshare Sniper helps you make quick decisions about trip requests while driving.
-          Set your preferences, and we'll show you clear visual signals for each trip.
-        </Text>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIndicator, { backgroundColor: colors.primary }]} />
-          <Text style={styles.infoItemText}>
-            <Text style={styles.infoBold}>Green Crosshair:</Text> Profitable trips that meet your criteria
-          </Text>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIndicator, { backgroundColor: colors.warning }]} />
-          <Text style={styles.infoItemText}>
-            <Text style={styles.infoBold}>Yellow Warning:</Text> Borderline trips that barely meet criteria
-          </Text>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIndicator, { backgroundColor: colors.secondary }]} />
-          <Text style={styles.infoItemText}>
-            <Text style={styles.infoBold}>Red X:</Text> Unprofitable trips to reject
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
+      {/* Overlay Demo */}
+      <OverlayDemo 
+        visible={showOverlay} 
+        onClose={() => {
+          setShowOverlay(false);
+          setIsActive(false);
+        }} 
+      />
+    </SafeAreaView>
   );
 }
 
@@ -172,210 +160,105 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+  headerButton: {
+    padding: 8,
   },
-  title: {
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    marginVertical: 30,
+  },
+  emergencyButton: {
+    marginTop: 16,
+    backgroundColor: colors.secondary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  emergencyButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  statsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+  },
+  statsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.primary,
-    letterSpacing: 1,
+    color: colors.textPrimary,
+    marginBottom: 15,
   },
-  welcomeText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  statusOnline: {
-    backgroundColor: colors.primary,
-  },
-  statusOffline: {
-    backgroundColor: colors.textMuted,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  taglineContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  tagline: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.textSecondary,
-    letterSpacing: 1,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cardHeader: {
+  statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 15,
   },
-  cardTitle: {
-    fontSize: 16,
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: colors.textPrimary,
-    letterSpacing: 0.5,
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-  },
-  editButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
     color: colors.primary,
-    marginLeft: 4,
+    marginBottom: 5,
   },
-  profileDetails: {
-    marginTop: 16,
-    marginBottom: 16,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 12,
-    padding: 12,
-  },
-  filtersSectionTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.textSecondary,
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  profileDetail: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-    paddingVertical: 4,
-  },
-  profileDetailLabel: {
+  statLabel: {
     fontSize: 14,
     color: colors.textSecondary,
-    letterSpacing: 0.5,
   },
-  profileDetailValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginVertical: 8,
-    gap: 8,
-  },
-  simulatorButton: {
-    flex: 1,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 8,
-    padding: 16,
-  },
-  simulatorButtonContent: {
+  viewStatsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
   },
-  simulatorButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+  viewStatsText: {
+    fontSize: 16,
+    color: colors.primary,
+    marginRight: 5,
+  },
+  tipsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+  },
+  tipsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  tipsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: colors.textPrimary,
-    marginLeft: 8,
-    letterSpacing: 0.5,
+  },
+  tipText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 10,
+    lineHeight: 22,
   },
   helpButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: 16,
-  },
-  helpButtonContent: {
-    flexDirection: 'row',
+    backgroundColor: colors.surfaceLight,
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   helpButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginLeft: 8,
-    letterSpacing: 0.5,
-  },
-  infoCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  infoTitle: {
+    color: colors.primary,
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginLeft: 8,
-    letterSpacing: 0.5,
-  },
-  infoText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  infoIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  infoItemText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    flex: 1,
-  },
-  infoBold: {
-    fontWeight: 'bold',
-    color: colors.textPrimary,
   },
 });

@@ -1,296 +1,170 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Platform } from 'react-native';
-import { Play, Pause, RefreshCw, ArrowLeft } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, SafeAreaView, Slider } from 'react-native';
+import { Stack } from 'expo-router';
+import { Settings, Play, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
-import TripCard from '@/components/TripCard';
-import ProfileSelector from '@/components/ProfileSelector';
-import { useProfileStore } from '@/store/profileStore';
-import { TripRequest } from '@/types';
-import { evaluateTrip } from '@/utils/tripEvaluator';
-import * as Haptics from 'expo-haptics';
 import OverlayDemo from '@/components/OverlayDemo';
 
-// Mock data generators
-const generateRandomTrip = (): TripRequest => {
-  const id = Date.now().toString();
-  const estimatedFare = Math.round(Math.random() * 30 + 5);
-  const pickupDistance = Math.round(Math.random() * 10 * 10) / 10;
-  const dropoffDistance = Math.round(Math.random() * 15 * 10) / 10;
-  const estimatedDuration = Math.round((dropoffDistance / 0.5) + 5);
-  const passengerRating = Math.round(Math.random() * 2 * 10 + 30) / 10;
-  
-  return {
-    id,
-    estimatedFare,
-    pickupDistance,
-    dropoffDistance,
-    estimatedDuration,
-    passengerRating,
-    timestamp: Date.now(),
-    pickupLocation: "Downtown",
-    dropoffLocation: "Airport",
-    passengerName: "Alex",
-    platform: "uber"
-  };
-};
-
 export default function SimulatorScreen() {
-  const router = useRouter();
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentTrip, setCurrentTrip] = useState<TripRequest | null>(null);
-  const [remainingTime, setRemainingTime] = useState(15);
-  const [acceptedTrips, setAcceptedTrips] = useState<TripRequest[]>([]);
-  const [rejectedTrips, setRejectedTrips] = useState<TripRequest[]>([]);
-  const [showOverlayDemo, setShowOverlayDemo] = useState(false);
-  const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
-  
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { getActiveProfile } = useProfileStore();
-  
-  const startSimulation = () => {
-    setIsRunning(true);
-    generateNewTrip();
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [isPositionMode, setIsPositionMode] = useState(false);
+  const [criteria, setCriteria] = useState({
+    minFare: 5.00,
+    maxPickupDistance: 5.0,
+    maxPickupTime: 10,
+    minRating: 4.7,
+    acceptShare: true,
+  });
+
+  const updateCriteria = (key, value) => {
+    setCriteria(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
-  
-  const stopSimulation = () => {
-    setIsRunning(false);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-  
-  const resetSimulation = () => {
-    stopSimulation();
-    setCurrentTrip(null);
-    setAcceptedTrips([]);
-    setRejectedTrips([]);
-    
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } catch (error) {
-        console.log('Haptics not available:', error);
-      }
-    }
-  };
-  
-  const generateNewTrip = () => {
-    const newTrip = generateRandomTrip();
-    setCurrentTrip(newTrip);
-    setRemainingTime(15);
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    
-    timerRef.current = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 1) {
-          handleRejectTrip();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-  
-  const handleAcceptTrip = () => {
-    if (!currentTrip) return;
-    
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } catch (error) {
-        console.log('Haptics not available:', error);
-      }
-    }
-    
-    setAcceptedTrips((prev) => [...prev, currentTrip]);
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    
-    if (isRunning) {
-      setTimeout(() => {
-        generateNewTrip();
-      }, 1000);
-    } else {
-      setCurrentTrip(null);
-    }
-  };
-  
-  const handleRejectTrip = () => {
-    if (!currentTrip) return;
-    
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch (error) {
-        console.log('Haptics not available:', error);
-      }
-    }
-    
-    setRejectedTrips((prev) => [...prev, currentTrip]);
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    
-    if (isRunning) {
-      setTimeout(() => {
-        generateNewTrip();
-      }, 1000);
-    } else {
-      setCurrentTrip(null);
-    }
-  };
-  
-  const showDemo = (type: 'accept' | 'reject' | 'consider') => {
-    setDemoType(type);
-    setShowOverlayDemo(true);
-  };
-  
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
-  
-  const activeProfile = getActiveProfile();
-  const tripEvaluation = currentTrip && activeProfile 
-    ? evaluateTrip(currentTrip, activeProfile)
-    : null;
-  
-  const totalEarnings = acceptedTrips.reduce(
-    (sum, trip) => sum + trip.estimatedFare,
-    0
-  );
-  
+
   return (
-    <View style={styles.container}>
-      {showOverlayDemo ? (
-        <OverlayDemo 
-          recommendation={demoType} 
-          onClose={() => setShowOverlayDemo(false)} 
-        />
-      ) : (
-        <ScrollView>
-          <View style={styles.header}>
-            <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <ArrowLeft size={20} color={colors.primary} />
-              <Text style={styles.backButtonText}>Back</Text>
-            </Pressable>
-            <Text style={styles.title}>SIMULATOR</Text>
-            <View style={styles.placeholder} />
-          </View>
-          
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>ACTIVE PROFILE</Text>
-            <ProfileSelector />
-          </View>
-          
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{acceptedTrips.length + rejectedTrips.length}</Text>
-              <Text style={styles.statLabel}>Total</Text>
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen 
+        options={{
+          title: 'Trip Simulator',
+          headerRight: () => (
+            <TouchableOpacity style={styles.headerButton}>
+              <Settings size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+          <Text style={styles.title}>Trip Request Simulator</Text>
+          <Text style={styles.description}>
+            Test how the Sniper overlay will appear on top of Uber trip requests.
+            Position the accept/reject buttons to match your app's layout.
+          </Text>
+
+          <TouchableOpacity 
+            style={styles.demoButton} 
+            onPress={() => setShowOverlay(true)}
+          >
+            <Play size={24} color="white" style={styles.buttonIcon} />
+            <Text style={styles.demoButtonText}>Show Demo Overlay</Text>
+          </TouchableOpacity>
+
+          <View style={styles.settingsCard}>
+            <Text style={styles.settingsTitle}>Trip Criteria</Text>
+            
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Minimum Fare</Text>
+              <View style={styles.sliderContainer}>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={1}
+                  maximumValue={20}
+                  step={0.5}
+                  value={criteria.minFare}
+                  onValueChange={(value) => updateCriteria('minFare', value)}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor="#d3d3d3"
+                  thumbTintColor={colors.primary}
+                />
+                <Text style={styles.settingValue}>${criteria.minFare.toFixed(2)}</Text>
+              </View>
             </View>
             
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{acceptedTrips.length}</Text>
-              <Text style={styles.statLabel}>Accepted</Text>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Max Pickup Distance</Text>
+              <View style={styles.sliderContainer}>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={1}
+                  maximumValue={10}
+                  step={0.5}
+                  value={criteria.maxPickupDistance}
+                  onValueChange={(value) => updateCriteria('maxPickupDistance', value)}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor="#d3d3d3"
+                  thumbTintColor={colors.primary}
+                />
+                <Text style={styles.settingValue}>{criteria.maxPickupDistance.toFixed(1)} mi</Text>
+              </View>
             </View>
             
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>${totalEarnings.toFixed(2)}</Text>
-              <Text style={styles.statLabel}>Earnings</Text>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Max Pickup Time</Text>
+              <View style={styles.sliderContainer}>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={1}
+                  maximumValue={20}
+                  step={1}
+                  value={criteria.maxPickupTime}
+                  onValueChange={(value) => updateCriteria('maxPickupTime', value)}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor="#d3d3d3"
+                  thumbTintColor={colors.primary}
+                />
+                <Text style={styles.settingValue}>{criteria.maxPickupTime} min</Text>
+              </View>
             </View>
-          </View>
-          
-          <View style={styles.controlsContainer}>
-            <Pressable
-              style={[styles.controlButton, styles.resetButton]}
-              onPress={resetSimulation}
-            >
-              <RefreshCw size={20} color={colors.textPrimary} />
-              <Text style={styles.controlButtonText}>RESET</Text>
-            </Pressable>
             
-            <Pressable
-              style={[
-                styles.controlButton,
-                isRunning ? styles.pauseButton : styles.playButton,
-              ]}
-              onPress={isRunning ? stopSimulation : startSimulation}
-            >
-              {isRunning ? (
-                <Pause size={20} color={colors.textPrimary} />
-              ) : (
-                <Play size={20} color={colors.textPrimary} />
-              )}
-              <Text style={styles.controlButtonText}>
-                {isRunning ? 'PAUSE' : 'START'}
-              </Text>
-            </Pressable>
-          </View>
-          
-          {currentTrip && tripEvaluation ? (
-            <TripCard
-              trip={currentTrip}
-              evaluation={tripEvaluation}
-              onAccept={handleAcceptTrip}
-              onReject={handleRejectTrip}
-              remainingTime={remainingTime}
-            />
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                Press START to begin simulation
-              </Text>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Minimum Rating</Text>
+              <View style={styles.sliderContainer}>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={3.0}
+                  maximumValue={5.0}
+                  step={0.1}
+                  value={criteria.minRating}
+                  onValueChange={(value) => updateCriteria('minRating', value)}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor="#d3d3d3"
+                  thumbTintColor={colors.primary}
+                />
+                <Text style={styles.settingValue}>{criteria.minRating.toFixed(1)}⭐</Text>
+              </View>
             </View>
-          )}
-          
-          <View style={styles.demoSection}>
-            <Text style={styles.demoTitle}>OVERLAY DEMOS</Text>
             
-            <View style={styles.demoButtons}>
-              <Pressable 
-                style={[styles.demoButton, { backgroundColor: colors.primary }]}
-                onPress={() => showDemo('accept')}
-              >
-                <View style={styles.miniCrosshair}>
-                  <View style={styles.miniCrosshairH} />
-                  <View style={styles.miniCrosshairV} />
-                </View>
-                <Text style={styles.demoButtonText}>GREEN CROSSHAIR</Text>
-              </Pressable>
-              
-              <Pressable 
-                style={[styles.demoButton, { backgroundColor: colors.warning }]}
-                onPress={() => showDemo('consider')}
-              >
-                <Text style={styles.demoIcon}>!</Text>
-                <Text style={styles.demoButtonText}>YELLOW WARNING</Text>
-              </Pressable>
-              
-              <Pressable 
-                style={[styles.demoButton, { backgroundColor: colors.secondary }]}
-                onPress={() => showDemo('reject')}
-              >
-                <Text style={styles.demoIcon}>×</Text>
-                <Text style={styles.demoButtonText}>RED X</Text>
-              </Pressable>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Accept Shared Rides</Text>
+              <Switch
+                value={criteria.acceptShare}
+                onValueChange={(value) => updateCriteria('acceptShare', value)}
+                trackColor={{ false: '#767577', true: colors.primary }}
+                thumbColor={criteria.acceptShare ? '#fff' : '#f4f3f4'}
+              />
             </View>
           </View>
-        </ScrollView>
-      )}
-    </View>
+
+          <View style={styles.infoCard}>
+            <Text style={styles.infoTitle}>How It Works</Text>
+            <Text style={styles.infoText}>
+              1. The overlay will appear on top of Uber's trip request screen
+            </Text>
+            <Text style={styles.infoText}>
+              2. Green indicator means the trip meets your criteria
+            </Text>
+            <Text style={styles.infoText}>
+              3. Yellow means it's borderline but may be worth taking
+            </Text>
+            <Text style={styles.infoText}>
+              4. Red means the trip doesn't meet your criteria
+            </Text>
+            <Text style={styles.infoText}>
+              5. Drag the red X button to position it over Uber's X button
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Overlay Demo */}
+      <OverlayDemo 
+        visible={showOverlay} 
+        onClose={() => setShowOverlay(false)} 
+      />
+    </SafeAreaView>
   );
 }
 
@@ -299,175 +173,94 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+  headerButton: {
+    padding: 8,
   },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  scrollView: {
+    flex: 1,
   },
-  backButtonText: {
-    fontSize: 16,
-    color: colors.primary,
-    marginLeft: 4,
-  },
-  placeholder: {
-    width: 60,
+  content: {
+    padding: 20,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.primary,
-    letterSpacing: 1,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cardTitle: {
-    fontSize: 16,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
-    letterSpacing: 0.5,
+    marginBottom: 10,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  controlsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginVertical: 8,
-  },
-  controlButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  resetButton: {
-    backgroundColor: colors.surfaceLight,
-  },
-  playButton: {
-    backgroundColor: colors.primary,
-  },
-  pauseButton: {
-    backgroundColor: colors.warning,
-  },
-  controlButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginLeft: 8,
-    letterSpacing: 0.5,
-  },
-  emptyContainer: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 32,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    minHeight: 200,
-  },
-  emptyText: {
+  description: {
     fontSize: 16,
     color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  demoSection: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  demoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 16,
-    letterSpacing: 0.5,
-  },
-  demoButtons: {
-    flexDirection: 'column',
-    gap: 8,
+    marginBottom: 24,
+    lineHeight: 22,
   },
   demoButton: {
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: colors.primary,
     flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  miniCrosshair: {
-    width: 20,
-    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
   },
-  miniCrosshairH: {
-    position: 'absolute',
-    width: 16,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-  },
-  miniCrosshairV: {
-    position: 'absolute',
-    width: 2,
-    height: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  demoIcon: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  buttonIcon: {
     marginRight: 8,
   },
   demoButtonText: {
-    fontSize: 14,
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
+  },
+  settingsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  settingsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 16,
+  },
+  settingRow: {
+    marginBottom: 16,
+  },
+  settingLabel: {
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  sliderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  slider: {
+    flex: 1,
+    height: 40,
+  },
+  settingValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.primary,
+    width: 60,
+    textAlign: 'right',
+  },
+  infoCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+  },
+  infoTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 8,
+    lineHeight: 22,
   },
 });

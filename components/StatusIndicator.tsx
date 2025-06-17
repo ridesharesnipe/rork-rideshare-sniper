@@ -1,91 +1,58 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Circle } from 'lucide-react-native';
-import { useSettingsStore } from '@/store/settingsStore';
-import { useAuthStore } from '@/store/authStore';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import colors from '@/constants/colors';
+import { useSettingsStore } from '@/store/settingsStore';
 
-export default function StatusIndicator() {
-  const { driverStatus, setDriverStatus } = useSettingsStore();
-  const { isAuthenticated } = useAuthStore();
+interface StatusIndicatorProps {
+  isActive?: boolean;
+}
+
+const StatusIndicator: React.FC<StatusIndicatorProps> = ({ isActive }) => {
+  const driverStatus = useSettingsStore(state => state.driverStatus);
   
-  // Set driver status to online when user is authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      console.log('User authenticated, setting driver status to online');
-      setDriverStatus('online');
-    } else {
-      console.log('User not authenticated, setting driver status to offline');
-      setDriverStatus('offline');
-    }
-  }, [isAuthenticated, setDriverStatus]);
-  
-  const toggleStatus = () => {
-    if (driverStatus === 'offline') {
-      setDriverStatus('online');
-    } else if (driverStatus === 'online') {
-      setDriverStatus('offline');
-    }
-  };
-  
-  const getStatusColor = () => {
-    switch (driverStatus) {
-      case 'online':
-        return colors.online;
-      case 'offline':
-        return colors.offline;
-      case 'busy':
-        return colors.busy;
-      default:
-        return colors.offline;
-    }
-  };
-  
-  const getStatusText = () => {
-    switch (driverStatus) {
-      case 'online':
-        return 'ONLINE';
-      case 'offline':
-        return 'OFFLINE';
-      case 'busy':
-        return 'BUSY';
-      default:
-        return 'OFFLINE';
-    }
-  };
+  // If isActive is provided, use it, otherwise use the store's driverStatus
+  const active = isActive !== undefined ? isActive : driverStatus === 'online';
   
   return (
-    <Pressable onPress={toggleStatus} style={styles.container}>
-      <View style={styles.statusContainer}>
-        <Circle
-          size={14}
-          fill={getStatusColor()}
-          color={getStatusColor()}
-          style={styles.statusIcon}
-        />
-        <Text style={[styles.statusText, { color: getStatusColor() }]}>
-          {getStatusText()}
-        </Text>
-      </View>
-    </Pressable>
+    <View style={styles.container}>
+      <View style={[
+        styles.indicator,
+        active ? styles.activeIndicator : styles.inactiveIndicator
+      ]} />
+      <Text style={styles.text}>
+        {active ? 'Sniper Active' : 'Sniper Inactive'}
+      </Text>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.surface,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 10,
   },
-  statusIcon: {
-    marginRight: 6,
+  indicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8,
   },
-  statusText: {
-    fontSize: 14,
+  activeIndicator: {
+    backgroundColor: colors.primary,
+  },
+  inactiveIndicator: {
+    backgroundColor: colors.secondary,
+  },
+  text: {
+    fontSize: 16,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    color: colors.textPrimary,
   },
 });
+
+export default StatusIndicator;

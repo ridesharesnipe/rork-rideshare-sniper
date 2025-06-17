@@ -68,6 +68,9 @@ export default function CreatorScreen() {
             <Animated.Text style={[styles.title, { opacity: fadeAnim1 }]}>
               Why I Built Rideshare Sniper
             </Animated.Text>
+            <Animated.Text style={[styles.subtitle, { opacity: fadeAnim1 }]}>
+              Made by a rideshare driver for rideshare drivers
+            </Animated.Text>
           </View>
 
           <Animated.View style={[styles.messageCard, { opacity: fadeAnim2 }]}>
@@ -159,6 +162,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textAlign: 'center',
     marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 16,
   },
   messageCard: {
     backgroundColor: colors.surface,

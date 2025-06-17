@@ -16,10 +16,10 @@ export default function Index() {
         console.error('Auth initialization error:', error);
       }
       
-      // Show splash for 2 seconds
+      // Show splash for 8 seconds
       setTimeout(() => {
         setSplashComplete(true);
-      }, 2000);
+      }, 8000);
     };
     
     initializeApp();
