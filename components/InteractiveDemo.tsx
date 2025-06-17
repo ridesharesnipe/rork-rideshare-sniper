@@ -62,7 +62,7 @@ const InteractiveDemo: React.FC = () => {
       case 'red':
         return {
           title: '🔴 RED OVERLAY - SKIP THIS TRIP',
-          text: '• Fare: $4.31 (below $5 minimum ✗)\n• Pickup: 3.2 miles (fare too low for distance)\n• Decision: Doesn\'t meet criteria - DECLINE\n• Driver action: Tap red X or let timer expire\n• Safety: Red X prevents accidental accepts',
+          text: '• Fare: $4.31 (below $5 minimum ✗)\n• Pickup: 3.2 miles (fare too low for distance)\n• Decision: Does not meet criteria - DECLINE\n• Driver action: Tap red X or let timer expire\n• Safety: Red X prevents accidental accepts',
         };
       default:
         return { title: '', text: '' };

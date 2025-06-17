@@ -96,6 +96,8 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         {recommendation !== 'reject' && (
           <Animated.View
             style={[styles.acceptOverlay, {
+              backgroundColor: recommendation === 'accept' ? colors.primary : colors.warning,
+              borderColor: recommendation === 'accept' ? '#45a049' : '#ffb300',
               transform: [{ translateX: acceptPan.x }, { translateY: acceptPan.y }]
             }]}
             {...acceptPanResponder.panHandlers}
@@ -237,7 +239,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
             </Text>
           </View>
           
-          <View style={styles.routeLine2} />
+          <View style={styles.routeLineCard} />
           
           <View style={styles.locationContainer}>
             <View style={styles.locationSquare} />
@@ -501,7 +503,7 @@ const styles = StyleSheet.create({
     color: '#555',
     marginLeft: 20,
   },
-  routeLine2: {
+  routeLineCard: {
     width: 2,
     height: 20,
     backgroundColor: '#000',
@@ -564,10 +566,8 @@ const styles = StyleSheet.create({
     bottom: 100,
     width: '85%',
     height: 56,
-    backgroundColor: colors.primary,
     borderRadius: 28,
     borderWidth: 2,
-    borderColor: '#45a049',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -677,4 +677,5 @@ const styles = StyleSheet.create({
     zIndex: 1001,
   },
 });
+
 export default OverlayDemo;
