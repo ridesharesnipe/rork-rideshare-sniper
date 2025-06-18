@@ -92,12 +92,21 @@ export default function MinimalModeIndicator({
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: colors.background,
+    zIndex: 9999,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   content: {
     padding: 6,

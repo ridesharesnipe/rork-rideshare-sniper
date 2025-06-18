@@ -16,6 +16,7 @@ export interface TripCriteria {
   maxPickupTime: number;
   minRating: number;
   acceptShare: boolean;
+  ratingFilterEnabled?: boolean; // Added to support rating filter toggle
 }
 
 export type TripDecision = 'green' | 'yellow' | 'red';
@@ -24,6 +25,13 @@ export const evaluateTrip = (trip: TripData, criteria: TripCriteria): TripDecisi
   // Check if trip is a shared ride but user doesn't want shared rides
   if (trip.isShare && !criteria.acceptShare) {
     return 'red';
+  }
+
+  // Check passenger rating if filter is enabled
+  if (criteria.ratingFilterEnabled && trip.rating !== undefined) {
+    if (trip.rating < criteria.minRating) {
+      return 'red'; // Immediately reject if rating is below minimum
+    }
   }
 
   // Calculate score based on criteria (0-100)

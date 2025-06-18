@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, Pressable, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Edit, Plus, Trash2, Bell, Battery, Eye, Shield, Lock, HelpCircle } from 'lucide-react-native';
+import { ChevronRight, Edit, Plus, Trash2, Bell, Battery, Eye, Shield, Lock, HelpCircle, Star } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
 import OverlayDemo from '@/components/OverlayDemo';
+import Slider from '@/components/Slider';
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +22,8 @@ export default function SettingsScreen() {
     minimalMode,
     emergencyDisable,
     sniperPermissionGranted,
+    ratingFilterEnabled,
+    minRating,
     setSoundEnabled,
     setVibrationEnabled,
     setDarkMode,
@@ -29,6 +32,8 @@ export default function SettingsScreen() {
     setMinimalMode,
     setEmergencyDisable,
     setSniperPermission,
+    setRatingFilterEnabled,
+    setMinRating,
   } = useSettingsStore();
   
   const { profiles, deleteProfile } = useProfileStore();
@@ -121,6 +126,61 @@ export default function SettingsScreen() {
             </View>
           </View>
         ))}
+      </View>
+      
+      {/* PASSENGER FILTERS SECTION */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>PASSENGER FILTERS</Text>
+        
+        <View style={styles.settingItem}>
+          <View style={styles.settingIconContainer}>
+            <Star size={18} color={colors.textSecondary} />
+          </View>
+          <View style={styles.settingTextContainer}>
+            <Text style={styles.settingLabel}>⭐ Min Passenger Rating</Text>
+            <Text style={styles.settingDescription}>
+              Only accept trips from passengers with this rating or higher
+            </Text>
+          </View>
+          <Switch
+            value={ratingFilterEnabled}
+            onValueChange={setRatingFilterEnabled}
+            trackColor={{ false: colors.surfaceLight, true: colors.primary }}
+            thumbColor={colors.textPrimary}
+          />
+        </View>
+        
+        {ratingFilterEnabled && (
+          <View style={styles.sliderContainer}>
+            <View style={styles.sliderHeader}>
+              <Text style={styles.sliderValue}>{minRating.toFixed(1)} ⭐</Text>
+            </View>
+            
+            <Slider
+              value={minRating}
+              minimumValue={3.0}
+              maximumValue={5.0}
+              step={0.1}
+              onValueChange={setMinRating}
+              minimumTrackTintColor={colors.primary}
+              maximumTrackTintColor={colors.surfaceLight}
+              thumbTintColor={colors.primary}
+            />
+            
+            <View style={styles.sliderLabels}>
+              <Text style={styles.sliderMinLabel}>3.0</Text>
+              <Text style={styles.sliderMaxLabel}>5.0</Text>
+            </View>
+            
+            {minRating >= 4.8 && (
+              <View style={styles.warningContainer}>
+                <Text style={styles.warningText}>
+                  ⚠️ Very few passengers have 4.8+ ratings
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
       </View>
       
       {/* PERMISSIONS SECTION */}
@@ -523,5 +583,45 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.secondary,
     letterSpacing: 0.5,
+  },
+  sliderContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+    marginBottom: 5,
+  },
+  sliderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 5,
+  },
+  sliderValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 5,
+  },
+  sliderMinLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  sliderMaxLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  warningContainer: {
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: 'rgba(255, 204, 0, 0.1)',
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+  },
+  warningText: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
 });

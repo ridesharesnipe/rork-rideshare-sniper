@@ -16,6 +16,10 @@ interface SettingsState {
   // Single permission for sniping
   sniperPermissionGranted: boolean;
   
+  // Passenger rating filter
+  ratingFilterEnabled: boolean;
+  minRating: number;
+  
   setDriverStatus: (status: DriverStatus) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setVibrationEnabled: (enabled: boolean) => void;
@@ -27,6 +31,10 @@ interface SettingsState {
   
   // Single permission setter
   setSniperPermission: (granted: boolean) => void;
+  
+  // Rating filter setters
+  setRatingFilterEnabled: (enabled: boolean) => void;
+  setMinRating: (rating: number) => void;
   
   // Check if permission is granted
   isSniperPermissionGranted: () => boolean;
@@ -46,6 +54,10 @@ export const useSettingsStore = create<SettingsState>()(
       
       // Single permission - default to true for easier testing
       sniperPermissionGranted: true,
+      
+      // Passenger rating filter - default values
+      ratingFilterEnabled: false,
+      minRating: 4.5,
       
       setDriverStatus: (status) => {
         set({ driverStatus: status });
@@ -91,6 +103,17 @@ export const useSettingsStore = create<SettingsState>()(
       setSniperPermission: (granted) => {
         set({ sniperPermissionGranted: granted });
         console.log(`Sniper permission ${granted ? 'granted' : 'denied'}`);
+      },
+      
+      // Rating filter setters
+      setRatingFilterEnabled: (enabled) => {
+        set({ ratingFilterEnabled: enabled });
+        console.log(`Rating filter ${enabled ? 'enabled' : 'disabled'}`);
+      },
+      
+      setMinRating: (rating) => {
+        set({ minRating: rating });
+        console.log(`Minimum passenger rating set to: ${rating}`);
       },
       
       // Check if permission is granted

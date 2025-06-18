@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform } from 'react-native';
 import { X, Star } from 'lucide-react-native';
 import colors from '@/constants/colors';
+import { useSettingsStore } from '@/store/settingsStore';
 
 const { width } = Dimensions.get('window');
 
@@ -9,6 +10,7 @@ type DemoState = 'green' | 'yellow' | 'red';
 
 const InteractiveDemo: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<DemoState>('green');
+  const { ratingFilterEnabled, minRating } = useSettingsStore();
 
   const getTripData = () => {
     switch (activeDemo) {
@@ -18,7 +20,8 @@ const InteractiveDemo: React.FC = () => {
           pickup: '2.1 mi',
           pricePerMile: '$3.42',
           timeDistance: '9 mins (2.1 mi)',
-          tripDistance: '13 mins (4.4 mi)'
+          tripDistance: '13 mins (4.4 mi)',
+          rating: '5.00'
         };
       case 'yellow':
         return {
@@ -26,7 +29,8 @@ const InteractiveDemo: React.FC = () => {
           pickup: '3.8 mi',
           pricePerMile: '$1.91',
           timeDistance: '9 mins (3.8 mi)',
-          tripDistance: '13 mins (4.4 mi)'
+          tripDistance: '13 mins (4.4 mi)',
+          rating: '4.8'
         };
       case 'red':
         return {
@@ -34,7 +38,8 @@ const InteractiveDemo: React.FC = () => {
           pickup: '3.2 mi',
           pricePerMile: '$1.35',
           timeDistance: '9 mins (3.2 mi)',
-          tripDistance: '13 mins (4.4 mi)'
+          tripDistance: '13 mins (4.4 mi)',
+          rating: '5.00'
         };
       default:
         return {
@@ -42,27 +47,58 @@ const InteractiveDemo: React.FC = () => {
           pickup: '3.2 mi',
           pricePerMile: '$1.35',
           timeDistance: '9 mins (3.2 mi)',
-          tripDistance: '13 mins (4.4 mi)'
+          tripDistance: '13 mins (4.4 mi)',
+          rating: '5.00'
         };
     }
   };
 
+  // Check if rating filter would reject this trip
+  const checkRatingFilter = (tripRating: string): boolean => {
+    if (!ratingFilterEnabled) return true; // Filter disabled, always pass
+    
+    const numericRating = parseFloat(tripRating);
+    return numericRating >= minRating;
+  };
+
   const getExplanation = () => {
+    const tripData = getTripData();
+    const passesRatingFilter = checkRatingFilter(tripData.rating);
+    
+    // If rating filter is enabled and trip doesn't pass, show rating filter explanation
+    if (ratingFilterEnabled && !passesRatingFilter) {
+      return {
+        title: '🔴 RATING FILTER - REJECT',
+        text: `• Passenger Rating: ${tripData.rating} stars (below your minimum of ${minRating} ✗)
+• Rating Filter: Enabled
+• Decision: Rating too low - DECLINE`,
+      };
+    }
+    
     switch (activeDemo) {
       case 'green':
         return {
           title: '✅ GREEN OVERLAY - ACCEPT THIS TRIP',
-          text: '• Fare: $18.50 (above $5 minimum ✓)\n• Pickup: 2.1 miles (under 5 mile limit ✓)\n• Price per mile: $3.42 (excellent rate ✓)\n• Decision: All criteria met - GOOD TRIP!',
+          text: `• Fare: $18.50 (above $5 minimum ✓)
+• Pickup: 2.1 miles (under 5 mile limit ✓)
+• Price per mile: $3.42 (excellent rate ✓)
+• Decision: All criteria met - GOOD TRIP!`,
         };
       case 'yellow':
         return {
           title: '🟡 YELLOW OVERLAY - CONSIDER THIS TRIP',
-          text: '• Fare: $7.25 (close to minimum)\n• Pickup: 3.8 miles (reasonable distance)\n• Price per mile: $1.91 (borderline rate)\n• Decision: Partially meets criteria - YOUR CHOICE',
+          text: `• Fare: $7.25 (close to minimum)
+• Pickup: 3.8 miles (reasonable distance)
+• Price per mile: $1.91 (borderline rate)
+• Decision: Partially meets criteria - YOUR CHOICE`,
         };
       case 'red':
         return {
           title: '🔴 RED OVERLAY - SKIP THIS TRIP',
-          text: '• Fare: $4.31 (below $5 minimum ✗)\n• Pickup: 3.2 miles (fare too low for distance)\n• Price per mile: $1.35 (poor rate ✗)\n• Decision: Does not meet criteria - DECLINE',
+          text: `• Fare: $4.31 (below $5 minimum ✗)
+• Pickup: 3.2 miles (fare too low for distance)
+• Price per mile: $1.35 (poor rate ✗)
+• Decision: Does not meet criteria - DECLINE`,
         };
       default:
         return { title: '', text: '' };
@@ -71,6 +107,17 @@ const InteractiveDemo: React.FC = () => {
 
   const renderPricePerMileWidget = () => {
     const tripData = getTripData();
+    const passesRatingFilter = checkRatingFilter(tripData.rating);
+    
+    // If rating filter is enabled and trip doesn't pass, force red color
+    if (ratingFilterEnabled && !passesRatingFilter) {
+      return (
+        <View style={[styles.pricePerMileWidget, { backgroundColor: colors.secondary }]}>
+          <Text style={styles.pricePerMileText}>{tripData.pricePerMile}/mi</Text>
+        </View>
+      );
+    }
+    
     const widgetColor = activeDemo === 'green' ? colors.primary : 
                        activeDemo === 'yellow' ? colors.warning : colors.secondary;
     
@@ -82,7 +129,13 @@ const InteractiveDemo: React.FC = () => {
   };
 
   const renderAcceptOverlay = () => {
-    if (activeDemo === 'red') return null;
+    const tripData = getTripData();
+    const passesRatingFilter = checkRatingFilter(tripData.rating);
+    
+    // If rating filter is enabled and trip doesn't pass, don't show accept overlay
+    if (activeDemo === 'red' || (ratingFilterEnabled && !passesRatingFilter)) {
+      return null;
+    }
 
     const backgroundColor = activeDemo === 'green' ? colors.primary : colors.warning;
     const text = activeDemo === 'green' ? 'GOOD TRIP' : 'MAYBE';
@@ -134,8 +187,14 @@ const InteractiveDemo: React.FC = () => {
           
           {/* Simulated Uber trip card */}
           <View style={styles.tripCard}>
-            <Text style={styles.fareText}>{tripData.fare}</Text>
-            <Text style={styles.timeDistanceText}>{tripData.timeDistance}</Text>
+            <View style={styles.tripCardHeader}>
+              <Text style={styles.fareText}>{tripData.fare}</Text>
+              <View style={styles.ratingContainer}>
+                <Star size={14} color="#FFD700" fill="#FFD700" />
+                <Text style={styles.ratingText}>{tripData.rating}</Text>
+              </View>
+            </View>
+            
             <View style={styles.locationContainer}>
               <View style={styles.locationDot} />
               <Text style={styles.locationText}>
@@ -166,7 +225,7 @@ const InteractiveDemo: React.FC = () => {
           {renderAcceptOverlay()}
           
           {/* Reject overlay - positioned over reject button */}
-          {activeDemo === 'red' && (
+          {(activeDemo === 'red' || (ratingFilterEnabled && !checkRatingFilter(tripData.rating))) && (
             <View style={styles.rejectOverlay}>
               <X size={20} color="#fff" />
             </View>
@@ -232,7 +291,7 @@ const styles = StyleSheet.create({
   },
   uberScreenshot: {
     position: 'relative',
-    height: 320,
+    height: 300,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: colors.surfaceLight,
@@ -276,16 +335,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  tripCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   fareText: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
     color: '#000',
   },
-  timeDistanceText: {
-    fontSize: 12,
-    marginBottom: 8,
-    color: '#666',
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 4,
   },
   locationContainer: {
     flexDirection: 'row',
@@ -403,7 +471,7 @@ const styles = StyleSheet.create({
   },
   rejectOverlay: {
     position: 'absolute',
-    bottom: 16,
+    top: 16,
     right: 16,
     width: 40,
     height: 40,

@@ -3,11 +3,13 @@ import { View, TouchableOpacity, Text, StyleSheet, PanResponder, Dimensions, Pla
 import { Check, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { useOverlayStore } from '@/store/overlayStore';
+import { useSettingsStore } from '@/store/settingsStore';
 
 interface TripData {
   fare: number;
   pickupDistance: number;
   totalDistance: number;
+  passengerRating?: number;
 }
 
 interface TripOverlayProps {
@@ -16,6 +18,7 @@ interface TripOverlayProps {
 
 export default function TripOverlay({ tripData }: TripOverlayProps) {
   const { overlayVisible, tripQuality, acceptPosition, rejectPosition, updatePosition, positioningMode, hideOverlay } = useOverlayStore();
+  const { ratingFilterEnabled, minRating } = useSettingsStore();
   
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
@@ -34,6 +37,16 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
     return () => clearTimeout(timeout);
   }, [overlayVisible, positioningMode, hideOverlay]);
 
+  // Constrain position to stay within screen bounds
+  const constrainPosition = (x: number, y: number, elementWidth: number, elementHeight: number) => {
+    const maxX = screenWidth - elementWidth;
+    const maxY = screenHeight - elementHeight;
+    return {
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY))
+    };
+  };
+
   const acceptPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => positioningMode,
@@ -44,7 +57,9 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
         };
       },
       onPanResponderRelease: () => {
-        updatePosition('accept', { x: acceptPan.current.x, y: acceptPan.current.y });
+        // Constrain to screen bounds
+        const constrained = constrainPosition(acceptPan.current.x, acceptPan.current.y, screenWidth * 0.7, 44);
+        updatePosition('accept', constrained);
       },
     })
   ).current;
@@ -59,7 +74,9 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
         };
       },
       onPanResponderRelease: () => {
-        updatePosition('reject', { x: rejectPan.current.x, y: rejectPan.current.y });
+        // Constrain to screen bounds
+        const constrained = constrainPosition(rejectPan.current.x, rejectPan.current.y, 40, 40);
+        updatePosition('reject', constrained);
       },
     })
   ).current;
@@ -72,9 +89,24 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
     return pricePerMile.toFixed(2);
   };
 
+  // Check if trip passes rating filter
+  const passesRatingFilter = () => {
+    if (!ratingFilterEnabled || !tripData?.passengerRating) return true;
+    return tripData.passengerRating >= minRating;
+  };
+
   const renderPricePerMileWidget = () => {
     const pricePerMile = calculatePricePerMile();
     if (!pricePerMile) return null;
+
+    // If rating filter is enabled and trip doesn't pass, force red color
+    if (ratingFilterEnabled && !passesRatingFilter()) {
+      return (
+        <View style={[styles.pricePerMileWidget, { backgroundColor: colors.secondary }]}>
+          <Text style={styles.pricePerMileText}>${pricePerMile}/mi</Text>
+        </View>
+      );
+    }
 
     const widgetColor = tripQuality === 'green' ? colors.primary : 
                        tripQuality === 'yellow' ? colors.warning : colors.secondary;
@@ -91,17 +123,14 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
   }
 
   const renderAcceptButton = () => {
-    if (tripQuality === 'red') {
+    // If rating filter is enabled and trip doesn't pass, don't show accept button
+    if (tripQuality === 'red' || (ratingFilterEnabled && !passesRatingFilter())) {
       return null;
     }
 
     const backgroundColor = tripQuality === 'green' ? colors.primary : colors.warning;
     const borderColor = tripQuality === 'green' ? '#45a049' : '#ffb300';
     const text = tripQuality === 'green' ? 'GOOD TRIP' : 'MAYBE';
-
-    // Calculate position based on screen dimensions
-    const left = acceptPosition.x;
-    const bottom = screenHeight - acceptPosition.y;
 
     return (
       <TouchableOpacity
@@ -110,8 +139,8 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
           { 
             backgroundColor, 
             borderColor, 
-            left: left,
-            bottom: bottom,
+            left: acceptPosition.x,
+            top: acceptPosition.y,
             width: screenWidth * 0.7, // Responsive width
           },
           positioningMode && styles.positioningMode,
@@ -138,7 +167,7 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
 
   return (
     <View style={styles.overlayContainer}>
-      {/* Price per mile widget */}
+      {/* Price per mile widget - always visible */}
       {renderPricePerMileWidget()}
       
       {/* Accept overlay */}
@@ -149,7 +178,7 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
         style={[
           styles.rejectButton,
           { 
-            right: screenWidth - rejectPosition.x, 
+            left: rejectPosition.x, 
             top: rejectPosition.y,
             width: 40, // Fixed size for reject button
             height: 40,
@@ -184,7 +213,7 @@ const styles = StyleSheet.create({
   },
   pricePerMileWidget: {
     position: 'absolute',
-    top: 10,
+    top: Platform.OS === 'ios' ? 50 : 30,
     left: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -195,7 +224,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     zIndex: 1002,
-    pointerEvents: 'none',
+    pointerEvents: 'auto',
   },
   pricePerMileText: {
     color: 'white',
@@ -223,22 +252,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   crosshair: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 20,
+    width: 16,
     height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 20,
+    height: 16,
     backgroundColor: 'white',
   },
   crosshairCenter: {
@@ -263,9 +292,8 @@ const styles = StyleSheet.create({
     pointerEvents: 'auto',
   },
   positioningMode: {
-    opacity: 0.5,
+    opacity: 0.7,
     borderStyle: 'dashed',
     borderWidth: 2,
-    borderColor: '#000',
   },
 });

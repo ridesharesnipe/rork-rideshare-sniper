@@ -8,10 +8,12 @@ import {
   PanResponder,
   Animated,
   Platform,
-  SafeAreaView
+  SafeAreaView,
+  ScrollView
 } from 'react-native';
 import { X, Star } from 'lucide-react-native';
 import colors from '@/constants/colors';
+import { useSettingsStore } from '@/store/settingsStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,6 +29,9 @@ interface Position {
 }
 
 const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendation = 'accept' }) => {
+  // Get rating filter settings
+  const { ratingFilterEnabled, minRating } = useSettingsStore();
+  
   // Initial positions calculated based on screen size
   const initialRejectPosition = { x: width * 0.85, y: height * 0.25 };
   const initialAcceptPosition = { x: width * 0.1, y: height * 0.75 };
@@ -37,6 +42,16 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
   const rejectPan = useRef(new Animated.ValueXY()).current;
   const currentAcceptPosition = useRef<Position>(initialAcceptPosition);
   const currentRejectPosition = useRef<Position>(initialRejectPosition);
+  
+  // Constrain position to stay within screen bounds
+  const constrainPosition = (x: number, y: number, elementWidth: number, elementHeight: number) => {
+    const maxX = width - elementWidth;
+    const maxY = height - elementHeight;
+    return {
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY))
+    };
+  };
   
   const acceptPanResponder = useRef(
     PanResponder.create({
@@ -59,8 +74,12 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         acceptPan.flattenOffset();
         const newX = currentAcceptPosition.current.x + gestureState.dx;
         const newY = currentAcceptPosition.current.y + gestureState.dy;
-        currentAcceptPosition.current = { x: newX, y: newY };
-        setAcceptPosition({ x: newX, y: newY });
+        
+        // Constrain to screen bounds
+        const constrained = constrainPosition(newX, newY, width * 0.7, 44);
+        
+        currentAcceptPosition.current = constrained;
+        setAcceptPosition(constrained);
       }
     })
   ).current;
@@ -86,8 +105,12 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         rejectPan.flattenOffset();
         const newX = currentRejectPosition.current.x + gestureState.dx;
         const newY = currentRejectPosition.current.y + gestureState.dy;
-        currentRejectPosition.current = { x: newX, y: newY };
-        setRejectPosition({ x: newX, y: newY });
+        
+        // Constrain to screen bounds
+        const constrained = constrainPosition(newX, newY, 40, 40);
+        
+        currentRejectPosition.current = constrained;
+        setRejectPosition(constrained);
       }
     })
   ).current;
@@ -123,6 +146,14 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
     }
   };
 
+  // Check if rating filter would reject this trip
+  const checkRatingFilter = (tripRating: string): boolean => {
+    if (!ratingFilterEnabled) return true; // Filter disabled, always pass
+    
+    const numericRating = parseFloat(tripRating);
+    return numericRating >= minRating;
+  };
+
   const renderPricePerMileWidget = () => {
     const tripData = getTripData();
     const widgetColor = recommendation === 'accept' ? colors.primary : 
@@ -136,6 +167,23 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
   };
 
   const getOverlayContent = () => {
+    const tripData = getTripData();
+    const passesRatingFilter = checkRatingFilter(tripData.rating);
+    
+    // If rating filter is enabled and trip doesn't pass, only show red X
+    if (ratingFilterEnabled && !passesRatingFilter) {
+      return (
+        <Animated.View
+          style={[styles.rejectOverlay, {
+            transform: [{ translateX: rejectPan.x }, { translateY: rejectPan.y }]
+          }]}
+          {...rejectPanResponder.panHandlers}
+        >
+          <X size={20} color="#fff" />
+        </Animated.View>
+      );
+    }
+    
     return (
       <>
         {recommendation !== 'reject' && (
@@ -170,6 +218,13 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
   };
 
   const getInstructionText = () => {
+    const tripData = getTripData();
+    const passesRatingFilter = checkRatingFilter(tripData.rating);
+    
+    if (ratingFilterEnabled && !passesRatingFilter) {
+      return `Rating filter active: Passenger rating ${tripData.rating} is below your minimum of ${minRating}. Trip automatically rejected.`;
+    }
+    
     switch (recommendation) {
       case 'accept':
         return "Green crosshair indicates a profitable trip worth accepting. Drag to position over Uber's accept button.";
@@ -183,6 +238,16 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
   };
 
   const getExplanationContent = () => {
+    const tripData = getTripData();
+    const passesRatingFilter = checkRatingFilter(tripData.rating);
+    
+    if (ratingFilterEnabled && !passesRatingFilter) {
+      return {
+        title: "🔴 Rating Filter - Reject",
+        description: `This trip has a passenger rating of ${tripData.rating} stars, which is below your minimum requirement of ${minRating} stars. The trip is automatically rejected.`
+      };
+    }
+    
     switch (recommendation) {
       case 'accept':
         return {
@@ -220,19 +285,24 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         <X size={24} color="#fff" />
       </TouchableOpacity>
       
+      {/* Price per mile widget - always visible */}
+      {renderPricePerMileWidget()}
+      
       {/* Main Content */}
-      <View style={styles.content}>
-        {/* Price per mile widget - top left */}
-        {renderPricePerMileWidget()}
-        
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+      >
         {/* Simplified Uber Trip Card */}
         <View style={styles.tripCardContainer}>
           <View style={styles.tripCard}>
-            <Text style={styles.fareText}>{tripData.fare}</Text>
-            
-            <View style={styles.ratingContainer}>
-              <Star size={14} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
-              <Text style={styles.ratingText}>{tripData.rating}</Text>
+            <View style={styles.tripCardHeader}>
+              <Text style={styles.fareText}>{tripData.fare}</Text>
+              
+              <View style={styles.ratingContainer}>
+                <Star size={14} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
+                <Text style={styles.ratingText}>{tripData.rating}</Text>
+              </View>
             </View>
             
             <View style={styles.locationContainer}>
@@ -285,7 +355,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
           <Text style={styles.explanationTitle}>{explanation.title}</Text>
           <Text style={styles.explanationText}>{explanation.description}</Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -307,25 +377,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 8,
   },
-  content: {
+  scrollView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
+    marginTop: 50, // Space for the close button
   },
-  tripCardContainer: {
-    width: '100%',
-    maxWidth: 350,
-    height: 300,
-    position: 'relative',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 16,
+  scrollViewContent: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
   },
   pricePerMileWidget: {
     position: 'absolute',
-    top: 10,
+    top: Platform.OS === 'ios' ? 50 : 60,
     left: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -342,26 +405,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  tripCardContainer: {
+    width: '100%',
+    maxWidth: 350,
+    position: 'relative',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
   tripCard: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: 'white',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderRadius: 16,
     padding: 16,
-    paddingBottom: 70,
+    paddingBottom: 70, // Space for buttons
+  },
+  tripCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   fareText: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
   starIcon: {
     marginRight: 4,
@@ -441,7 +512,9 @@ const styles = StyleSheet.create({
   },
   acceptOverlay: {
     position: 'absolute',
-    width: '70%',
+    bottom: 16,
+    left: 16,
+    right: 64, // Space for reject button
     height: 44,
     borderRadius: 8,
     borderWidth: 2,
@@ -456,22 +529,22 @@ const styles = StyleSheet.create({
     zIndex: 1001,
   },
   crosshair: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 6,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 20,
+    width: 16,
     height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 20,
+    height: 16,
     backgroundColor: 'white',
   },
   crosshairCenter: {
@@ -487,6 +560,8 @@ const styles = StyleSheet.create({
   },
   rejectOverlay: {
     position: 'absolute',
+    top: 16,
+    right: 16,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -544,5 +619,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-export default OverlayDemo;
