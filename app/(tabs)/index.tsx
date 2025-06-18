@@ -9,7 +9,7 @@ import OverlayDemo from '@/components/OverlayDemo';
 import TripOverlay from '@/components/TripOverlay';
 import { useOverlayStore } from '@/store/overlayStore';
 
-function HomeScreen() {
+export default function HomeScreen() {
   const router = useRouter();
   const [isActive, setIsActive] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -351,5 +351,3 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
-
-export default HomeScreen;
