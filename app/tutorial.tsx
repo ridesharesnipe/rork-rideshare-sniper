@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions, SafeAreaView } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { DollarSign, MapPin, ChevronRight, ChevronLeft, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import Slider from '@/components/Slider';
 import OverlayDemo from '@/components/OverlayDemo';
+
+const { width } = Dimensions.get('window');
 
 export default function TutorialScreen() {
   const router = useRouter();
@@ -70,7 +72,7 @@ export default function TutorialScreen() {
                   <View style={styles.miniCrosshairH} />
                   <View style={styles.miniCrosshairV} />
                 </View>
-                <Text style={styles.demoButtonText}>Accept Widget</Text>
+                <Text style={styles.demoButtonText}>Accept</Text>
               </Pressable>
               
               <Pressable 
@@ -78,7 +80,7 @@ export default function TutorialScreen() {
                 onPress={() => handleShowDemo('consider')}
               >
                 <Text style={styles.demoIcon}>!</Text>
-                <Text style={styles.demoButtonText}>Consider Widget</Text>
+                <Text style={styles.demoButtonText}>Consider</Text>
               </Pressable>
               
               <Pressable 
@@ -86,7 +88,7 @@ export default function TutorialScreen() {
                 onPress={() => handleShowDemo('reject')}
               >
                 <Text style={styles.demoIcon}>×</Text>
-                <Text style={styles.demoButtonText}>Reject Widget</Text>
+                <Text style={styles.demoButtonText}>Reject</Text>
               </Pressable>
             </View>
           </View>
@@ -95,7 +97,7 @@ export default function TutorialScreen() {
       case 1:
         return (
           <View style={styles.stepContainer}>
-            <DollarSign size={48} color={colors.primary} style={styles.stepIcon} />
+            <DollarSign size={40} color={colors.primary} style={styles.stepIcon} />
             <Text style={styles.stepTitle}>Understanding Minimum Fare</Text>
             <Text style={styles.stepDescription}>
               This is how you set your minimum acceptable fare amount. Trips below this threshold will show a red X indicator.
@@ -125,7 +127,7 @@ export default function TutorialScreen() {
       case 2:
         return (
           <View style={styles.stepContainer}>
-            <MapPin size={48} color={colors.primary} style={styles.stepIcon} />
+            <MapPin size={40} color={colors.primary} style={styles.stepIcon} />
             <Text style={styles.stepTitle}>Understanding Pickup Distance</Text>
             <Text style={styles.stepDescription}>
               This controls your maximum pickup distance. Longer pickups reduce your hourly earnings.
@@ -167,7 +169,7 @@ export default function TutorialScreen() {
   };
   
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen 
         options={{ 
           title: 'Tutorial',
@@ -214,7 +216,7 @@ export default function TutorialScreen() {
           </View>
         </>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    paddingTop: 60,
+    paddingTop: 50,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
@@ -256,56 +258,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 80,
   },
   stepContainer: {
-    padding: 24,
+    padding: 20,
     alignItems: 'center',
   },
   logo: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   crosshair: {
-    width: 80,
-    height: 80,
+    width: 70,
+    height: 70,
     alignItems: 'center',
     justifyContent: 'center',
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 60,
-    height: 3,
+    width: 50,
+    height: 2,
     backgroundColor: colors.primary,
   },
   crosshairVertical: {
     position: 'absolute',
-    width: 3,
-    height: 60,
+    width: 2,
+    height: 50,
     backgroundColor: colors.primary,
   },
   crosshairCenter: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: colors.primary,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 8,
+    marginBottom: 6,
     letterSpacing: 1,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   description: {
     fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
     lineHeight: 20,
   },
   demoContainer: {
@@ -316,33 +318,33 @@ const styles = StyleSheet.create({
   demoButton: {
     width: '30%',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
   },
   miniCrosshair: {
-    width: 20,
-    height: 20,
+    width: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   miniCrosshairH: {
     position: 'absolute',
-    width: 16,
+    width: 12,
     height: 2,
     backgroundColor: '#FFFFFF',
   },
   miniCrosshairV: {
     position: 'absolute',
     width: 2,
-    height: 16,
+    height: 12,
     backgroundColor: '#FFFFFF',
   },
   demoIcon: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   demoButtonText: {
     fontSize: 12,
@@ -351,38 +353,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   stepIcon: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   stepTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'center',
   },
   stepDescription: {
     fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
     lineHeight: 20,
   },
   sliderContainer: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sliderValue: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 8,
+    marginTop: 6,
   },
   sliderLabel: {
     fontSize: 12,
@@ -394,10 +396,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     backgroundColor: colors.surface,
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
+    width: '100%',
   },
   footer: {
     position: 'absolute',
@@ -414,27 +417,27 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
     marginLeft: 4,
   },
   nextButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginRight: 8,
+    marginRight: 6,
   },
   errorText: {
     fontSize: 16,
@@ -449,7 +452,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   resetButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },

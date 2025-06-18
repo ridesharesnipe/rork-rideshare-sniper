@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { DollarSign, MapPin, ChevronRight, ChevronLeft } from 'lucide-react-native';
 import colors from '@/constants/colors';
@@ -8,6 +8,8 @@ import Slider from '@/components/Slider';
 import OverlayDemo from '@/components/OverlayDemo';
 import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
+
+const { width, height } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -94,7 +96,7 @@ export default function OnboardingScreen() {
                   <View style={styles.miniCrosshairV} />
                   <View style={styles.miniCrosshairC} />
                 </View>
-                <Text style={styles.demoButtonText}>Accept Widget</Text>
+                <Text style={styles.demoButtonText}>Accept</Text>
               </Pressable>
               
               <Pressable 
@@ -102,7 +104,7 @@ export default function OnboardingScreen() {
                 onPress={() => setCurrentDemo('consider')}
               >
                 <Text style={styles.demoIcon}>!</Text>
-                <Text style={styles.demoButtonText}>Consider Widget</Text>
+                <Text style={styles.demoButtonText}>Consider</Text>
               </Pressable>
               
               <Pressable 
@@ -110,7 +112,7 @@ export default function OnboardingScreen() {
                 onPress={() => setCurrentDemo('reject')}
               >
                 <Text style={styles.demoIcon}>×</Text>
-                <Text style={styles.demoButtonText}>Reject Widget</Text>
+                <Text style={styles.demoButtonText}>Reject</Text>
               </Pressable>
             </View>
           </View>
@@ -119,7 +121,7 @@ export default function OnboardingScreen() {
       case 1:
         return (
           <View style={styles.stepContainer}>
-            <DollarSign size={48} color={colors.primary} style={styles.stepIcon} />
+            <DollarSign size={40} color={colors.primary} style={styles.stepIcon} />
             <Text style={styles.stepTitle}>Minimum Fare</Text>
             <Text style={styles.stepDescription}>
               Set your minimum acceptable fare amount
@@ -145,7 +147,7 @@ export default function OnboardingScreen() {
       case 2:
         return (
           <View style={styles.stepContainer}>
-            <MapPin size={48} color={colors.primary} style={styles.stepIcon} />
+            <MapPin size={40} color={colors.primary} style={styles.stepIcon} />
             <Text style={styles.stepTitle}>Maximum Pickup Distance</Text>
             <Text style={styles.stepDescription}>
               Set your maximum pickup distance
@@ -174,7 +176,7 @@ export default function OnboardingScreen() {
   };
   
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {currentDemo ? (
         <OverlayDemo 
           visible={true}
@@ -204,7 +206,7 @@ export default function OnboardingScreen() {
           </View>
         </>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -217,55 +219,55 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 80,
   },
   stepContainer: {
-    padding: 24,
+    padding: 20,
     alignItems: 'center',
   },
   logo: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   crosshair: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
   crosshairOuterRing: {
     position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     borderWidth: 2,
     borderColor: colors.primary,
     opacity: 0.7,
   },
   crosshairInnerRing: {
     position: 'absolute',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     borderWidth: 1.5,
     borderColor: colors.primary,
     opacity: 0.9,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 90,
+    width: 70,
     height: 2,
     backgroundColor: colors.primary,
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 90,
+    height: 70,
     backgroundColor: colors.primary,
   },
   crosshairCenter: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: colors.primary,
     zIndex: 1,
   },
@@ -275,72 +277,72 @@ const styles = StyleSheet.create({
   },
   rangeTop: {
     width: 2,
-    height: 10,
-    top: 10,
+    height: 8,
+    top: 8,
   },
   rangeBottom: {
     width: 2,
-    height: 10,
-    bottom: 10,
+    height: 8,
+    bottom: 8,
   },
   rangeLeft: {
-    width: 10,
+    width: 8,
     height: 2,
-    left: 10,
+    left: 8,
   },
   rangeRight: {
-    width: 10,
+    width: 8,
     height: 2,
-    right: 10,
+    right: 8,
   },
   cornerBracket: {
     position: 'absolute',
-    width: 16,
-    height: 16,
+    width: 12,
+    height: 12,
     borderColor: colors.primary,
     borderWidth: 2,
   },
   topLeft: {
-    top: 10,
-    left: 10,
+    top: 8,
+    left: 8,
     borderRightWidth: 0,
     borderBottomWidth: 0,
   },
   topRight: {
-    top: 10,
-    right: 10,
+    top: 8,
+    right: 8,
     borderLeftWidth: 0,
     borderBottomWidth: 0,
   },
   bottomLeft: {
-    bottom: 10,
-    left: 10,
+    bottom: 8,
+    left: 8,
     borderRightWidth: 0,
     borderTopWidth: 0,
   },
   bottomRight: {
-    bottom: 10,
-    right: 10,
+    bottom: 8,
+    right: 8,
     borderLeftWidth: 0,
     borderTopWidth: 0,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 8,
+    marginBottom: 6,
     letterSpacing: 1,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   description: {
     fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
     lineHeight: 20,
   },
   demoContainer: {
@@ -351,26 +353,26 @@ const styles = StyleSheet.create({
   demoButton: {
     width: '30%',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
   },
   miniCrosshair: {
-    width: 20,
-    height: 20,
+    width: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   miniCrosshairH: {
     position: 'absolute',
-    width: 16,
+    width: 12,
     height: 2,
     backgroundColor: '#FFFFFF',
   },
   miniCrosshairV: {
     position: 'absolute',
     width: 2,
-    height: 16,
+    height: 12,
     backgroundColor: '#FFFFFF',
   },
   miniCrosshairC: {
@@ -380,10 +382,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   demoIcon: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   demoButtonText: {
     fontSize: 12,
@@ -392,35 +394,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   stepIcon: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   stepTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   stepDescription: {
     fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   sliderContainer: {
     width: '100%',
     alignItems: 'center',
   },
   sliderValue: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 8,
+    marginTop: 6,
   },
   sliderLabel: {
     fontSize: 12,
@@ -435,30 +437,32 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
     marginLeft: 4,
   },
   nextButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginRight: 8,
+    marginRight: 6,
   },
 });

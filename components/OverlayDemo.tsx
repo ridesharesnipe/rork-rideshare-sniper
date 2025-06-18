@@ -3,12 +3,12 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  Image, 
   TouchableOpacity, 
   Dimensions,
   PanResponder,
   Animated,
-  ScrollView
+  Platform,
+  SafeAreaView
 } from 'react-native';
 import { X, Star } from 'lucide-react-native';
 import colors from '@/constants/colors';
@@ -27,12 +27,16 @@ interface Position {
 }
 
 const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendation = 'accept' }) => {
-  const [rejectPosition, setRejectPosition] = useState<Position>({ x: width - 60, y: height * 0.35 });
-  const [acceptPosition, setAcceptPosition] = useState<Position>({ x: width * 0.075, y: height - 180 });
+  // Initial positions calculated based on screen size
+  const initialRejectPosition = { x: width * 0.85, y: height * 0.25 };
+  const initialAcceptPosition = { x: width * 0.1, y: height * 0.75 };
+  
+  const [rejectPosition, setRejectPosition] = useState<Position>(initialRejectPosition);
+  const [acceptPosition, setAcceptPosition] = useState<Position>(initialAcceptPosition);
   const acceptPan = useRef(new Animated.ValueXY()).current;
   const rejectPan = useRef(new Animated.ValueXY()).current;
-  const currentAcceptPosition = useRef<Position>({ x: width * 0.075, y: height - 180 });
-  const currentRejectPosition = useRef<Position>({ x: width - 60, y: height * 0.35 });
+  const currentAcceptPosition = useRef<Position>(initialAcceptPosition);
+  const currentRejectPosition = useRef<Position>(initialRejectPosition);
   
   const acceptPanResponder = useRef(
     PanResponder.create({
@@ -97,28 +101,24 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
           fare: '$18.50',
           pricePerMile: '$3.42',
           rating: '5.00',
-          imageUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=1000&auto=format&fit=crop'
         };
       case 'consider':
         return {
           fare: '$7.25',
           pricePerMile: '$1.91',
           rating: '4.8',
-          imageUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=1000&auto=format&fit=crop'
         };
       case 'reject':
         return {
           fare: '$4.31',
           pricePerMile: '$1.35',
           rating: '5.00',
-          imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop'
         };
       default:
         return {
           fare: '$4.31',
           pricePerMile: '$1.35',
           rating: '5.00',
-          imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop'
         };
     }
   };
@@ -163,7 +163,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
           }]}
           {...rejectPanResponder.panHandlers}
         >
-          <X size={24} color="#fff" />
+          <X size={20} color="#fff" />
         </Animated.View>
       </>
     );
@@ -187,17 +187,17 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
       case 'accept':
         return {
           title: "Green Crosshair - Accept",
-          description: "The green crosshair appears when a trip meets all your criteria for profitability. This includes fare amount, pickup distance, and rider rating. Position this over the accept button in the Uber app to quickly take good trips."
+          description: "The green crosshair appears when a trip meets all your criteria for profitability. Position this over the accept button in the Uber app."
         };
       case 'consider':
         return {
           title: "Yellow Warning - Consider",
-          description: "The yellow warning indicator shows when a trip is borderline. It may meet most but not all of your criteria. Review the trip details before deciding. Position this over the accept button if you choose to take it."
+          description: "The yellow warning indicator shows when a trip is borderline. Review the trip details before deciding."
         };
       case 'reject':
         return {
           title: "Red X - Reject",
-          description: "The red X appears when a trip does not meet your minimum standards for profitability. This could be due to low fare, long pickup distance, or poor rider rating. Position this over the reject button in the Uber app to decline bad trips."
+          description: "The red X appears when a trip does not meet your minimum standards for profitability. Position this over the reject button."
         };
       default:
         return {
@@ -211,76 +211,82 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
   const tripData = getTripData();
 
   return (
-    <View style={styles.container}>
-      {/* Simplified Uber Trip Card */}
-      <View style={styles.tripCardContainer}>
-        <TouchableOpacity 
-          style={styles.closeButton} 
-          onPress={onClose}
-        >
-          <X size={24} color="#fff" />
-        </TouchableOpacity>
-        
+    <SafeAreaView style={styles.container}>
+      {/* Close Button */}
+      <TouchableOpacity 
+        style={styles.closeButton} 
+        onPress={onClose}
+      >
+        <X size={24} color="#fff" />
+      </TouchableOpacity>
+      
+      {/* Main Content */}
+      <View style={styles.content}>
         {/* Price per mile widget - top left */}
         {renderPricePerMileWidget()}
         
-        <View style={styles.tripCard}>
-          <Text style={styles.fareText}>{tripData.fare}</Text>
-          
-          <View style={styles.ratingContainer}>
-            <Star size={16} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
-            <Text style={styles.ratingText}>{tripData.rating}</Text>
-          </View>
-          
-          <View style={styles.locationContainer}>
-            <View style={styles.locationDot} />
-            <Text style={styles.locationText}>
-              Bristol Forest Way & Waterford Chase Pkwy
+        {/* Simplified Uber Trip Card */}
+        <View style={styles.tripCardContainer}>
+          <View style={styles.tripCard}>
+            <Text style={styles.fareText}>{tripData.fare}</Text>
+            
+            <View style={styles.ratingContainer}>
+              <Star size={14} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
+              <Text style={styles.ratingText}>{tripData.rating}</Text>
+            </View>
+            
+            <View style={styles.locationContainer}>
+              <View style={styles.locationDot} />
+              <Text style={styles.locationText}>
+                Bristol Forest Way
+              </Text>
+            </View>
+            
+            <View style={styles.routeLine} />
+            
+            <View style={styles.locationContainer}>
+              <View style={styles.locationSquare} />
+              <Text style={styles.locationText}>
+                13 mins (4.4 mi)
+              </Text>
+            </View>
+            
+            <Text style={styles.locationText2}>
+              N Alafaya Trl
             </Text>
+            
+            {/* Accept Button */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.acceptButton}>
+                <Text style={styles.acceptButtonText}>Accept</Text>
+              </TouchableOpacity>
+              
+              {/* Reject Button */}
+              <TouchableOpacity style={styles.rejectButton}>
+                <X size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
           </View>
           
-          <View style={styles.routeLine} />
-          
-          <View style={styles.locationContainer}>
-            <View style={styles.locationSquare} />
-            <Text style={styles.locationText}>
-              13 mins (4.4 mi)
-            </Text>
-          </View>
-          
-          <Text style={styles.locationText2}>
-            N Alafaya Trl, Orlando
-          </Text>
-          
-          {/* Accept Button */}
-          <TouchableOpacity style={styles.acceptButton}>
-            <Text style={styles.acceptButtonText}>Accept</Text>
-          </TouchableOpacity>
-          
-          {/* Reject Button */}
-          <TouchableOpacity style={styles.rejectButton}>
-            <X size={20} color="#666" />
-          </TouchableOpacity>
+          {/* Overlay Widgets */}
+          {getOverlayContent()}
         </View>
         
-        {/* Overlay Widgets */}
-        {getOverlayContent()}
+        {/* Instructions */}
+        <View style={styles.instructions}>
+          <Text style={styles.instructionsTitle}>Positioning Demo</Text>
+          <Text style={styles.instructionsText}>
+            {getInstructionText()}
+          </Text>
+        </View>
+        
+        {/* Explanation Section */}
+        <View style={styles.explanationContainer}>
+          <Text style={styles.explanationTitle}>{explanation.title}</Text>
+          <Text style={styles.explanationText}>{explanation.description}</Text>
+        </View>
       </View>
-      
-      {/* Instructions */}
-      <View style={styles.instructions}>
-        <Text style={styles.instructionsTitle}>Positioning Demo</Text>
-        <Text style={styles.instructionsText}>
-          {getInstructionText()}
-        </Text>
-      </View>
-      
-      {/* Explanation Section */}
-      <View style={styles.explanationContainer}>
-        <Text style={styles.explanationTitle}>{explanation.title}</Text>
-        <Text style={styles.explanationText}>{explanation.description}</Text>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -291,35 +297,39 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'rgba(0,0,0,0.9)',
     zIndex: 1000,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   closeButton: {
     position: 'absolute',
-    top: 10,
+    top: Platform.OS === 'ios' ? 10 : 20,
     right: 10,
     zIndex: 1010,
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 20,
     padding: 8,
   },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
   tripCardContainer: {
     width: '100%',
-    height: 400,
+    maxWidth: 350,
+    height: 300,
     position: 'relative',
     backgroundColor: '#f5f5f5',
     borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   pricePerMileWidget: {
     position: 'absolute',
-    top: 16,
-    left: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    top: 10,
+    left: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -329,7 +339,7 @@ const styles = StyleSheet.create({
   },
   pricePerMileText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   tripCard: {
@@ -340,86 +350,89 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    padding: 20,
-    paddingBottom: 80,
+    padding: 16,
+    paddingBottom: 70,
   },
   fareText: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   starIcon: {
-    marginRight: 5,
+    marginRight: 4,
   },
   ratingText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   locationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#000',
-    marginRight: 10,
+    marginRight: 8,
     marginTop: 4,
   },
   locationSquare: {
-    width: 10,
-    height: 10,
+    width: 8,
+    height: 8,
     backgroundColor: '#000',
-    marginRight: 10,
+    marginRight: 8,
     marginTop: 4,
   },
   locationText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#555',
     flexShrink: 1,
     flex: 1,
   },
   locationText2: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#555',
-    marginLeft: 20,
+    marginLeft: 16,
   },
   routeLine: {
     width: 2,
-    height: 20,
+    height: 16,
     backgroundColor: '#000',
-    marginLeft: 5,
+    marginLeft: 4,
     marginVertical: 2,
   },
-  acceptButton: {
+  buttonContainer: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 76,
+    bottom: 16,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  acceptButton: {
+    flex: 1,
     backgroundColor: '#2979ff',
     borderRadius: 8,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
+    marginRight: 8,
   },
   acceptButtonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   rejectButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
@@ -429,7 +442,7 @@ const styles = StyleSheet.create({
   acceptOverlay: {
     position: 'absolute',
     width: '70%',
-    height: 52,
+    height: 44,
     borderRadius: 8,
     borderWidth: 2,
     flexDirection: 'row',
@@ -443,40 +456,40 @@ const styles = StyleSheet.create({
     zIndex: 1001,
   },
   crosshair: {
-    width: 30,
-    height: 30,
+    width: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 24,
+    width: 20,
     height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 24,
+    height: 20,
     backgroundColor: 'white',
   },
   crosshairCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: 'white',
   },
   acceptText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   rejectOverlay: {
     position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.secondary,
     borderWidth: 2,
     borderColor: '#d32f2f',
@@ -491,40 +504,43 @@ const styles = StyleSheet.create({
   },
   instructions: {
     backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 15,
+    padding: 12,
     borderRadius: 8,
-    marginBottom: 20,
+    marginBottom: 16,
     width: '100%',
+    maxWidth: 350,
   },
   instructionsTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: 'center',
   },
   instructionsText: {
     color: '#fff',
     textAlign: 'center',
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 18,
   },
   explanationContainer: {
     backgroundColor: 'rgba(255,255,255,0.9)',
-    padding: 15,
+    padding: 12,
     borderRadius: 10,
     width: '100%',
+    maxWidth: 350,
   },
   explanationTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: 'center',
   },
   explanationText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#555',
-    lineHeight: 20,
+    lineHeight: 18,
     textAlign: 'center',
   },
 });

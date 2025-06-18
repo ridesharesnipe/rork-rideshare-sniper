@@ -45,12 +45,12 @@ export default function MinimalModeIndicator({
   
   const panelWidth = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [24, 140],
+    outputRange: [24, 120],
   });
   
   const panelHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [24, 80],
+    outputRange: [24, 70],
   });
   
   const contentOpacity = animation.interpolate({
@@ -100,14 +100,14 @@ const styles = StyleSheet.create({
     borderColor: colors.background,
   },
   content: {
-    padding: 8,
+    padding: 6,
     width: '100%',
   },
   fareAmount: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   distanceContainer: {
     flexDirection: 'row',
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   distanceValue: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: colors.textPrimary,
   },

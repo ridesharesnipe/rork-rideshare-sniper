@@ -99,11 +99,21 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
     const borderColor = tripQuality === 'green' ? '#45a049' : '#ffb300';
     const text = tripQuality === 'green' ? 'GOOD TRIP' : 'MAYBE';
 
+    // Calculate position based on screen dimensions
+    const left = acceptPosition.x;
+    const bottom = screenHeight - acceptPosition.y;
+
     return (
       <TouchableOpacity
         style={[
           styles.acceptButton,
-          { backgroundColor, borderColor, left: acceptPosition.x, bottom: screenHeight - acceptPosition.y },
+          { 
+            backgroundColor, 
+            borderColor, 
+            left: left,
+            bottom: bottom,
+            width: screenWidth * 0.7, // Responsive width
+          },
           positioningMode && styles.positioningMode,
         ]}
         {...acceptPanResponder.panHandlers}
@@ -138,7 +148,12 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
       <TouchableOpacity
         style={[
           styles.rejectButton,
-          { right: screenWidth - rejectPosition.x, top: rejectPosition.y },
+          { 
+            right: screenWidth - rejectPosition.x, 
+            top: rejectPosition.y,
+            width: 40, // Fixed size for reject button
+            height: 40,
+          },
           positioningMode && styles.positioningMode,
         ]}
         {...rejectPanResponder.panHandlers}
@@ -151,7 +166,7 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
           }
         }}
       >
-        <X size={28} color="white" />
+        <X size={20} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -169,11 +184,11 @@ const styles = StyleSheet.create({
   },
   pricePerMileWidget: {
     position: 'absolute',
-    top: 20,
-    left: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    top: 10,
+    left: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -184,13 +199,12 @@ const styles = StyleSheet.create({
   },
   pricePerMileText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   acceptButton: {
     position: 'absolute',
-    width: '85%',
-    height: 56,
+    height: 44,
     borderRadius: 8,
     borderWidth: 2,
     flexDirection: 'row',
@@ -205,39 +219,37 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   crosshair: {
-    width: 30,
-    height: 30,
+    width: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 6,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 24,
+    width: 20,
     height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 24,
+    height: 20,
     backgroundColor: 'white',
   },
   crosshairCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: 'white',
   },
   rejectButton: {
     position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    borderRadius: 20,
     backgroundColor: colors.secondary,
     borderWidth: 2,
     borderColor: '#d32f2f',

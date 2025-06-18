@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch, Pressable, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronRight, Edit, Plus, Trash2, Bell, Battery, Eye, Shield, Lock, HelpCircle } from 'lucide-react-native';
 import colors from '@/constants/colors';
@@ -7,6 +7,8 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
 import OverlayDemo from '@/components/OverlayDemo';
+
+const { width } = Dimensions.get('window');
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -89,7 +91,7 @@ export default function SettingsScreen() {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>DRIVER PROFILES</Text>
           <Pressable style={styles.addButton} onPress={navigateToCreateProfile}>
-            <Plus size={20} color={colors.textPrimary} />
+            <Plus size={18} color={colors.textPrimary} />
           </Pressable>
         </View>
         
@@ -107,14 +109,14 @@ export default function SettingsScreen() {
                 style={styles.profileActionButton}
                 onPress={() => handleDeleteProfile(profile.id)}
               >
-                <Trash2 size={20} color={colors.secondary} />
+                <Trash2 size={18} color={colors.secondary} />
               </Pressable>
               
               <Pressable 
                 style={styles.profileActionButton}
                 onPress={() => navigateToEditProfile(profile.id)}
               >
-                <Edit size={20} color={colors.textSecondary} />
+                <Edit size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
           </View>
@@ -127,7 +129,7 @@ export default function SettingsScreen() {
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
-            <Shield size={20} color={colors.textSecondary} />
+            <Shield size={18} color={colors.textSecondary} />
           </View>
           <View style={styles.settingTextContainer}>
             <Text style={styles.settingLabel}>Overlay Permission</Text>
@@ -150,7 +152,7 @@ export default function SettingsScreen() {
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
-            <Bell size={20} color={colors.textSecondary} />
+            <Bell size={18} color={colors.textSecondary} />
           </View>
           <View style={styles.settingTextContainer}>
             <Text style={styles.settingLabel}>Sound Notifications</Text>
@@ -168,7 +170,7 @@ export default function SettingsScreen() {
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
-            <Bell size={20} color={colors.textSecondary} />
+            <Bell size={18} color={colors.textSecondary} />
           </View>
           <View style={styles.settingTextContainer}>
             <Text style={styles.settingLabel}>Vibration Feedback</Text>
@@ -186,7 +188,7 @@ export default function SettingsScreen() {
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
-            <Eye size={20} color={colors.textSecondary} />
+            <Eye size={18} color={colors.textSecondary} />
           </View>
           <View style={styles.settingTextContainer}>
             <Text style={styles.settingLabel}>Minimal Mode</Text>
@@ -226,7 +228,7 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
+          <ChevronRight size={18} color={colors.textSecondary} />
         </Pressable>
         
         <Pressable 
@@ -244,7 +246,7 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
+          <ChevronRight size={18} color={colors.textSecondary} />
         </Pressable>
         
         <Pressable 
@@ -262,7 +264,7 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
+          <ChevronRight size={18} color={colors.textSecondary} />
         </Pressable>
       </View>
       
@@ -276,11 +278,11 @@ export default function SettingsScreen() {
         >
           <View style={styles.helpItemContent}>
             <View style={styles.helpIconContainer}>
-              <HelpCircle size={20} color={colors.textSecondary} />
+              <HelpCircle size={18} color={colors.textSecondary} />
             </View>
             <Text style={styles.helpItemTitle}>Tutorial</Text>
           </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
+          <ChevronRight size={18} color={colors.textSecondary} />
         </Pressable>
         
         <Pressable 
@@ -289,11 +291,11 @@ export default function SettingsScreen() {
         >
           <View style={styles.helpItemContent}>
             <View style={styles.helpIconContainer}>
-              <HelpCircle size={20} color={colors.textSecondary} />
+              <HelpCircle size={18} color={colors.textSecondary} />
             </View>
             <Text style={styles.helpItemTitle}>Help Center</Text>
           </View>
-          <ChevronRight size={20} color={colors.textSecondary} />
+          <ChevronRight size={18} color={colors.textSecondary} />
         </Pressable>
       </View>
       
@@ -303,7 +305,7 @@ export default function SettingsScreen() {
         
         <View style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
-            <Lock size={20} color={colors.textSecondary} />
+            <Lock size={18} color={colors.textSecondary} />
           </View>
           <View style={styles.settingTextContainer}>
             <Text style={styles.settingLabel}>Remember Me</Text>
@@ -354,44 +356,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 12,
     letterSpacing: 0.5,
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
   settingIconContainer: {
-    width: 32,
+    width: 28,
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   settingTextContainer: {
     flex: 1,
   },
   settingLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   settingDescription: {
     fontSize: 12,
     color: colors.textSecondary,
   },
   addButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
@@ -400,7 +402,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
@@ -408,13 +410,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   profileDetail: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
   },
   profileActions: {
@@ -422,14 +424,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileActionButton: {
-    padding: 8,
-    marginLeft: 8,
+    padding: 6,
+    marginLeft: 6,
   },
   demoItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
@@ -439,29 +441,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   demoIndicator: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   miniCrosshair: {
-    width: 16,
-    height: 16,
+    width: 14,
+    height: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   miniCrosshairH: {
     position: 'absolute',
-    width: 12,
+    width: 10,
     height: 2,
     backgroundColor: '#FFFFFF',
   },
   miniCrosshairV: {
     position: 'absolute',
     width: 2,
-    height: 12,
+    height: 10,
     backgroundColor: '#FFFFFF',
   },
   miniCrosshairC: {
@@ -471,7 +473,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   demoIcon: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -479,9 +481,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   demoItemTitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   demoItemDescription: {
     fontSize: 12,
@@ -491,7 +493,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
@@ -501,20 +503,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   helpIconContainer: {
-    width: 32,
+    width: 28,
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   helpItemTitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textPrimary,
   },
   logoutButton: {
     backgroundColor: colors.surfaceLight,
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
   },
   logoutButtonText: {
     fontSize: 14,

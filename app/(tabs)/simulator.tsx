@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import { Stack } from 'expo-router';
 import { Settings, Play } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import OverlayDemo from '@/components/OverlayDemo';
 import InteractiveDemo from '@/components/InteractiveDemo';
 import Slider from '@/components/Slider';
+
+const { width } = Dimensions.get('window');
 
 interface CriteriaState {
   minFare: number;
@@ -119,7 +121,7 @@ export default function SimulatorScreen() {
               style={[styles.demoButton, { backgroundColor: colors.primary, marginTop: 16 }]} 
               onPress={() => setShowInteractiveDemo(true)}
             >
-              <Play size={24} color="white" style={styles.buttonIcon} />
+              <Play size={20} color="white" style={styles.buttonIcon} />
               <Text style={styles.demoButtonText}>Interactive Trip Demo</Text>
             </TouchableOpacity>
           </View>
@@ -261,61 +263,61 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: 16,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   description: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 24,
-    lineHeight: 22,
+    marginBottom: 20,
+    lineHeight: 20,
   },
   demoSectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   demoButtonsContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   demoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   demoButtonIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   miniCrosshair: {
-    width: 20,
-    height: 20,
+    width: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   miniCrosshairH: {
     position: 'absolute',
-    width: 16,
+    width: 12,
     height: 2,
     backgroundColor: '#FFFFFF',
   },
   miniCrosshairV: {
     position: 'absolute',
     width: 2,
-    height: 16,
+    height: 12,
     backgroundColor: '#FFFFFF',
   },
   miniCrosshairC: {
@@ -325,37 +327,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   demoButtonIconText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   buttonIcon: {
-    marginRight: 12,
+    marginRight: 10,
   },
   demoButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   settingsCard: {
     backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   settingsTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   settingRow: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   settingLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textPrimary,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   sliderContainer: {
     flexDirection: 'row',
@@ -366,10 +368,10 @@ const styles = StyleSheet.create({
     height: 40,
   },
   settingValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: colors.primary,
-    width: 60,
+    width: 50,
     textAlign: 'right',
   },
   infoCard: {
@@ -378,15 +380,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   infoTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   infoText: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 8,
-    lineHeight: 22,
+    marginBottom: 6,
+    lineHeight: 20,
   },
 });

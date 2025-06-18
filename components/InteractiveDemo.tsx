@@ -1,25 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { X, Plus } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, Platform } from 'react-native';
+import { X, Star } from 'lucide-react-native';
 import colors from '@/constants/colors';
+
+const { width } = Dimensions.get('window');
 
 type DemoState = 'green' | 'yellow' | 'red';
 
 const InteractiveDemo: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<DemoState>('green');
-
-  const getScreenshotUrl = () => {
-    switch (activeDemo) {
-      case 'green':
-        return 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=400&h=300&auto=format&fit=crop';
-      case 'yellow':
-        return 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=400&h=300&auto=format&fit=crop';
-      case 'red':
-        return 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=400&h=300&auto=format&fit=crop';
-      default:
-        return 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?q=80&w=400&h=300&auto=format&fit=crop';
-    }
-  };
 
   const getTripData = () => {
     switch (activeDemo) {
@@ -63,17 +52,17 @@ const InteractiveDemo: React.FC = () => {
       case 'green':
         return {
           title: '✅ GREEN OVERLAY - ACCEPT THIS TRIP',
-          text: '• Fare: $18.50 (above $5 minimum ✓)\n• Pickup: 2.1 miles (under 5 mile limit ✓)\n• Price per mile: $3.42 (excellent rate ✓)\n• Decision: All criteria met - GOOD TRIP!\n• Driver action: Tap green overlay to accept',
+          text: '• Fare: $18.50 (above $5 minimum ✓)\n• Pickup: 2.1 miles (under 5 mile limit ✓)\n• Price per mile: $3.42 (excellent rate ✓)\n• Decision: All criteria met - GOOD TRIP!',
         };
       case 'yellow':
         return {
           title: '🟡 YELLOW OVERLAY - CONSIDER THIS TRIP',
-          text: '• Fare: $7.25 (close to minimum)\n• Pickup: 3.8 miles (reasonable distance)\n• Price per mile: $1.91 (borderline rate)\n• Decision: Partially meets criteria - YOUR CHOICE\n• Driver action: Quick decision based on situation',
+          text: '• Fare: $7.25 (close to minimum)\n• Pickup: 3.8 miles (reasonable distance)\n• Price per mile: $1.91 (borderline rate)\n• Decision: Partially meets criteria - YOUR CHOICE',
         };
       case 'red':
         return {
           title: '🔴 RED OVERLAY - SKIP THIS TRIP',
-          text: '• Fare: $4.31 (below $5 minimum ✗)\n• Pickup: 3.2 miles (fare too low for distance)\n• Price per mile: $1.35 (poor rate ✗)\n• Decision: Does not meet criteria - DECLINE\n• Driver action: Tap red X or let timer expire\n• Safety: Red X prevents accidental accepts',
+          text: '• Fare: $4.31 (below $5 minimum ✗)\n• Pickup: 3.2 miles (fare too low for distance)\n• Price per mile: $1.35 (poor rate ✗)\n• Decision: Does not meet criteria - DECLINE',
         };
       default:
         return { title: '', text: '' };
@@ -114,25 +103,25 @@ const InteractiveDemo: React.FC = () => {
   const tripData = getTripData();
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.demoButton, activeDemo === 'green' && styles.activeButton, { backgroundColor: colors.primary }]}
           onPress={() => setActiveDemo('green')}
         >
-          <Text style={styles.demoButtonText}>GREEN TRIP</Text>
+          <Text style={styles.demoButtonText}>GREEN</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.demoButton, activeDemo === 'yellow' && styles.activeButton, { backgroundColor: colors.warning }]}
           onPress={() => setActiveDemo('yellow')}
         >
-          <Text style={styles.demoButtonText}>YELLOW TRIP</Text>
+          <Text style={styles.demoButtonText}>YELLOW</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.demoButton, activeDemo === 'red' && styles.activeButton, { backgroundColor: colors.secondary }]}
           onPress={() => setActiveDemo('red')}
         >
-          <Text style={styles.demoButtonText}>RED TRIP</Text>
+          <Text style={styles.demoButtonText}>RED</Text>
         </TouchableOpacity>
       </View>
 
@@ -140,12 +129,6 @@ const InteractiveDemo: React.FC = () => {
         <Text style={styles.simulatorTitle}>Uber Interface Simulation</Text>
         
         <View style={styles.uberScreenshot}>
-          <Image
-            source={{ uri: getScreenshotUrl() }}
-            style={styles.backgroundImage}
-            resizeMode="cover"
-          />
-          
           {/* Price per mile widget - top left */}
           {renderPricePerMileWidget()}
           
@@ -156,7 +139,7 @@ const InteractiveDemo: React.FC = () => {
             <View style={styles.locationContainer}>
               <View style={styles.locationDot} />
               <Text style={styles.locationText}>
-                Bristol Forest Way & Waterford Chase Pkwy
+                Bristol Forest Way
               </Text>
             </View>
             <View style={styles.routeLine} />
@@ -164,9 +147,9 @@ const InteractiveDemo: React.FC = () => {
               <View style={styles.locationSquare} />
               <Text style={styles.locationText}>{tripData.tripDistance}</Text>
             </View>
-            <Text style={styles.locationText2}>N Alafaya Trl, Orlando</Text>
+            <Text style={styles.locationText2}>N Alafaya Trl</Text>
             
-            {/* Accept button with overlay */}
+            {/* Button container */}
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.acceptButton}>
                 <Text style={styles.acceptButtonText}>Accept</Text>
@@ -174,7 +157,7 @@ const InteractiveDemo: React.FC = () => {
               
               {/* Reject button */}
               <TouchableOpacity style={styles.rejectButton}>
-                <X size={20} color="#666" />
+                <X size={16} color="#666" />
               </TouchableOpacity>
             </View>
           </View>
@@ -185,7 +168,7 @@ const InteractiveDemo: React.FC = () => {
           {/* Reject overlay - positioned over reject button */}
           {activeDemo === 'red' && (
             <View style={styles.rejectOverlay}>
-              <X size={24} color="#fff" />
+              <X size={20} color="#fff" />
             </View>
           )}
         </View>
@@ -204,18 +187,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  contentContainer: {
+    paddingBottom: 20,
+  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 16,
+    padding: 12,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   demoButton: {
     flex: 1,
-    marginHorizontal: 5,
-    paddingVertical: 12,
+    marginHorizontal: 4,
+    paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -232,21 +218,21 @@ const styles = StyleSheet.create({
   demoButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 12,
   },
   simulatorContainer: {
-    padding: 16,
+    padding: 12,
   },
   simulatorTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'center',
   },
   uberScreenshot: {
     position: 'relative',
-    height: 400,
+    height: 320,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: colors.surfaceLight,
@@ -256,20 +242,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  backgroundImage: {
-    position: 'absolute',
-    width: '100%',
-    height: '60%',
-    top: 0,
-    opacity: 0.3,
-  },
   pricePerMileWidget: {
     position: 'absolute',
-    top: 16,
-    left: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    top: 10,
+    left: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -290,7 +269,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    padding: 20,
+    padding: 16,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
@@ -298,13 +277,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   fareText: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
     color: '#000',
   },
   timeDistanceText: {
-    fontSize: 14,
+    fontSize: 12,
     marginBottom: 8,
     color: '#666',
   },
@@ -355,20 +334,20 @@ const styles = StyleSheet.create({
   acceptButton: {
     backgroundColor: '#2979ff',
     borderRadius: 8,
-    padding: 14,
+    padding: 12,
     flex: 1,
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 8,
   },
   acceptButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   rejectButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
@@ -377,10 +356,10 @@ const styles = StyleSheet.create({
   },
   acceptOverlay: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 76,
-    height: 44,
+    bottom: 16,
+    left: 16,
+    right: 64,
+    height: 40,
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
@@ -393,22 +372,22 @@ const styles = StyleSheet.create({
     zIndex: 1001,
   },
   crosshair: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 6,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 20,
+    width: 16,
     height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 20,
+    height: 16,
     backgroundColor: 'white',
   },
   crosshairCenter: {
@@ -419,16 +398,16 @@ const styles = StyleSheet.create({
   },
   acceptText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   rejectOverlay: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    bottom: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -443,7 +422,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
-    margin: 16,
+    margin: 12,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -453,16 +432,16 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   explanationTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 12,
+    marginBottom: 10,
     textAlign: 'center',
   },
   explanationText: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 18,
   },
 });
 
