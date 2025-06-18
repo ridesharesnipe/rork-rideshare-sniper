@@ -38,7 +38,7 @@ export default function SplashScreen() {
             {/* Outer targeting ring */}
             <View style={styles.crosshairOuterRing} />
             
-            {/* Main crosshair lines */}
+            {/* Reticle lines */}
             <View style={styles.crosshairHorizontal} />
             <View style={styles.crosshairVertical} />
             
@@ -53,6 +53,12 @@ export default function SplashScreen() {
             <View style={[styles.rangeMark, styles.rangeBottom]} />
             <View style={[styles.rangeMark, styles.rangeLeft]} />
             <View style={[styles.rangeMark, styles.rangeRight]} />
+            
+            {/* Mil-dot markers */}
+            <View style={[styles.milDot, styles.milDotTop]} />
+            <View style={[styles.milDot, styles.milDotBottom]} />
+            <View style={[styles.milDot, styles.milDotLeft]} />
+            <View style={[styles.milDot, styles.milDotRight]} />
             
             {/* Corner brackets */}
             <View style={[styles.cornerBracket, styles.topLeft]} />
@@ -86,39 +92,39 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   crosshair: {
-    width: 120,
-    height: 120,
+    width: 140,
+    height: 140,
     alignItems: 'center',
     justifyContent: 'center',
   },
   crosshairOuterRing: {
     position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     borderWidth: 2,
     borderColor: colors.primary,
     opacity: 0.7,
   },
   crosshairInnerRing: {
     position: 'absolute',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 1.5,
     borderColor: colors.primary,
     opacity: 0.9,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 110,
+    width: 130,
     height: 2,
     backgroundColor: colors.primary,
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 110,
+    height: 130,
     backgroundColor: colors.primary,
   },
   crosshairCenter: {
@@ -133,24 +139,43 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   rangeTop: {
-    width: 4,
-    height: 16,
-    top: 6,
+    width: 2,
+    height: 10,
+    top: 15,
   },
   rangeBottom: {
-    width: 4,
-    height: 16,
-    bottom: 6,
+    width: 2,
+    height: 10,
+    bottom: 15,
   },
   rangeLeft: {
-    width: 16,
-    height: 4,
-    left: 6,
+    width: 10,
+    height: 2,
+    left: 15,
   },
   rangeRight: {
-    width: 16,
+    width: 10,
+    height: 2,
+    right: 15,
+  },
+  milDot: {
+    position: 'absolute',
+    width: 4,
     height: 4,
-    right: 6,
+    borderRadius: 2,
+    backgroundColor: colors.primary,
+  },
+  milDotTop: {
+    top: 40,
+  },
+  milDotBottom: {
+    bottom: 40,
+  },
+  milDotLeft: {
+    left: 40,
+  },
+  milDotRight: {
+    right: 40,
   },
   cornerBracket: {
     position: 'absolute',
@@ -160,26 +185,26 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   topLeft: {
-    top: 15,
-    left: 15,
+    top: 10,
+    left: 10,
     borderRightWidth: 0,
     borderBottomWidth: 0,
   },
   topRight: {
-    top: 15,
-    right: 15,
+    top: 10,
+    right: 10,
     borderLeftWidth: 0,
     borderBottomWidth: 0,
   },
   bottomLeft: {
-    bottom: 15,
-    left: 15,
+    bottom: 10,
+    left: 10,
     borderRightWidth: 0,
     borderTopWidth: 0,
   },
   bottomRight: {
-    bottom: 15,
-    right: 15,
+    bottom: 10,
+    right: 10,
     borderLeftWidth: 0,
     borderTopWidth: 0,
   },

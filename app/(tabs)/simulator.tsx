@@ -18,6 +18,7 @@ interface CriteriaState {
 export default function SimulatorScreen() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [showInteractiveDemo, setShowInteractiveDemo] = useState(false);
+  const [demoType, setDemoType] = useState<'accept' | 'reject' | 'consider'>('accept');
   const [isPositionMode, setIsPositionMode] = useState(false);
   const [criteria, setCriteria] = useState<CriteriaState>({
     minFare: 5.00,
@@ -32,6 +33,11 @@ export default function SimulatorScreen() {
       ...prev,
       [key]: value
     }));
+  };
+
+  const handleShowDemo = (type: 'accept' | 'reject' | 'consider') => {
+    setDemoType(type);
+    setShowOverlay(true);
   };
 
   if (showInteractiveDemo) {
@@ -70,24 +76,53 @@ export default function SimulatorScreen() {
           <Text style={styles.title}>Trip Request Simulator</Text>
           <Text style={styles.description}>
             Test how the Sniper overlay will appear on top of Uber trip requests.
-            Position the accept/reject buttons to match your app's layout.
+            Try different trip scenarios to see how the overlay responds.
           </Text>
 
-          <TouchableOpacity 
-            style={styles.demoButton} 
-            onPress={() => setShowOverlay(true)}
-          >
-            <Play size={24} color="white" style={styles.buttonIcon} />
-            <Text style={styles.demoButtonText}>Show Demo Overlay</Text>
-          </TouchableOpacity>
+          <View style={styles.demoButtonsContainer}>
+            <Text style={styles.demoSectionTitle}>Overlay Demos</Text>
+            <TouchableOpacity 
+              style={[styles.demoButton, { backgroundColor: colors.primary }]} 
+              onPress={() => handleShowDemo('accept')}
+            >
+              <View style={styles.demoButtonIcon}>
+                <View style={styles.miniCrosshair}>
+                  <View style={styles.miniCrosshairH} />
+                  <View style={styles.miniCrosshairV} />
+                  <View style={styles.miniCrosshairC} />
+                </View>
+              </View>
+              <Text style={styles.demoButtonText}>Green Accept</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.demoButton, { backgroundColor: colors.primary }]} 
-            onPress={() => setShowInteractiveDemo(true)}
-          >
-            <Play size={24} color="white" style={styles.buttonIcon} />
-            <Text style={styles.demoButtonText}>Interactive Trip Demo</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.demoButton, { backgroundColor: colors.warning }]} 
+              onPress={() => handleShowDemo('consider')}
+            >
+              <View style={styles.demoButtonIcon}>
+                <Text style={styles.demoButtonIconText}>!</Text>
+              </View>
+              <Text style={styles.demoButtonText}>Yellow Consider</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.demoButton, { backgroundColor: colors.secondary }]} 
+              onPress={() => handleShowDemo('reject')}
+            >
+              <View style={styles.demoButtonIcon}>
+                <Text style={styles.demoButtonIconText}>×</Text>
+              </View>
+              <Text style={styles.demoButtonText}>Red Reject</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.demoButton, { backgroundColor: colors.primary, marginTop: 16 }]} 
+              onPress={() => setShowInteractiveDemo(true)}
+            >
+              <Play size={24} color="white" style={styles.buttonIcon} />
+              <Text style={styles.demoButtonText}>Interactive Trip Demo</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.settingsCard}>
             <Text style={styles.settingsTitle}>Trip Criteria</Text>
@@ -194,7 +229,7 @@ export default function SimulatorScreen() {
               4. Red means the trip doesn't meet your criteria
             </Text>
             <Text style={styles.infoText}>
-              5. Drag the red X button to position it over Uber's X button
+              5. Price per mile widget shows at a glance how profitable the trip is
             </Text>
           </View>
         </View>
@@ -203,7 +238,8 @@ export default function SimulatorScreen() {
       {/* Overlay Demo */}
       <OverlayDemo 
         visible={showOverlay} 
-        onClose={() => setShowOverlay(false)} 
+        onClose={() => setShowOverlay(false)}
+        recommendation={demoType}
       />
     </SafeAreaView>
   );
@@ -239,21 +275,66 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 22,
   },
-  demoButton: {
-    backgroundColor: colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
+  demoSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
     marginBottom: 16,
   },
+  demoButtonsContainer: {
+    marginBottom: 24,
+  },
+  demoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  demoButtonIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  miniCrosshair: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniCrosshairH: {
+    position: 'absolute',
+    width: 16,
+    height: 2,
+    backgroundColor: '#FFFFFF',
+  },
+  miniCrosshairV: {
+    position: 'absolute',
+    width: 2,
+    height: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  miniCrosshairC: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FFFFFF',
+  },
+  demoButtonIconText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
   buttonIcon: {
-    marginRight: 8,
+    marginRight: 12,
   },
   demoButtonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   settingsCard: {

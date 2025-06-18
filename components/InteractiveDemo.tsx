@@ -183,9 +183,11 @@ const InteractiveDemo: React.FC = () => {
           {renderAcceptOverlay()}
           
           {/* Reject overlay - positioned over reject button */}
-          <View style={styles.rejectOverlay}>
-            <X size={24} color="#fff" />
-          </View>
+          {activeDemo === 'red' && (
+            <View style={styles.rejectOverlay}>
+              <X size={24} color="#fff" />
+            </View>
+          )}
         </View>
       </View>
 

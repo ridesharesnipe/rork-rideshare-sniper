@@ -61,9 +61,19 @@ export default function OnboardingScreen() {
           <View style={styles.stepContainer}>
             <View style={styles.logo}>
               <View style={styles.crosshair}>
+                <View style={styles.crosshairOuterRing} />
                 <View style={styles.crosshairHorizontal} />
                 <View style={styles.crosshairVertical} />
+                <View style={styles.crosshairInnerRing} />
                 <View style={styles.crosshairCenter} />
+                <View style={[styles.rangeMark, styles.rangeTop]} />
+                <View style={[styles.rangeMark, styles.rangeBottom]} />
+                <View style={[styles.rangeMark, styles.rangeLeft]} />
+                <View style={[styles.rangeMark, styles.rangeRight]} />
+                <View style={[styles.cornerBracket, styles.topLeft]} />
+                <View style={[styles.cornerBracket, styles.topRight]} />
+                <View style={[styles.cornerBracket, styles.bottomLeft]} />
+                <View style={[styles.cornerBracket, styles.bottomRight]} />
               </View>
             </View>
             
@@ -82,6 +92,7 @@ export default function OnboardingScreen() {
                 <View style={styles.miniCrosshair}>
                   <View style={styles.miniCrosshairH} />
                   <View style={styles.miniCrosshairV} />
+                  <View style={styles.miniCrosshairC} />
                 </View>
                 <Text style={styles.demoButtonText}>Accept Widget</Text>
               </Pressable>
@@ -166,6 +177,7 @@ export default function OnboardingScreen() {
     <View style={styles.container}>
       {currentDemo ? (
         <OverlayDemo 
+          visible={true}
           recommendation={currentDemo} 
           onClose={() => setCurrentDemo(null)} 
         />
@@ -215,28 +227,102 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   crosshair: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  crosshairOuterRing: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    opacity: 0.7,
+  },
+  crosshairInnerRing: {
+    position: 'absolute',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    opacity: 0.9,
+  },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 60,
-    height: 3,
+    width: 90,
+    height: 2,
     backgroundColor: colors.primary,
   },
   crosshairVertical: {
     position: 'absolute',
-    width: 3,
-    height: 60,
+    width: 2,
+    height: 90,
     backgroundColor: colors.primary,
   },
   crosshairCenter: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: colors.primary,
+    zIndex: 1,
+  },
+  rangeMark: {
+    position: 'absolute',
+    backgroundColor: colors.primary,
+  },
+  rangeTop: {
+    width: 2,
+    height: 10,
+    top: 10,
+  },
+  rangeBottom: {
+    width: 2,
+    height: 10,
+    bottom: 10,
+  },
+  rangeLeft: {
+    width: 10,
+    height: 2,
+    left: 10,
+  },
+  rangeRight: {
+    width: 10,
+    height: 2,
+    right: 10,
+  },
+  cornerBracket: {
+    position: 'absolute',
+    width: 16,
+    height: 16,
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  topLeft: {
+    top: 10,
+    left: 10,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+  topRight: {
+    top: 10,
+    right: 10,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+  },
+  bottomLeft: {
+    bottom: 10,
+    left: 10,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+  },
+  bottomRight: {
+    bottom: 10,
+    right: 10,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
   },
   title: {
     fontSize: 24,
@@ -285,6 +371,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 2,
     height: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  miniCrosshairC: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: '#FFFFFF',
   },
   demoIcon: {

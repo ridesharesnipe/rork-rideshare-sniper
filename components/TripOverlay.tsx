@@ -117,7 +117,6 @@ export default function TripOverlay({ tripData }: TripOverlayProps) {
         }}
       >
         <View style={styles.crosshair}>
-          <View style={styles.crosshairOuterRing} />
           <View style={styles.crosshairHorizontal} />
           <View style={styles.crosshairVertical} />
           <View style={styles.crosshairCenter} />
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '85%',
     height: 56,
-    borderRadius: 28,
+    borderRadius: 8,
     borderWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
@@ -210,31 +209,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   crosshair: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
   },
-  crosshairOuterRing: {
-    position: 'absolute',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'white',
-    opacity: 0.6,
-  },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 30,
+    width: 24,
     height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
     width: 2,
-    height: 30,
+    height: 24,
     backgroundColor: 'white',
   },
   crosshairCenter: {

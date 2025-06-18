@@ -211,80 +211,35 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
   const tripData = getTripData();
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Map Background with Route */}
-      <View style={styles.mapContainer}>
-        <Image 
-          source={{ uri: tripData.imageUrl }}
-          style={styles.mapImage}
-          resizeMode="cover"
-        />
+    <View style={styles.container}>
+      {/* Simplified Uber Trip Card */}
+      <View style={styles.tripCardContainer}>
+        <TouchableOpacity 
+          style={styles.closeButton} 
+          onPress={onClose}
+        >
+          <X size={24} color="#fff" />
+        </TouchableOpacity>
         
         {/* Price per mile widget - top left */}
         {renderPricePerMileWidget()}
         
-        {/* Route Line Overlay */}
-        <View style={styles.routeLine} />
-        
-        {/* Pickup Point (Blue) */}
-        <View style={[styles.mapMarker, styles.pickupMarker]}>
-          <View style={styles.markerInner}>
-            <View style={styles.personIcon} />
-          </View>
-        </View>
-        
-        {/* Destination Point (Black) */}
-        <View style={[styles.mapMarker, styles.destMarker]}>
-          <View style={styles.markerInner}>
-            <View style={styles.squareIcon} />
-          </View>
-        </View>
-        
-        {/* Navigation Arrow */}
-        <View style={styles.navArrow}>
-          <View style={styles.arrowCircle}>
-            <View style={styles.arrowTriangle} />
-          </View>
-        </View>
-      </View>
-      
-      {/* Trip Card - Exact match to screenshot */}
-      <View style={styles.tripCard}>
-        {/* Header with Share and X */}
-        <View style={styles.cardHeader}>
-          <View style={styles.shareButton}>
-            <Text style={styles.shareIcon}>👤</Text>
-            <Text style={styles.shareText}>Share</Text>
-          </View>
+        <View style={styles.tripCard}>
+          <Text style={styles.fareText}>{tripData.fare}</Text>
           
-          <Text style={styles.exclusiveText}>Exclusive</Text>
-          
-          <TouchableOpacity style={styles.closeButton}>
-            <X size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-        
-        {/* Fare */}
-        <Text style={styles.fareText}>{tripData.fare}</Text>
-        
-        {/* Rating */}
-        <View style={styles.ratingContainer}>
-          <Star size={16} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
-          <Text style={styles.ratingText}>{tripData.rating}</Text>
-        </View>
-        
-        {/* Trip Details */}
-        <View style={styles.tripDetails}>
-          <Text style={styles.timeDistanceText}>9 mins (3.2 mi)</Text>
+          <View style={styles.ratingContainer}>
+            <Star size={16} color="#FFD700" fill="#FFD700" style={styles.starIcon} />
+            <Text style={styles.ratingText}>{tripData.rating}</Text>
+          </View>
           
           <View style={styles.locationContainer}>
             <View style={styles.locationDot} />
             <Text style={styles.locationText}>
-              Bristol Forest Way & Waterford Chase Pkwy, Orlando
+              Bristol Forest Way & Waterford Chase Pkwy
             </Text>
           </View>
           
-          <View style={styles.routeLineCard} />
+          <View style={styles.routeLine} />
           
           <View style={styles.locationContainer}>
             <View style={styles.locationSquare} />
@@ -296,40 +251,25 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
           <Text style={styles.locationText2}>
             N Alafaya Trl, Orlando
           </Text>
+          
+          {/* Accept Button */}
+          <TouchableOpacity style={styles.acceptButton}>
+            <Text style={styles.acceptButtonText}>Accept</Text>
+          </TouchableOpacity>
+          
+          {/* Reject Button */}
+          <TouchableOpacity style={styles.rejectButton}>
+            <X size={20} color="#666" />
+          </TouchableOpacity>
         </View>
         
-        {/* Accept Button */}
-        <TouchableOpacity style={styles.acceptButton}>
-          <Text style={styles.acceptButtonText}>Accept</Text>
-        </TouchableOpacity>
-      </View>
-      
-      {/* Tactical Panel - Our overlay */}
-      <View style={styles.tacticalPanel}>
-        <Text style={styles.tacticalHeader}>TACTICAL PANEL</Text>
-        <View style={styles.tacticalRow}>
-          <Text style={styles.tacticalLabel}>FARE:</Text>
-          <Text style={recommendation === 'accept' ? styles.tacticalValueGreen : recommendation === 'consider' ? styles.tacticalValueYellow : styles.tacticalValueRed}>{tripData.fare}</Text>
-        </View>
-        <View style={styles.tacticalRow}>
-          <Text style={styles.tacticalLabel}>PICKUP:</Text>
-          <Text style={styles.tacticalValueYellow}>3.2 mi</Text>
-        </View>
-        <View style={styles.tacticalRow}>
-          <Text style={styles.tacticalLabel}>TRIP:</Text>
-          <Text style={styles.tacticalValueGreen}>4.4 mi</Text>
-        </View>
-        <View style={styles.tacticalRow}>
-          <Text style={styles.tacticalLabel}>RATING:</Text>
-          <Text style={styles.tacticalValueGreen}>{tripData.rating}</Text>
-        </View>
-        
-        {/* Dynamic Overlay Content */}
+        {/* Overlay Widgets */}
         {getOverlayContent()}
       </View>
       
       {/* Instructions */}
       <View style={styles.instructions}>
+        <Text style={styles.instructionsTitle}>Positioning Demo</Text>
         <Text style={styles.instructionsText}>
           {getInstructionText()}
         </Text>
@@ -340,15 +280,7 @@ const OverlayDemo: React.FC<OverlayDemoProps> = ({ visible, onClose, recommendat
         <Text style={styles.explanationTitle}>{explanation.title}</Text>
         <Text style={styles.explanationText}>{explanation.description}</Text>
       </View>
-      
-      {/* Close button for the entire demo */}
-      <TouchableOpacity 
-        style={styles.demoCloseButton} 
-        onPress={onClose}
-      >
-        <Text style={styles.demoCloseText}>Close Demo</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -357,24 +289,34 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(0,0,0,0.9)',
     zIndex: 1000,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  mapContainer: {
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1010,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  tripCardContainer: {
     width: '100%',
-    height: '60%',
+    height: 400,
     position: 'relative',
-  },
-  mapImage: {
-    width: '100%',
-    height: '100%',
-    opacity: 0.9,
-    backgroundColor: '#e1e6ea',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 20,
   },
   pricePerMileWidget: {
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: 16,
+    left: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -390,130 +332,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  routeLine: {
-    position: 'absolute',
-    width: '70%',
-    height: 6,
-    backgroundColor: '#333',
-    top: '50%',
-    left: '15%',
-    borderRadius: 3,
-    transform: [{ rotate: '-5deg' }],
-  },
-  mapMarker: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pickupMarker: {
-    backgroundColor: '#2979ff',
-    top: '40%',
-    right: '30%',
-  },
-  destMarker: {
-    backgroundColor: '#000',
-    top: '30%',
-    left: '20%',
-  },
-  markerInner: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  personIcon: {
-    width: 12,
-    height: 12,
-    backgroundColor: '#2979ff',
-    borderRadius: 6,
-  },
-  squareIcon: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#000',
-  },
-  navArrow: {
-    position: 'absolute',
-    bottom: '20%',
-    right: '15%',
-  },
-  arrowCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'white',
-    borderWidth: 2,
-    borderColor: '#333',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  arrowTriangle: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderBottomWidth: 16,
-    borderStyle: 'solid',
-    backgroundColor: 'transparent',
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#333',
-    transform: [{ rotate: '90deg' }],
-  },
   tripCard: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     padding: 20,
-    paddingBottom: 30,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  shareButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  shareIcon: {
-    color: 'white',
-    fontSize: 14,
-    marginRight: 4,
-  },
-  shareText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  exclusiveText: {
-    color: '#2979ff',
-    fontSize: 16,
-  },
-  closeButton: {
-    padding: 5,
+    paddingBottom: 80,
   },
   fareText: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 5,
   },
@@ -528,13 +359,6 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  tripDetails: {
-    marginBottom: 20,
-  },
-  timeDistanceText: {
-    fontSize: 16,
-    marginBottom: 10,
   },
   locationContainer: {
     flexDirection: 'row',
@@ -567,7 +391,7 @@ const styles = StyleSheet.create({
     color: '#555',
     marginLeft: 20,
   },
-  routeLineCard: {
+  routeLine: {
     width: 2,
     height: 20,
     backgroundColor: '#000',
@@ -575,6 +399,10 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   acceptButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 76,
     backgroundColor: '#2979ff',
     borderRadius: 8,
     padding: 16,
@@ -585,52 +413,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  tacticalPanel: {
+  rejectButton: {
     position: 'absolute',
-    top: 80,
+    bottom: 20,
     right: 20,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    borderRadius: 10,
-    padding: 10,
-    width: 150,
-  },
-  tacticalHeader: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    textAlign: 'center',
-  },
-  tacticalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 2,
-  },
-  tacticalLabel: {
-    color: 'white',
-    fontSize: 12,
-  },
-  tacticalValueGreen: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  tacticalValueYellow: {
-    color: colors.warning,
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  tacticalValueRed: {
-    color: colors.secondary,
-    fontSize: 12,
-    fontWeight: 'bold',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   acceptOverlay: {
     position: 'absolute',
-    bottom: 100,
-    width: '85%',
-    height: 56,
-    borderRadius: 28,
+    width: '70%',
+    height: 52,
+    borderRadius: 8,
     borderWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
@@ -643,28 +443,28 @@ const styles = StyleSheet.create({
     zIndex: 1001,
   },
   crosshair: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
   },
   crosshairHorizontal: {
     position: 'absolute',
-    width: 30,
-    height: 3,
+    width: 24,
+    height: 2,
     backgroundColor: 'white',
   },
   crosshairVertical: {
     position: 'absolute',
-    width: 3,
-    height: 30,
+    width: 2,
+    height: 24,
     backgroundColor: 'white',
   },
   crosshairCenter: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: 'white',
   },
   acceptText: {
@@ -672,64 +472,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  instructions: {
-    position: 'absolute',
-    bottom: 250,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    padding: 10,
-    borderRadius: 8,
-  },
-  instructionsText: {
-    color: 'white',
-    textAlign: 'center',
-  },
-  explanationContainer: {
-    position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    padding: 15,
-    borderRadius: 10,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    zIndex: -1,
-  },
-  explanationTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  explanationText: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-  demoCloseButton: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    backgroundColor: colors.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-  },
-  demoCloseText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
   rejectOverlay: {
     position: 'absolute',
-    bottom: 100,
-    right: 10,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -744,6 +488,44 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     zIndex: 1001,
+  },
+  instructions: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 20,
+    width: '100%',
+  },
+  instructionsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  instructionsText: {
+    color: '#fff',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  explanationContainer: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    padding: 15,
+    borderRadius: 10,
+    width: '100%',
+  },
+  explanationTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  explanationText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
+    textAlign: 'center',
   },
 });
 

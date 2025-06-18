@@ -133,7 +133,7 @@ export default function HomeScreen() {
               • Position the overlay buttons to match your rideshare app
             </Text>
             <Text style={styles.tipText}>
-              • Green means the trip meets all your criteria
+              • Green means the trip meets all your criteria for profitability
             </Text>
             <Text style={styles.tipText}>
               • Yellow means it's close but not perfect
@@ -142,7 +142,7 @@ export default function HomeScreen() {
               • Red means the trip doesn't meet your standards
             </Text>
             <Text style={styles.tipText}>
-              • Made by a rideshare driver for rideshare drivers
+              • Built by a rideshare driver for rideshare drivers
             </Text>
           </View>
           

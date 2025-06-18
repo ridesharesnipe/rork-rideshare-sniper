@@ -216,6 +216,7 @@ export default function SettingsScreen() {
               <View style={styles.miniCrosshair}>
                 <View style={styles.miniCrosshairH} />
                 <View style={styles.miniCrosshairV} />
+                <View style={styles.miniCrosshairC} />
               </View>
             </View>
             <View style={styles.demoTextContainer}>
@@ -461,6 +462,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 2,
     height: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  miniCrosshairC: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: '#FFFFFF',
   },
   demoIcon: {
